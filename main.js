@@ -57,6 +57,6 @@ const testLine = (line, ctx) => {
     ctx.stats.totalCount++
     if (result == false) {
         ctx.stats.failCount++
-        console.log(`FAIL | Line | ${ctx.lineNumber} | Should be | - | Is | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+        console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
     }
 }
