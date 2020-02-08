@@ -1,5 +1,8 @@
 #temporary files
 .temp/*
+#IDE
+.vscode/*
+
 
 # Logs
 logs
