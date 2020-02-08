@@ -53,10 +53,14 @@ const parseLine = (line, ctx) => {
 
 
 const testLine = (line, ctx) => {
-    result = eval(line)
-    ctx.stats.totalCount++
-    if (result == false) {
-        ctx.stats.failCount++
-        console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+    try {
+        result = eval(line)
+        ctx.stats.totalCount++
+        if (result == false) {
+            ctx.stats.failCount++
+            console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+        }
+    } catch (e) {
+        console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | exception | ${e}`)
     }
 }
