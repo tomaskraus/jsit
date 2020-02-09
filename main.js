@@ -67,6 +67,6 @@ const testLine = (line, ctx) => {
             console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
         }
     } catch (e) {
-        console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | exception | ${e}`)
+        console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
     }
 }
