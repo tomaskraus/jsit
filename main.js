@@ -1,6 +1,6 @@
 /* Main routine */
 
-
+const fs = require('fs');
 
 const readline = require('readline');
 
@@ -14,14 +14,10 @@ const createProcessLine = (ctx) => {
 }
 
 
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+const fileName = process.argv[2]
 
 const context = {
-    fileName: "",
+    fileName,
     lineText: "",
     lineNumber: 0,
     commentFlag: false,
@@ -31,17 +27,27 @@ const context = {
     }
 }
 
-rl.on('line', createProcessLine(context))
+try {
 
-const testSummary = (ctx) => {
-    return () => {
-        console.log(`END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`)
+    const rl = readline.createInterface({
+        input: fs.createReadStream(context.fileName),
+        output: process.stdout,
+        console: false,      
+    });
+    rl.on('line', createProcessLine(context))
+    
+    const testSummary = (ctx) => {
+        return () => {
+            console.log(`END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`)
+        }
     }
+    
+    rl.on('close', testSummary(context))
+
+} catch (e) {
+    console.log(e)
 }
-
-rl.on('close', testSummary(context))
-
-
+    
 
 //-------------------------------------------------
 
