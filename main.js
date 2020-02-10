@@ -82,6 +82,7 @@ const testLine = (line, ctx) => {
             }
         }
     } catch (e) {
+        ctx.stats.failCount++
         console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
     }
 }
