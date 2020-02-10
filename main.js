@@ -34,7 +34,7 @@ try {
     const rl = readline.createInterface({
         input: fs.createReadStream(context.fileName),
         output: process.stdout,
-        console: false,      
+        terminal: false,      
     });
     rl.on('line', createProcessLine(context))
     
