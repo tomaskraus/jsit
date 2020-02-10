@@ -29,6 +29,13 @@ const context = {
     }
 }
 
+const path = require('path')
+
+const nameWithoutExt = (name) => path.basename(name, path.extname(name))
+
+
+eval( `var ${nameWithoutExt(fileName)} = require("./" + "` + fileName + `")` )
+
 try {
 
     const rl = readline.createInterface({
