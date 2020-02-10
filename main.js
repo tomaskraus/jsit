@@ -8,6 +8,8 @@ const readline = require('readline');
 const createProcessLine = (ctx) => {
     return (line) => {
         line = parseLine(line, ctx)
+        line = filterLine(line, ctx)
+        line = isolateLine(line, ctx)
         testLine(line, ctx)
         //console.log(`${ctx.lineNumber} Received: ${line}`);
     }
@@ -57,14 +59,27 @@ const parseLine = (line, ctx) => {
     return line
 }
 
+const filterLine = (line, ctx) => {
+    let re = /^\s*\*:/
+    return re.test(line) ? line : ""
+}
+
+const isolateLine = (line, ctx) => {
+    let re = /^(\s*\*:)\s(.*$)/
+    return line.replace(re, "$2")
+}
+
 
 const testLine = (line, ctx) => {
     try {
-        result = eval(line)
-        ctx.stats.totalCount++
-        if (result == false) {
-            ctx.stats.failCount++
-            console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+        if (line.trim() !== "") {
+            
+            result = eval(line)
+            ctx.stats.totalCount++
+            if (result == false) {
+                ctx.stats.failCount++
+                console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+            }
         }
     } catch (e) {
         console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
