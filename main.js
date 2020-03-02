@@ -16,7 +16,11 @@ const createProcessLine = (ctx) => {
 }
 
 
-const fileName = process.argv[2]
+const path = require('path')
+const fileName = path.resolve(process.argv[2])
+    .replace(/\\/g, "/")    //on Windows
+    
+//console.log("fname=" + fileName)
 
 const context = {
     fileName,
@@ -29,22 +33,23 @@ const context = {
     }
 }
 
-const path = require('path')
 
 const nameWithoutExt = (name) => path.basename(name, path.extname(name))
 
-const strToEval = `var ${nameWithoutExt(fileName)} = require("${"./" + fileName}")`
+const strToEval = `var ${nameWithoutExt(fileName)} = require("${fileName}")`
+//console.log(strToEval)
 eval( strToEval )
 
 try {
+    const rs = fs.createReadStream(process.argv[2])
 
     const rl = readline.createInterface({
-        input: fs.createReadStream(context.fileName),
+        input: rs,
         output: process.stdout,
         terminal: false,      
     });
     rl.on('line', createProcessLine(context))
-    
+
     const testSummary = (ctx) => {
         return () => {
             console.log(`END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`)
