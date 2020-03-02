@@ -33,8 +33,8 @@ const path = require('path')
 
 const nameWithoutExt = (name) => path.basename(name, path.extname(name))
 
-
-eval( `var ${nameWithoutExt(fileName)} = require("./" + "` + fileName + `")` )
+const strToEval = `var ${nameWithoutExt(fileName)} = require("${"./" + fileName}")`
+eval( strToEval )
 
 try {
 
