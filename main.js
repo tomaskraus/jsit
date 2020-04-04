@@ -34,8 +34,7 @@ Impure.testLine = (line, ctx) => {
             }
         }
     } catch (e) {
-        ctx.stats.failCount++
-        console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
+        console.error(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
     }
 }
 
