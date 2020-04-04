@@ -2,8 +2,6 @@
 
 const core = require('./core')
 
-const comment = str => `// ${str}`
-
 //place all impure functions under this
 const impure = {}
 
@@ -19,6 +17,7 @@ impure.summaryOfTest = (ctx) => {
     }
 }
 
+//need to be in this file, to reach the evaluated file code
 impure.testLine = (line, ctx) => {
     try {
         if (line.trim() !== "") {
@@ -61,6 +60,9 @@ impure.app = (filename, context) => {
     }
 }
 
+// ---------------------------------------------------------------------------------------------------------
+
+const comment = str => `// ${str}`
 
 //impure code, that has to be done in global scope: --------------------------------------------------------
 
