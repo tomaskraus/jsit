@@ -2,6 +2,12 @@
 
 const comment = str => `// ${str}`
 
+const errAndExit = msg => {
+    console.error(msg)
+    // process.exit(1)
+    process.exitCode = 1    //soft exit, allowing things to close itself properly
+}
+
 const context = {
     fileName: "",
     lineText: "",
@@ -13,11 +19,32 @@ const context = {
     }
 }
 
+//place all impure functions under this
+const Impure = {}
+
+Impure.testLine = (line, ctx) => {
+    try {
+        if (line.trim() !== "") {
+
+            result = eval(line)
+            ctx.stats.totalCount++
+            if (result == false) {
+                ctx.stats.failCount++
+                console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+            }
+        }
+    } catch (e) {
+        ctx.stats.failCount++
+        console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
+    }
+}
+
+
 const createProcessLine = context => line => {
     line = parseLine(line, context)
     line = filterLine(line, context)
     line = isolateLine(line, context)
-    testLine(line, context)
+    Impure.testLine(line, context)
     //console.log(`${ctx.lineNumber} Received: ${line}`);
 }
 
@@ -27,29 +54,30 @@ const summaryOfTest = (ctx) => {
     }
 }
 
-const app = (filename, context) => {
-    try {
-        context.fileName = fileName
+Impure.app = (filename, context) => {
+        try {
+            context.fileName = fileName
 
-        const fs = require('fs');
-        const rs = fs.createReadStream(filename)
-        rs.on('error', err => console.error(err.message))
+            const fs = require('fs');
+            const rs = fs.createReadStream(filename)
+            rs.on('error', err => errAndExit(err.message))
 
-        const readline = require('readline');
-        const rl = readline.createInterface({
-            input: rs,
-            output: process.stdout,
-            terminal: false,
-        });
-        rl.on('line', createProcessLine(context))
-        rl.on('close', summaryOfTest(context))
+            const readline = require('readline');
+            const rl = readline.createInterface({
+                input: rs,
+                output: process.stdout,
+                terminal: false,
+            });
+            rl.on('line', createProcessLine(context))
+            rl.on('close', summaryOfTest(context))
 
-    } catch (e) {
-        console.log(e.message)
+        } catch (e) {
+            errAndExit(e.message)
+        }
     }
-}
 
-//this has to be done in global scope: --------------------------------------------------------
+
+//impure code, that has to be done in global scope: --------------------------------------------------------
 
 
 const path = require('path')
@@ -59,15 +87,18 @@ const fileName = path.resolve(process.argv[2])
 console.log(comment(`processing: ${fileName}`))
 
 
-app(fileName, context)
+Impure.app(fileName, context)
 
 
 const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
 const requireFileCommandStr = `var ${nameWithoutExt(fileName)} = require("${fileName}")`
 //console.log("cmdStr:", requireFileCommandStr)
 
-eval(requireFileCommandStr)
-
+try {
+    eval(requireFileCommandStr)
+} catch (e) {
+    errAndExit(e.message)
+}
 //----------------------------------------------------------------------------------------------
 
 
@@ -89,20 +120,3 @@ const isolateLine = (line, ctx) => {
     return line.replace(re, "$2")
 }
 
-
-const testLine = (line, ctx) => {
-    try {
-        if (line.trim() !== "") {
-
-            result = eval(line)
-            ctx.stats.totalCount++
-            if (result == false) {
-                ctx.stats.failCount++
-                console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
-            }
-        }
-    } catch (e) {
-        ctx.stats.failCount++
-        console.log(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
-    }
-}
