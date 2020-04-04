@@ -71,8 +71,9 @@ const fileName = path.resolve(process.argv[2])
     .replace(/\\/g, "/")    //on Windows
 
 const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
-const requireFileStr = `var ${nameWithoutExt(fileName)} = require("${fileName}")`
-console.log(`BEGIN | Module to test | ${nameWithoutExt(fileName)} | File | ${fileName}`)
+const moduleName = nameWithoutExt(fileName)
+const requireFileStr = `var ${moduleName} = require("${fileName}")`
+console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
 try {
     eval(requireFileStr)
 } catch (e) {
