@@ -1,28 +1,25 @@
 /* Main routine */
 
+const core = require('./core')
+
 const comment = str => `// ${str}`
 
-const errAndExit = msg => {
+//place all impure functions under this
+const impure = {}
+
+impure.errAndExit = msg => {
     console.error(msg)
     // process.exit(1)
     process.exitCode = 1    //soft exit, allowing things to close itself properly
 }
 
-const context = {
-    fileName: "",
-    lineText: "",
-    lineNumber: 0,
-    commentFlag: false,
-    stats: {
-        failCount: 0,
-        totalCount: 0
+impure.summaryOfTest = (ctx) => {
+    return () => {
+        console.log(`END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`)
     }
 }
 
-//place all impure functions under this
-const Impure = {}
-
-Impure.testLine = (line, ctx) => {
+impure.testLine = (line, ctx) => {
     try {
         if (line.trim() !== "") {
 
@@ -38,42 +35,31 @@ Impure.testLine = (line, ctx) => {
     }
 }
 
+impure.app = (filename, context) => {
+    try {
+        context.fileName = fileName
 
-const createProcessLine = context => line => {
-    line = parseLine(line, context)
-    line = filterLine(line, context)
-    line = isolateLine(line, context)
-    Impure.testLine(line, context)
-    //console.log(`${ctx.lineNumber} Received: ${line}`);
-}
+        const fs = require('fs');
+        const rs = fs.createReadStream(filename)
+        rs.on('error', err => impure.errAndExit(err.message))
 
-const summaryOfTest = (ctx) => {
-    return () => {
-        console.log(`END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`)
+        const readline = require('readline');
+        const rl = readline.createInterface({
+            input: rs,
+            output: process.stdout,
+            terminal: false,
+        });
+        rl.on('line', (line) => {
+            let processedLine = core.preprocessLine(line, context)
+            impure.testLine(processedLine, context)
+
+        })
+        rl.on('close', impure.summaryOfTest(context))
+
+    } catch (e) {
+        impure.errAndExit(e.message)
     }
 }
-
-Impure.app = (filename, context) => {
-        try {
-            context.fileName = fileName
-
-            const fs = require('fs');
-            const rs = fs.createReadStream(filename)
-            rs.on('error', err => errAndExit(err.message))
-
-            const readline = require('readline');
-            const rl = readline.createInterface({
-                input: rs,
-                output: process.stdout,
-                terminal: false,
-            });
-            rl.on('line', createProcessLine(context))
-            rl.on('close', summaryOfTest(context))
-
-        } catch (e) {
-            errAndExit(e.message)
-        }
-    }
 
 
 //impure code, that has to be done in global scope: --------------------------------------------------------
@@ -89,29 +75,11 @@ const requireFileStr = `var ${nameWithoutExt(fileName)} = require("${fileName}")
 try {
     eval(requireFileStr)
 } catch (e) {
-    errAndExit(e.message)
+    impure.errAndExit(e.message)
 }
 
-Impure.app(fileName, context)
+impure.app(fileName, core.context)
 
 //----------------------------------------------------------------------------------------------
 
-
-// ======================================================================================================
-
-const parseLine = (line, ctx) => {
-    ctx.lineNumber++
-    ctx.lineText = line
-    return line
-}
-
-const filterLine = (line, ctx) => {
-    let re = /^\s*\*:/
-    return re.test(line) ? line : ""
-}
-
-const isolateLine = (line, ctx) => {
-    let re = /^(\s*\*:)\s(.*$)/
-    return line.replace(re, "$2")
-}
 
