@@ -2,7 +2,6 @@
  * Provides basic arithmetical ops
  * @module Mth
  */
-module.exports = {
 
     /**
      * subtracts number a from number b
@@ -18,9 +17,9 @@ module.exports = {
      *: Mth.minus(1, 2) == -1 
      * 
      */
-    minus: (a, b) => {
+    const minus = (a, b) => {
         return a - b
-    },
+    }
 
     /** add number a to number b
      * @example
@@ -28,8 +27,13 @@ module.exports = {
      *: Mth.plus(1, -1) == 2 
      *: Mth.plus(1, 2) == 3 
      */
-    plus: (a, b) => {
+    const plus = (a, b) => {
         return a + b
-    },
+    }
 
+
+
+module.exports = {
+    plus,
+    minus,
 }
