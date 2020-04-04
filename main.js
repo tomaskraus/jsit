@@ -78,26 +78,22 @@ Impure.app = (filename, context) => {
 
 //impure code, that has to be done in global scope: --------------------------------------------------------
 
-
 const path = require('path')
 const fileName = path.resolve(process.argv[2])
     .replace(/\\/g, "/")    //on Windows
 
 console.log(comment(`processing: ${fileName}`))
 
-
-Impure.app(fileName, context)
-
-
 const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
 const requireFileStr = `var ${nameWithoutExt(fileName)} = require("${fileName}")`
-//console.log("cmdStr:", requireFileCommandStr)
-
 try {
     eval(requireFileStr)
 } catch (e) {
     errAndExit(e.message)
 }
+
+Impure.app(fileName, context)
+
 //----------------------------------------------------------------------------------------------
 
 
