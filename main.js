@@ -90,11 +90,11 @@ Impure.app(fileName, context)
 
 
 const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
-const requireFileCommandStr = `var ${nameWithoutExt(fileName)} = require("${fileName}")`
+const requireFileStr = `var ${nameWithoutExt(fileName)} = require("${fileName}")`
 //console.log("cmdStr:", requireFileCommandStr)
 
 try {
-    eval(requireFileCommandStr)
+    eval(requireFileStr)
 } catch (e) {
     errAndExit(e.message)
 }
