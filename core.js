@@ -4,7 +4,7 @@
  */
 
 
-module.exports.context = {
+context = {
     fileName: "",
     lineText: "",
     lineNumber: 0,
@@ -15,7 +15,7 @@ module.exports.context = {
     }
 }
 
-module.exports.preprocessLine = (line, context) => {
+preprocessLine = (line, context) => {
     line = parseLine(line, context)
     line = filterLine(line, context)
     line = isolateLine(line, context)
@@ -39,5 +39,15 @@ const filterLine = (line, ctx) => {
 const isolateLine = (line, ctx) => {
     let re = /^(\s*\*:)\s(.*$)/
     return line.replace(re, "$2")
+}
+
+
+
+// ======================================================================================================
+
+
+module.exports = {
+    context,
+    preprocessLine,
 }
 
