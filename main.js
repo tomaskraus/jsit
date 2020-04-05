@@ -14,7 +14,7 @@ impure.errAndExit = msg => {
 
 impure.summaryOfTest = (ctx) => {
     return () => {
-        console.log(`END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`)
+        return `END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`
     }
 }
 
@@ -37,7 +37,7 @@ impure.sandbox = (pathForModuleRequire) => {
 
 const fs = require('fs');
 
-impure.app = (filename, evaluationCallback, context) => {
+impure.app = (filename, evaluationCallback, endCallback, context) => {
     try {
         context.fileName = fileName
         const rs = fs.createReadStream(filename)
@@ -50,7 +50,7 @@ impure.app = (filename, evaluationCallback, context) => {
             terminal: false,
         });
         rl.on('line', (line) => core.impure.processLine(evaluationCallback, line, context))
-        rl.on('close', impure.summaryOfTest(context))
+        rl.on('close', endCallback)
 
     } catch (e) {
         impure.errAndExit(e)
@@ -59,7 +59,10 @@ impure.app = (filename, evaluationCallback, context) => {
 
 // ---------------------------------------------------------------------------------------------------------
 
-const comment = str => `// ${str}`
+//maybe will not work in callback if context variable pointer changes
+const onAppEnd = (ctx) => () => {
+    console.log(impure.summaryOfTest(ctx)())
+}
 
 //impure code, that has to be done in global scope: --------------------------------------------------------
 
@@ -72,7 +75,8 @@ try {
     fs.accessSync(fileName, fs.constants.R_OK);
     const sandB = impure.sandbox(fileName)
     if (!impure.error) {
-        impure.app(fileName, sandB.eval, core.context)
+        impure.app(fileName, sandB.eval, onAppEnd(core.context), core.context)
+        
     }
 } catch (err) {
     impure.errAndExit(err.message)
