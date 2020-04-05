@@ -17,24 +17,22 @@ impure.summaryOfTest = (ctx) => {
     }
 }
 
-//need to be in this file, to reach the evaluated file code
-impure.testLine = (line, ctx) => {
-    try {
-        if (line.trim() !== "") {
+impure.sandbox = (pathForModuleRequire) => {
+    const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
+    const moduleName = nameWithoutExt(pathForModuleRequire)
+    const requireFileStr = `var ${moduleName} = require("${fileName}")`
+    console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
 
-            result = eval(line)
-            ctx.stats.totalCount++
-            if (result == false) {
-                ctx.stats.failCount++
-                console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
-            }
-        }
+    try {
+        eval(requireFileStr)
+        return { eval: str => eval(str) }
     } catch (e) {
-        console.error(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
+        impure.errAndExit(e.message)
+        return { eval:null }
     }
 }
 
-impure.app = (filename, context) => {
+impure.app = (filename, evaluationCallback, context) => {
     try {
         context.fileName = fileName
 
@@ -48,15 +46,11 @@ impure.app = (filename, context) => {
             output: process.stdout,
             terminal: false,
         });
-        rl.on('line', (line) => {
-            let processedLine = core.preprocessLine(line, context)
-            impure.testLine(processedLine, context)
-
-        })
+        rl.on('line', (line) => core.impure.processLine(evaluationCallback, line, context))
         rl.on('close', impure.summaryOfTest(context))
 
     } catch (e) {
-        impure.errAndExit(e.message)
+        impure.errAndExit(e)
     }
 }
 
@@ -70,17 +64,8 @@ const path = require('path')
 const fileName = path.resolve(process.argv[2])
     .replace(/\\/g, "/")    //on Windows
 
-const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
-const moduleName = nameWithoutExt(fileName)
-const requireFileStr = `var ${moduleName} = require("${fileName}")`
-console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
-try {
-    eval(requireFileStr)
-} catch (e) {
-    impure.errAndExit(e.message)
-}
-
-impure.app(fileName, core.context)
+const sandB = impure.sandbox(fileName)
+impure.app(fileName, sandB.eval, core.context)
 
 //----------------------------------------------------------------------------------------------
 
