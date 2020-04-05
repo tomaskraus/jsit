@@ -23,7 +23,7 @@
 
     /** add number a to number b
      * @example
-     *: Mth.plus(1, 1) == 2 
+     *: Mth.plus(1, 1) =w= 2 
      *: Mth.plus(1, -1) == 2 
      *: Mth.plus(1, 2) == 3 
      */
