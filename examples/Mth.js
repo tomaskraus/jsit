@@ -5,7 +5,6 @@
 
 //
 //:::jsit 1
-//const test = require('jsit')
 
 
     /**
@@ -81,6 +80,8 @@ console.log( ,  )
 /**
  *: Mth.a = [1,2,3]
  *: Mth.a.toString() === "1,2,3" 
+ *: assert.deepStrictEqual( Mth.a, [1,2,4] )
+ *: assert.deepStrictEqual( Mth.a, [1,2,3] )
  *: console.log(Mth.a.concat([5]).toString())
  *: a = 22 
  */

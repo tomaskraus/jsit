@@ -27,6 +27,7 @@ impure.sandbox = (pathForModuleRequire) => {
     const outerImpure = impure
     try {
         eval(requireFileStr)
+        eval("var assert = require('assert')")
         return { eval: str => eval(str) }
     } catch (e) {
         outerImpure.errAndExit(e)
