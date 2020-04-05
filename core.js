@@ -4,7 +4,7 @@
  */
 
 
-context = {
+ context = {
     fileName: "",
     lineText: "",
     lineNumber: 0,
@@ -15,8 +15,13 @@ context = {
     }
 }
 
-
-preprocessLine = line => {
+/**
+ *: core._preprocessLine(" *:  abc ") === "abc"
+ *: core._preprocessLine(" * :  abc ") === ""
+ *: core._preprocessLine(" *:   ") === ""
+ //*: core._preprocessLine(" *: let a = 10;  ") === "let a = 10;"
+ */
+const _preprocessLine = line => {
     line = filterLine(line)
     line = isolateLine(line)
         .trim()
@@ -29,7 +34,7 @@ const impure = {}
 impure.processLine = (evaluationCallback, line, ctx) => {
     ctx.lineNumber++
     ctx.lineText = line
-    line = preprocessLine(line)
+    line = _preprocessLine(line)
 
     if (line) {
         try {
@@ -68,5 +73,7 @@ const isolateLine = line => {
 module.exports = {
     context,
     impure,
+
+    _preprocessLine,
 }
 
