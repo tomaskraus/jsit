@@ -32,6 +32,58 @@
     }
 
 
+/* 
+:::
+let Mth = {}
+Mth.a = [1,2,3]
+Mth = "aabbcc"
+console.log(Mth.a.toString())
+ */
+
+//----- alternative syntax --------------------------------------
+
+/**
+ * 
+ * :::
+ * Mth.a = [1,2,3]
+ * Mth = "aabbcc"
+ * console.log(Mth.a.toString())
+ */
+
+//     
+// ::: 
+// let Mth = {}
+// Mth.a = [1,2,3]
+// //Mth = "aabbcc"
+// console.log(Mth.a.toString())
+// 
+
+/**
+ *: Mth.a = 2
+ *: Mth.a === 2 
+ *: //Mth = "abc"
+ *: //Mth = "ahhoj"
+ */
+
+//-------------------------------------------------------------------
+
+/**
+ *: Mth.a = [1,2,3]
+ *: Mth.a.toString() === "1,2,3" 
+ *: console.log(Mth.a.toString())
+ *: a = 22 
+ */
+
+
+     /**
+     *: M = {} 
+     *: M.a = [1,2,3]
+     */
+    
+    /**
+     *: M.a.toString() === "1,2,3" 
+     *: a = 22 
+     */
 
 module.exports = {
     plus,
