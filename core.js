@@ -15,9 +15,11 @@ context = {
     }
 }
 
+
 preprocessLine = line => {
     line = filterLine(line)
     line = isolateLine(line)
+        .trim()
     return line
 }
 
@@ -29,7 +31,7 @@ impure.processLine = (evaluationCallback, line, ctx) => {
     ctx.lineText = line
     line = preprocessLine(line)
 
-    if (line.trim() !== "") {
+    if (line) {
         try {
             result = evaluationCallback(line)
             ctx.stats.totalCount++
