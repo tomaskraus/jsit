@@ -18,7 +18,8 @@
      * @example
      *: Mth.minus(1, 1) == 0 
      *: Mth.minus(1, -1) == 2
-     *: Mth.minus(1, 2) == -1 
+     *: Mth.minus(1, 2) == -1
+     *: assert.strictEqual( Mth.minus(1, 2), -3 ) 
      * 
      */
     const minus = (a, b) => {

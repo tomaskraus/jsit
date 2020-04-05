@@ -43,10 +43,11 @@ impure.processLine = (evaluationCallback, line, ctx) => {
             ctx.stats.totalCount++
             if (result == false) {
                 ctx.stats.failCount++
-                console.log(`FAIL | Line | ${ctx.lineNumber} | Is | ${result} | Should be | - | File | ${ctx.fileName} | Text | ${ctx.lineText}`)
+                console.log(logFailMessage(ctx, "The result is false"))
             }
         } catch (e) {
-            console.error(`ERROR | Line | ${ctx.lineNumber} | File | ${ctx.fileName} | Exception | ${e} | Text | ${ctx.lineText}`)
+            ctx.stats.failCount++
+            console.log(logFailMessage(ctx, e))
         }
     }
 
@@ -54,6 +55,8 @@ impure.processLine = (evaluationCallback, line, ctx) => {
 }
 
 // ======================================================================================================
+
+const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNumber} | ${ctx.fileName}:${ctx.lineNumber} | ${msg} | ${ctx.lineText}`
 
 
 const filterLine = line => {
