@@ -3,6 +3,11 @@
  * @module Mth
  */
 
+//
+//:::jsit 1
+//const test = require('jsit')
+
+
     /**
      * subtracts number a from number b
      * 
@@ -32,15 +37,21 @@
     }
 
 
-/* 
+
+//----- alternative syntax --------------------------------------
+
+/** 
 :::
 let Mth = {}
 Mth.a = [1,2,3]
-Mth = "aabbcc"
-console.log(Mth.a.toString())
+test.equals( Mth.a, [1, 2, 3] )
+test.throws( () => Mth.plus(-1, 1), Error)
+console.log( ,  )
  */
 
-//----- alternative syntax --------------------------------------
+
+//test.of( Mth.plus(-1, 1) ).equals( 2 ) 
+//test.of( () => Mth.plus(-1, "a") ).throws( Error ).property("message").contains("syntax err")
 
 /**
  * 
@@ -70,20 +81,30 @@ console.log(Mth.a.toString())
 /**
  *: Mth.a = [1,2,3]
  *: Mth.a.toString() === "1,2,3" 
- *: console.log(Mth.a.toString())
+ *: console.log(Mth.a.concat([5]).toString())
  *: a = 22 
  */
 
 
      /**
      *: M = {} 
-     *: M.a = [1,2,3]
+     *: M.a = [1,2,4]
      */
     
     /**
-     *: M.a.toString() === "1,2,3" 
+     *: M.a.toString() === "1,2,4" 
+     *: M.a.concat([3]) == '1,2,4,3'
      *: a = 22 
      */
+
+/**
+ *: Mth.obj1 = { a: 1, b: "22" }
+ *: Mth.obj2 = { a: 1, b: "22" }
+ *: Mth.obj1 == Mth.obj2
+ *: throw new Error("HU!") 
+ *: ({}) instanceof Object 
+
+ */
 
 module.exports = {
     plus,
