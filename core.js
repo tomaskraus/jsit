@@ -4,7 +4,7 @@
  */
 
 
- context = {
+ const context = {
     fileName: "",
     lineText: "",
     lineNumber: 0,
