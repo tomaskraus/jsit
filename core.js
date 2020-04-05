@@ -16,9 +16,10 @@
 }
 
 /**
- *: core._preprocessLine(" *:  abc ") === "abc"
- *: core._preprocessLine(" * :  abc ") === ""
- *: core._preprocessLine(" *:   ") === ""
+ *: core._preprocessLine(" *:  abc ") === "abc"     //valid text
+ *: core._preprocessLine(" * :  abc ") === ""       //invalid test prefix
+ *: core._preprocessLine(" *:   ") === ""           //whitespace trim
+ *: core._preprocessLine(" *:  // abc ") === "// abc"   //whitespace trim
  //*: core._preprocessLine(" *: let a = 10;  ") === "let a = 10;"
  */
 const _preprocessLine = line => {
