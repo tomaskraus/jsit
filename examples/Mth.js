@@ -19,7 +19,9 @@
      *: Mth.minus(1, 1) == 0 
      *: Mth.minus(1, -1) == 2
      *: Mth.minus(1, 2) == -1
-     *: assert.strictEqual( Mth.minus(1, 2), -3 ) 
+     *: assert.strictEqual( Mth.minus(1, 2), -3 )
+     *: Mth.b = 0;     true
+     *: Mth.minus(1, Mth.b) == 1
      * 
      */
     const minus = (a, b) => {
@@ -70,7 +72,8 @@ console.log( ,  )
 // 
 
 /**
- *: Mth.a = 2
+ *: Mth.a = false;      Mth
+ *: Mth.a === false 
  *: Mth.a === 2 
  *: //Mth = "abc"
  *: //Mth = "ahhoj"
