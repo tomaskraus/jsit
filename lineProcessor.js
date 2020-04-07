@@ -5,19 +5,19 @@
  */
 
 
-const { lambda, object } = require('folktale/core')
-const Maybe = require('folktale/maybe')
+const { compose, curry } = require('folktale/core/lambda')
+const Result = require('folktale/result')
 
 const impure = {}
 
 
 
-const process = (line, ctx) => {
+const process = curry(2, (line, ctx) => {
     ctx
     ctx.line = line
 
     return ctx
-}
+})
 
 
 //==================================================================================
@@ -30,7 +30,7 @@ impure.app = (s) => {
     console.log("--START-----------")
     for (let sn of strs) {
         ctx.lineNum++
-        ctx = process(sn, ctx)
+        ctx = process(sn)(ctx)
         console.log(`${ctx.lineNum}-\t${ctx.line}`)
     }
     console.log("--END-----------")
