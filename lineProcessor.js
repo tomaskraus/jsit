@@ -1,5 +1,5 @@
 /**
- * Everything ablut single line processing
+ * Everything about single line processing
  * 
  * @module lineProcessor
  */
@@ -8,18 +8,23 @@
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 
+//--auxiliary pointfree------------------------------------------------------------------------------
+
+const map = curry(2, (fn, functor) => functor.map(fn))
+const chain = curry(2, (fn, monad) => monad.chain(fn))
+
+const log = obj => { 
+    console.log("LOG", obj)
+    return obj
+}
+
+//--------------------------------------------------------------------------------
+
 const impure = {}
 
 
-impure.processInputLine = (fn, ctx, line) => {
-    ctx.input = line
-    ctx.output = line
-    ctx.lineNum++
-    return fn(ctx)
-}
-
 impure.prettyPrint = ctx => {
-    console.log(`${ctx.lineNum}-\t${ctx.output}`)
+    console.log(`${ctx.lineNum}:\t${ctx.output}`)
     return ctx
 }
 
@@ -29,26 +34,38 @@ impure.addtriStar = ctx => {
 }
 
 
-// filterLine :: (ctx c) => regex -> c -> c
+// filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx
 impure.filterLine = regex => ctx => {
-    ctx.output = regex.test(ctx.output) ? ctx.output   //passed
-        : ''
-    return ctx
-}
+    if (regex.test(ctx.output)) {
+        return Result.Ok(ctx)
+    }
+    return Result.Error(ctx)
+} 
     
 
 const lineCommentRegex = /^\s*\/\//
 
 
-//==================================================================================
+
+//-----------------------------------------------------------------------------------
 
 const processPrint = compose.all(
-    impure.prettyPrint,
-    impure.addtriStar,
-    impure.filterLine(lineCommentRegex),
-)
-   
+    // log,
+    map(impure.prettyPrint),
+    map(impure.addtriStar),
+    chain(impure.filterLine(lineCommentRegex)),
+    //log,
+    )
+    
+//==================================================================================
 
+//processInputLine :: (Result res, context ctx) => (res ctx -> res ctx) -> ctx -> string -> ctx
+impure.processInputLine = (fn, ctx, line) => {
+    ctx.input = line
+    ctx.output = line
+    ctx.lineNum++
+    return fn(Result.Ok(ctx)).merge()
+}
 
 impure.app = (s) => {
 
