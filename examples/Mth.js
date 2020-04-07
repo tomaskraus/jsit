@@ -63,6 +63,9 @@ console.log( ,  )
  * console.log(Mth.a.toString())
  */
 
+let hello = "hello"
+
+
 //     
 // ::: 
 // let Mth = {}
@@ -70,6 +73,8 @@ console.log( ,  )
 // //Mth = "aabbcc"
 // console.log(Mth.a.toString())
 // 
+
+
 
 /**
  *: Mth.a = false;      Mth
