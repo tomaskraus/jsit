@@ -11,27 +11,54 @@ const Result = require('folktale/result')
 const impure = {}
 
 
+impure.processInputLine = (fn, ctx, line) => {
+    ctx.input = line
+    ctx.output = line
+    ctx.lineNum++
+    return fn(ctx)
+}
 
-const process = curry(2, (line, ctx) => {
-    ctx
-    ctx.line = line
-
+impure.prettyPrint = ctx => {
+    console.log(`${ctx.lineNum}-\t${ctx.output}`)
     return ctx
-})
+}
+
+impure.addtriStar = ctx => {
+    ctx.output = '*** ' + ctx.output
+    return ctx
+}
+
+
+// filterLine :: (ctx c) => regex -> c -> c
+impure.filterLine = regex => ctx => {
+    ctx.output = regex.test(ctx.output) ? ctx.output   //passed
+        : ''
+    return ctx
+}
+    
+
+const lineCommentRegex = /^\s*\/\//
 
 
 //==================================================================================
 
+const processPrint = compose.all(
+    impure.prettyPrint,
+    impure.addtriStar,
+    impure.filterLine(lineCommentRegex),
+)
+   
+
+
 impure.app = (s) => {
-    
+
     const strs = s.split('\n')
-    
-    let ctx = { lineNum: 0 }
+
+    let ctx = { lineNum: 0, output: null }
     console.log("--START-----------")
     for (let sn of strs) {
-        ctx.lineNum++
-        ctx = process(sn)(ctx)
-        console.log(`${ctx.lineNum}-\t${ctx.line}`)
+        ctx = impure.processInputLine(processPrint, ctx, sn)
+
     }
     console.log("--END-----------")
 }
