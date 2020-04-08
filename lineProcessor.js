@@ -20,7 +20,7 @@ const resultOkErrorIf = curry(3,
         : Result.Error(ErrorVal)
 )
 
-const log = obj => { 
+const log = obj => {
     console.log("LOG", obj)
     return obj
 }
@@ -41,7 +41,7 @@ let context = {
     output: "",
 }
 
-const ctxL = L.makeLenses(['input', 'output'])
+const ctxL = L.makeLenses(['input', 'output', 'lineNum'])
 
 //--------------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
                 inBlockMode = true
                 return Result.Error(ctx)
             }
-        }  
+        }
         return resultOkErrorIf(ctx, ctx, inBlockMode)
     }
 }
@@ -100,17 +100,31 @@ const processPrint = compose.all(
     // log,
     chain(filterLineComment),
     //log,
-    )
-    
+)
+
 //==================================================================================
 
+
+const makeResult = a => Result.Ok(2)
+
+
 //processInputLine :: (Result res, context ctx) => (res ctx ctx -> res ctx ctx) -> ctx -> string -> ctx
-impure.processInputLine = (fn, ctx, line) => {
-    ctx.input = line
-    ctx.output = line
-    ctx.lineNum++
-    return fn(Result.Ok(ctx)).merge()
-}
+const processInputLine = (fn, ctx, line) => compose.all(
+    fn,
+    // log,
+    Result.of,
+    L.set(ctxL.output, line),
+    L.set(ctxL.input, line),
+    L.over(ctxL.lineNum, x => x + 1),
+)(ctx)
+
+
+// {
+//     ctx.input = line
+//     ctx.output = line
+//     ctx.lineNum++
+//     return fn(Result.Ok(ctx)).merge()
+// }
 
 impure.app = (s) => {
 
@@ -118,7 +132,7 @@ impure.app = (s) => {
 
     console.log("--START-----------")
     for (let sn of strs) {
-        context = impure.processInputLine(processPrint, context, sn)
+        context = processInputLine(processPrint, context, sn).merge()
 
     }
     // log(context)
