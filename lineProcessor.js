@@ -20,6 +20,16 @@ const log = obj => {
 
 //--------------------------------------------------------------------------------
 
+let context = {
+    fileName: "",
+    lineText: "",
+    lineNum: 0,
+    commentFlag: false,
+    stats: {
+        failCount: 0,
+        totalCount: 0
+    },
+}
 
 //--------------------------------------------------------------------------------
 
@@ -106,12 +116,12 @@ impure.app = (s) => {
 
     const strs = s.split('\n')
 
-    let ctx = { lineNum: 0, output: null }
     console.log("--START-----------")
     for (let sn of strs) {
-        ctx = impure.processInputLine(processPrint, ctx, sn)
+        context = impure.processInputLine(processPrint, context, sn)
 
     }
+    log(context)
     console.log("--END-----------")
 }
 
