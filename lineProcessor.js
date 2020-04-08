@@ -56,7 +56,6 @@ impure.prettyPrint = ctx => {
 const addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
 
 
-
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
 
@@ -66,8 +65,12 @@ const filterLineComment = filterLine(lineCommentRegex)
 const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 const removeLineCommentCtx = ctx => L.over(ctxL.output, removeLineComment, ctx)
 
-const beginCommentMark = /^\s*:::.*/
-const endCommentMark = /^\s*$/
+// TODO: add detection of one-line  block comment /*    */
+const beginJSCommentMark = /a/
+const endJSCommentMark = /b/
+
+const beginTestCommentMark = /^\s*:::.*/
+const endTestCommentMark = /^\s*$/
 
 impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
     let inBlockMode = false
@@ -88,17 +91,16 @@ impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
     }
 }
 
+const filterTestComment = impure.filterBlockComment(beginTestCommentMark, endTestCommentMark)
+
 //-----------------------------------------------------------------------------------
 
 const processPrint = compose.all(
-    // log,
     map(impure.prettyPrint),
     map(addtriStar),
     // chain(Result.Error),
-    // log,
-    chain(impure.filterBlockComment(beginCommentMark, endCommentMark)),
+    chain(filterTestComment),
     map(removeLineCommentCtx),
-    // log,
     filterLineComment,
     //log,
 )
