@@ -53,16 +53,16 @@ impure.prettyPrint = ctx => {
     return ctx
 }
 
-impure.addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
+addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
 
 
 
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
-impure.filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
+filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
 
 const lineCommentRegex = /^\s*\/\//
 
-const filterLineComment = impure.filterLine(lineCommentRegex)
+const filterLineComment = filterLine(lineCommentRegex)
 
 const removeLineComment = line => {
     return line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
@@ -97,7 +97,7 @@ impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
 const processPrint = compose.all(
     // log,
     map(impure.prettyPrint),
-    map(impure.addtriStar),
+    map(addtriStar),
     // chain(Result.Error),
     // log,
     chain(impure.filterBlockComment(/^\s*:::.*/, /^\s*$/)),
