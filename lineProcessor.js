@@ -98,18 +98,16 @@ const processPrint = compose.all(
     chain(impure.filterBlockComment(/^\s*:::.*/, /^\s*$/)),
     map(removeLineCommentCtx),
     // log,
-    chain(filterLineComment),
+    filterLineComment,
     //log,
 )
 
 //==================================================================================
 
 
-//processInputLine :: (Result res, context ctx) => (res ctx ctx -> res ctx ctx) -> ctx -> string -> ctx
+//processInputLine :: (ctx -> Result ctx ctx) -> ctx -> string -> ctx
 const processInputLine = (fn, ctx, line) => compose.all(
     fn,
-    // log,
-    Result.of,
     L.set(ctxL.output, line),
     L.set(ctxL.input, line),
     L.over(ctxL.lineNum, x => x + 1),
