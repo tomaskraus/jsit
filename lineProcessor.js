@@ -105,9 +105,6 @@ const processPrint = compose.all(
 //==================================================================================
 
 
-const makeResult = a => Result.Ok(2)
-
-
 //processInputLine :: (Result res, context ctx) => (res ctx ctx -> res ctx ctx) -> ctx -> string -> ctx
 const processInputLine = (fn, ctx, line) => compose.all(
     fn,
@@ -118,13 +115,6 @@ const processInputLine = (fn, ctx, line) => compose.all(
     L.over(ctxL.lineNum, x => x + 1),
 )(ctx)
 
-
-// {
-//     ctx.input = line
-//     ctx.output = line
-//     ctx.lineNum++
-//     return fn(Result.Ok(ctx)).merge()
-// }
 
 impure.app = (s) => {
 
