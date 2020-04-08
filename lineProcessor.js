@@ -66,6 +66,7 @@ const filterLineComment = filterLine(lineCommentRegex)
 
 const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 
+const removeLineCommentCtx = ctx => L.over(ctxL.output, removeLineComment, ctx)
 
 impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
     let inBlockMode = false
@@ -95,7 +96,7 @@ const processPrint = compose.all(
     // chain(Result.Error),
     // log,
     chain(impure.filterBlockComment(/^\s*:::.*/, /^\s*$/)),
-    map(impure.removeLineComment),
+    map(removeLineCommentCtx),
     // log,
     chain(filterLineComment),
     //log,
