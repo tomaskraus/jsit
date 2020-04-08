@@ -53,12 +53,12 @@ impure.prettyPrint = ctx => {
     return ctx
 }
 
-addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
+const addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
 
 
 
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
-filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
+const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
 
 const lineCommentRegex = /^\s*\/\//
 
