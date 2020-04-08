@@ -61,12 +61,13 @@ const addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
 const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
 
 const lineCommentRegex = /^\s*\/\//
-
 const filterLineComment = filterLine(lineCommentRegex)
 
 const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
-
 const removeLineCommentCtx = ctx => L.over(ctxL.output, removeLineComment, ctx)
+
+const beginCommentMark = /^\s*:::.*/
+const endCommentMark = /^\s*$/
 
 impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
     let inBlockMode = false
@@ -95,7 +96,7 @@ const processPrint = compose.all(
     map(addtriStar),
     // chain(Result.Error),
     // log,
-    chain(impure.filterBlockComment(/^\s*:::.*/, /^\s*$/)),
+    chain(impure.filterBlockComment(beginCommentMark, endCommentMark)),
     map(removeLineCommentCtx),
     // log,
     filterLineComment,
