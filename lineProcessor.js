@@ -7,6 +7,7 @@
 
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
+const L = require('lenses')
 
 //--auxiliary pointfree------------------------------------------------------------------------------
 
@@ -17,6 +18,7 @@ const log = obj => {
     console.log("LOG", obj)
     return obj
 }
+
 
 //--------------------------------------------------------------------------------
 
@@ -29,7 +31,11 @@ let context = {
         failCount: 0,
         totalCount: 0
     },
+    input: "",
+    output: "",
 }
+
+const ctxL = L.makeLenses(['input', 'output'])
 
 //--------------------------------------------------------------------------------
 
@@ -41,10 +47,8 @@ impure.prettyPrint = ctx => {
     return ctx
 }
 
-impure.addtriStar = ctx => {
-    ctx.output = '*** ' + ctx.output
-    return ctx
-}
+impure.addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
+
 
 
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx
@@ -93,6 +97,7 @@ impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
 const processPrint = compose.all(
     // log,
     map(impure.prettyPrint),
+    map(impure.addtriStar),
     // chain(Result.Error),
     // log,
     chain(impure.filterBlockComment(/^\s*:::.*/, /^\s*$/)),
@@ -121,7 +126,7 @@ impure.app = (s) => {
         context = impure.processInputLine(processPrint, context, sn)
 
     }
-    log(context)
+    // log(context)
     console.log("--END-----------")
 }
 

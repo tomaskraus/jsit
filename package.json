@@ -4,7 +4,8 @@
   "description": "inline unit testing tool",
   "main": "main.js",
   "dependencies": {
-    "folktale": "^2.3.2"
+    "folktale": "^2.3.2",
+    "lenses": "^0.1.0"
   },
   "devDependencies": {},
   "scripts": {
