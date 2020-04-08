@@ -64,13 +64,7 @@ const lineCommentRegex = /^\s*\/\//
 
 const filterLineComment = filterLine(lineCommentRegex)
 
-const removeLineComment = line => {
-    return line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
-}
-impure.removeLineComment = ctx => {
-    ctx.output = removeLineComment(ctx.output)
-    return ctx
-}
+const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 
 
 impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
