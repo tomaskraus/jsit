@@ -40,20 +40,31 @@ impure.filterLine = regex => ctx => {
         return Result.Ok(ctx)
     }
     return Result.Error(ctx)
-} 
-    
+}     
 
 const lineCommentRegex = /^\s*\/\//
 
+const filterLineComment = impure.filterLine(lineCommentRegex)
 
+const removeLineComment = line => {
+    return line.replace(/^(\s*\/\/)\s(.*$)/, "$2")
+}
+impure.removeLineComment = ctx => {
+    ctx.output = removeLineComment(ctx.output)
+    return ctx
+}
 
 //-----------------------------------------------------------------------------------
 
 const processPrint = compose.all(
     // log,
     map(impure.prettyPrint),
-    map(impure.addtriStar),
-    chain(impure.filterLine(lineCommentRegex)),
+    // map(impure.addtriStar),
+    // chain(Result.Error),
+    // log,
+    map(impure.removeLineComment),
+    // log,
+    chain(filterLineComment),
     //log,
     )
     
