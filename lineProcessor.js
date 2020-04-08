@@ -54,14 +54,35 @@ impure.removeLineComment = ctx => {
     return ctx
 }
 
+
+impure.removeBlockComment = (beginBlockRegex, endBlockRegex) => {
+    let inBlockMode = false
+    return ctx => {
+        if (inBlockMode) {
+            if (endBlockRegex.test(ctx.output)) {
+                inBlockMode = false
+                return Result.Error(ctx)
+            }
+        }
+        if (!inBlockMode) {
+            if (beginBlockRegex.test(ctx.output)) {
+                inBlockMode = true
+                return Result.Error(ctx)
+            }
+        }  
+        return inBlockMode ? Result.Ok(ctx)
+            : Result.Error(ctx) 
+    }
+}
+
 //-----------------------------------------------------------------------------------
 
 const processPrint = compose.all(
     // log,
     map(impure.prettyPrint),
-    // map(impure.addtriStar),
     // chain(Result.Error),
     // log,
+    chain(impure.removeBlockComment(/^\s*:::.*/, /^\s*$/)),
     map(impure.removeLineComment),
     // log,
     chain(filterLineComment),
@@ -110,6 +131,29 @@ let hello = "hello"
 // //Mth = "aabbcc"
 // console.log(Mth.a.toString())
 // 
+//  :::
+//
+
+//
+//
+//:::
+
+//     
+// ::: 
+// let 2 = 3
+//
+//  :::
+//nonsense
+//  // commentary
+// continues
+// 
+// 
+
+//
+//:::
+//
+//last
+//
 `
 
 impure.app(str)
