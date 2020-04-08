@@ -24,7 +24,7 @@ const impure = {}
 
 
 impure.prettyPrint = ctx => {
-    console.log(`${ctx.lineNum}:\t${ctx.output}`)
+    console.log(`${ctx.lineNum}: ${ctx.output}`)
     return ctx
 }
 
