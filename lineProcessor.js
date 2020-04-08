@@ -109,7 +109,7 @@ const processPrint = compose.all(
     
 //==================================================================================
 
-//processInputLine :: (Result res, context ctx) => (res ctx -> res ctx) -> ctx -> string -> ctx
+//processInputLine :: (Result res, context ctx) => (res ctx ctx -> res ctx ctx) -> ctx -> string -> ctx
 impure.processInputLine = (fn, ctx, line) => {
     ctx.input = line
     ctx.output = line
