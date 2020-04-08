@@ -14,6 +14,12 @@ const L = require('lenses')
 const map = curry(2, (fn, functor) => functor.map(fn))
 const chain = curry(2, (fn, monad) => monad.chain(fn))
 
+//resultOkErrorIf :: a -> a -> (_ -> bool) -> Result a a
+const resultOkErrorIf = curry(3,
+    (OkVal, ErrorVal, fn) => fn ? Result.Ok(OkVal)
+        : Result.Error(ErrorVal)
+)
+
 const log = obj => { 
     console.log("LOG", obj)
     return obj
@@ -51,13 +57,8 @@ impure.addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
 
 
 
-// filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx
-impure.filterLine = regex => ctx => {
-    if (regex.test(ctx.output)) {
-        return Result.Ok(ctx)
-    }
-    return Result.Error(ctx)
-}     
+// filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+impure.filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
 
 const lineCommentRegex = /^\s*\/\//
 
@@ -87,8 +88,7 @@ impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
                 return Result.Error(ctx)
             }
         }  
-        return inBlockMode ? Result.Ok(ctx)
-            : Result.Error(ctx) 
+        return resultOkErrorIf(ctx, ctx, inBlockMode)
     }
 }
 
