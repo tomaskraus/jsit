@@ -41,7 +41,7 @@ let context = {
     output: "",
 }
 
-const ctxL = L.makeLenses(['input', 'output', 'lineNum'])
+const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode'])
 
 //--------------------------------------------------------------------------------
 
@@ -72,26 +72,21 @@ const endJSCommentMark = /b/
 const beginTestCommentMark = /^\s*:::.*/
 const endTestCommentMark = /^\s*$/
 
-impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
-    let inBlockMode = false
-    return ctx => {
-        if (inBlockMode) {
-            if (endBlockRegex.test(ctx.output)) {
-                inBlockMode = false
-                return Result.Error(ctx)
-            }
+const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
+    const inBlockMode = (L.view(ctxL.blockMode, ctx))
+    if (inBlockMode) {
+        if (endBlockRegex.test(ctx.output)) {
+            return Result.Error(L.set(ctxL.blockMode, false, ctx))
         }
-        if (!inBlockMode) {
-            if (beginBlockRegex.test(ctx.output)) {
-                inBlockMode = true
-                return Result.Error(ctx)
-            }
-        }
-        return resultOkErrorIf(ctx, ctx, inBlockMode)
     }
+    if (beginBlockRegex.test(ctx.output)) {
+        return Result.Error(L.set(ctxL.blockMode, true, ctx))
+    }
+    return resultOkErrorIf(ctx, ctx, inBlockMode)
 }
 
-const filterTestComment = impure.filterBlockComment(beginTestCommentMark, endTestCommentMark)
+
+const filterTestComment = filterBlockComment(beginTestCommentMark, endTestCommentMark)
 
 //-----------------------------------------------------------------------------------
 
