@@ -20,6 +20,9 @@ const log = obj => {
 
 //--------------------------------------------------------------------------------
 
+
+//--------------------------------------------------------------------------------
+
 const impure = {}
 
 
@@ -55,7 +58,7 @@ impure.removeLineComment = ctx => {
 }
 
 
-impure.removeBlockComment = (beginBlockRegex, endBlockRegex) => {
+impure.filterBlockComment = (beginBlockRegex, endBlockRegex) => {
     let inBlockMode = false
     return ctx => {
         if (inBlockMode) {
@@ -82,7 +85,7 @@ const processPrint = compose.all(
     map(impure.prettyPrint),
     // chain(Result.Error),
     // log,
-    chain(impure.removeBlockComment(/^\s*:::.*/, /^\s*$/)),
+    chain(impure.filterBlockComment(/^\s*:::.*/, /^\s*$/)),
     map(impure.removeLineComment),
     // log,
     chain(filterLineComment),
