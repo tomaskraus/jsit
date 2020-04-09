@@ -74,10 +74,8 @@ const endTestCommentMark = /^\s*$/
 
 const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
     const inBlockMode = (L.view(ctxL.blockMode, ctx))
-    if (inBlockMode) {
-        if (endBlockRegex.test(ctx.output)) {
-            return Result.Error(L.set(ctxL.blockMode, false, ctx))
-        }
+    if (inBlockMode && endBlockRegex.test(ctx.output)) {
+        return Result.Error(L.set(ctxL.blockMode, false, ctx))
     }
     if (beginBlockRegex.test(ctx.output)) {
         return Result.Error(L.set(ctxL.blockMode, true, ctx))
