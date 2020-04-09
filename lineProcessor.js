@@ -13,6 +13,7 @@ const L = require('lenses')
 
 const map = curry(2, (fn, functor) => functor.map(fn))
 const chain = curry(2, (fn, monad) => monad.chain(fn))
+const merge = monad => monad.merge()
 
 //resultOkErrorIf :: a -> a -> (_ -> bool) -> Result a a
 const resultOkErrorIf = curry(3,
@@ -32,7 +33,7 @@ let context = {
     fileName: "",
     lineText: "",
     lineNum: 0,
-    commentFlag: false,
+    // commentFlag: false,
     stats: {
         failCount: 0,
         totalCount: 0
@@ -89,6 +90,7 @@ const filterTestComment = filterBlockComment(beginTestCommentMark, endTestCommen
 //-----------------------------------------------------------------------------------
 
 const processPrint = compose.all(
+    merge,
     map(impure.prettyPrint),
     map(addtriStar),
     // chain(Result.Error),
@@ -101,8 +103,8 @@ const processPrint = compose.all(
 //==================================================================================
 
 
-//processInputLine :: (ctx -> Result ctx ctx) -> ctx -> string -> ctx
-const processInputLine = (fn, ctx, line) => compose.all(
+//processInputLine :: ((ctx -> ctx) -> ctx) -> string -> ctx
+const processInputLine = (fn, ctx) => line => compose.all(
     fn,
     L.set(ctxL.output, line),
     L.set(ctxL.input, line),
@@ -116,7 +118,7 @@ impure.app = (s) => {
 
     console.log("--START-----------")
     for (let sn of strs) {
-        context = processInputLine(processPrint, context, sn).merge()
+        context = processInputLine(processPrint, context)(sn)
 
     }
     // log(context)
