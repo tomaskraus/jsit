@@ -29,18 +29,16 @@ const log = obj => {
 
 //--------------------------------------------------------------------------------
 
-let context = {
-    fileName: "",
-    lineText: "",
+const createContext = () => ({
     lineNum: 0,
-    // commentFlag: false,
-    stats: {
-        failCount: 0,
-        totalCount: 0
-    },
-    input: "",
-    output: "",
-}
+    // stats: {
+    //     failCount: 0,
+    //     totalCount: 0
+    // },
+
+    // input: "",
+    // output: "",
+})
 
 const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode'])
 
@@ -112,18 +110,16 @@ const processInputLine = (fn, ctx) => line => compose.all(
 )(ctx)
 
 
-impure.app = (s) => {
-
+impure.app = curry(2, (context, s) => {
     const strs = s.split('\n')
 
     console.log("--START-----------")
     for (let sn of strs) {
         context = processInputLine(processPrint, context)(sn)
-
     }
     // log(context)
     console.log("--END-----------")
-}
+})
 
 const str = `
 /**
@@ -169,4 +165,4 @@ let hello = "hello"
 //
 `
 
-impure.app(str)
+impure.app(createContext(), str)
