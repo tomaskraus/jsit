@@ -100,22 +100,21 @@ const processPrint = compose.all(
 
 //==================================================================================
 
-
-//processInputLine :: ((ctx -> ctx) -> ctx) -> string -> ctx
-const processInputLine = (fn, ctx) => line => compose.all(
-    fn,
+//updateContextLine :: ctx -> str -> ctx
+const updateContextLine = line => ctx => compose(
     L.set(ctxL.output, line),
     L.set(ctxL.input, line),
     L.over(ctxL.lineNum, x => x + 1),
 )(ctx)
 
 
-impure.app = curry(2, (context, s) => {
+impure.app = curry(2, (context, processHandler, s) => {
     const strs = s.split('\n')
 
     console.log("--START-----------")
     for (let sn of strs) {
-        context = processInputLine(processPrint, context)(sn)
+        context = updateContextLine(sn)(context)
+        context = processHandler(context)
     }
     // log(context)
     console.log("--END-----------")
@@ -165,4 +164,4 @@ let hello = "hello"
 //
 `
 
-impure.app(createContext(), str)
+impure.app(createContext(), processPrint, str)
