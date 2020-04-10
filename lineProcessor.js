@@ -56,8 +56,6 @@ impure.prettyPrint = ctx => {
     return ctx
 }
 
-const addtriStar = ctx => L.over(ctxL.output, s => `*** ${s}`, ctx)
-
 
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
