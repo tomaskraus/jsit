@@ -57,21 +57,24 @@ impure.prettyPrint = ctx => {
 }
 
 
-// filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
-const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
+// regexes ----------------------------
 
 const lineCommentRegex = /^\s*\/\//
-const filterLineComment = filterLine(lineCommentRegex)
-
-const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
-const removeLineCommentCtx = ctx => L.over(ctxL.output, removeLineComment, ctx)
-
 // TODO: add detection of one-line  block comment /*    */
 const beginJSCommentMark = /a/
 const endJSCommentMark = /b/
 
 const beginTestCommentMark = /^\s*:::.*/
 const endTestCommentMark = /^\s*$/
+
+
+// filters -----------------------------------
+// ... -> ctx -> Result ctx
+
+
+// filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
+const filterLineComment = filterLine(lineCommentRegex)
 
 const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
     const inBlockMode = (L.view(ctxL.blockMode, ctx))
@@ -84,23 +87,26 @@ const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
     return resultOkErrorIf(ctx, ctx, inBlockMode)
 }
 
+const filterTest = filterBlockComment(beginTestCommentMark, endTestCommentMark)
 
-const filterTestComment = filterBlockComment(beginTestCommentMark, endTestCommentMark)
+// line transformers  
+// str -> str
 
+const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 //-----------------------------------------------------------------------------------
 
 //filterTestLine :: ctx -> Result ctx
 const filterTestLine = compose.all(
     // log,
-    chain(filterTestComment),
-    map(removeLineCommentCtx),
+    chain(filterTest),
+    map(L.over(ctxL.output, removeLineComment)),
     filterLineComment,
 )
 
 //==================================================================================
 
 //updateContextLine :: ctx -> str -> ctx
-const updateContextLine = line => ctx => compose.all(
+const setContextLine = line => ctx => compose.all(
     L.set(ctxL.output, line),
     L.set(ctxL.input, line),
     L.over(ctxL.lineNum, x => x + 1),
@@ -113,7 +119,7 @@ const processLine = (handler, line, context) => compose.all(
     handler,
     //log2("before Handler"),
     //tap(console.log),
-    updateContextLine(line),
+    setContextLine(line),
     // log2("start processLine"),
 )(context)
 
