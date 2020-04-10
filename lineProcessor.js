@@ -21,11 +21,15 @@ const resultOkErrorIf = curry(3,
         : Result.Error(ErrorVal)
 )
 
-const log = obj => {
-    console.log("LOG", obj)
-    return obj
-}
+const tap = curry(2, (fn, a) => {
+    fn(a)
+    return a
+})
 
+const log2 = curry(2, (descr, a) => tap(s => console.log(`LOG ${descr}:`, s), a)
+)
+
+const log = log2("")
 
 //--------------------------------------------------------------------------------
 
