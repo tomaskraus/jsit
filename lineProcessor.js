@@ -89,34 +89,41 @@ const filterTestComment = filterBlockComment(beginTestCommentMark, endTestCommen
 
 //-----------------------------------------------------------------------------------
 
-const processPrint = compose.all(
-    merge,
-    map(impure.prettyPrint),
-    map(addtriStar),
-    // chain(Result.Error),
+//filterTestLine :: ctx -> Result ctx
+const filterTestLine = compose.all(
+    // log,
     chain(filterTestComment),
     map(removeLineCommentCtx),
     filterLineComment,
-    //log,
 )
 
 //==================================================================================
 
 //updateContextLine :: ctx -> str -> ctx
-const updateContextLine = line => ctx => compose(
+const updateContextLine = line => ctx => compose.all(
     L.set(ctxL.output, line),
     L.set(ctxL.input, line),
     L.over(ctxL.lineNum, x => x + 1),
+    // log2("contextLine"),
 )(ctx)
 
+
+//processLine :: (ctx -> ctx) -> s -> ctx -> ctx
+const processLine = (handler, line, context) => compose.all(
+    handler,
+    //log2("before Handler"),
+    //tap(console.log),
+    updateContextLine(line),
+    // log2("start processLine"),
+)(context)
 
 impure.app = curry(2, (context, processHandler, s) => {
     const strs = s.split('\n')
 
     console.log("--START-----------")
     for (let sn of strs) {
-        context = updateContextLine(sn)(context)
-        context = processHandler(context)
+        context = processLine(processHandler, sn, context)
+        // log2("after processLine", context)
     }
     // log(context)
     console.log("--END-----------")
@@ -166,4 +173,17 @@ let hello = "hello"
 //
 `
 
-impure.app(createContext(), processPrint, str)
+const testLineHandler = compose.all(
+    merge,
+    map(impure.prettyPrint),
+    filterTestLine,
+)
+
+const printAllHandler = ctx => tap(compose(console.log, L.view(ctxL.input)), ctx)
+
+
+
+// const handler = printAllHandler
+const handler = testLineHandler
+
+impure.app(createContext(), handler, str)
