@@ -6,14 +6,12 @@
 
 
 const { compose, curry } = require('folktale/core/lambda')
+const { map, chain } = require('pointfree-fantasy')
 const Result = require('folktale/result')
 const L = require('lenses')
 
 //--auxiliary pointfree------------------------------------------------------------------------------
 
-const map = curry(2, (fn, functor) => functor.map(fn))
-const chain = curry(2, (fn, monad) => monad.chain(fn))
-const merge = monad => monad.merge()
 
 //resultOkErrorIf :: a -> a -> (_ -> bool) -> Result a a
 const resultOkErrorIf = curry(3,
@@ -44,6 +42,7 @@ const createContext = () => ({
     // output: "",
 })
 
+// context lenses
 const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode'])
 
 //--------------------------------------------------------------------------------
@@ -87,23 +86,38 @@ const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
     return resultOkErrorIf(ctx, ctx, inBlockMode)
 }
 
-const filterTest = filterBlockComment(beginTestCommentMark, endTestCommentMark)
+const filterTestBlock = filterBlockComment(beginTestCommentMark, endTestCommentMark)
+
 
 // line transformers  
 // str -> str
 
 const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
-//-----------------------------------------------------------------------------------
 
-//filterTestLine :: ctx -> Result ctx
-const filterTestLine = compose.all(
+
+//-----------------------------------------------------------------------------------
+// handlers
+// ctx -> Result ctx
+
+//filterTestLineHandler :: ctx -> Result ctx
+const filterTestLineHandler = compose.all(
     // log,
-    chain(filterTest),
+    chain(filterTestBlock),
     map(L.over(ctxL.output, removeLineComment)),
     filterLineComment,
 )
 
-//==================================================================================
+
+
+// mappers
+// ctx -> ctx
+
+const printCtxInputMapper = ctx => tap(compose(console.log, L.view(ctxL.input)), ctx)
+const printCtxOutputMapper = ctx => tap(compose(console.log, L.view(ctxL.output)), ctx)
+
+const addLineNumMapper = ctx => L.over(ctxL.output, s => `${L.view(ctxL, lineNum)}:\t${s}`, ctx)
+
+//------------------------------------------------------------------------
 
 //updateContextLine :: ctx -> str -> ctx
 const setContextLine = line => ctx => compose.all(
@@ -115,81 +129,42 @@ const setContextLine = line => ctx => compose.all(
 
 
 //processLine :: (ctx -> ctx) -> s -> ctx -> ctx
-const processLine = (handler, line, context) => compose.all(
-    handler,
+const processLine = (mapper, line, context) => compose.all(
+    mapper,
     //log2("before Handler"),
     //tap(console.log),
     setContextLine(line),
     // log2("start processLine"),
 )(context)
 
-impure.app = curry(2, (context, processHandler, s) => {
-    const strs = s.split('\n')
 
-    console.log("--START-----------")
-    for (let sn of strs) {
-        context = processLine(processHandler, sn, context)
-        // log2("after processLine", context)
-    }
-    // log(context)
-    console.log("--END-----------")
-})
+//==================================================================================
 
-const str = `
-/**
- * 
- * :::
- * Mth.a = [1,2,3]
- * Mth = "aabbcc"
- * console.log(Mth.a.toString())
- */
+module.exports = {
+    //workhorse
+    processLine,
 
-let hello = "hello"
+    //logging
+    log, log2,
 
+    //context, context lens
+    createContext, ctxL,
 
-//     
-// ::: 
-// let Mth = {}
-// Mth.a = [1,2,3]
-// //Mth = "aabbcc"
-// console.log(Mth.a.toString())
-// 
-//  :::
-//
+    //ctx -> Result ctx
+    handlers: {
+        extractTestLine: filterTestLineHandler,
+    },
 
-//
-//
-//:::
+    //ctx -> Result ctx
+    filters: {
+        test: filterTestBlock,
+    },
 
-//     
-// ::: 
-// let 2 = 3
-//
-//  :::
-//nonsense
-//  // commentary
-// continues
-// 
-// 
+    //ctx -> ctx
+    mappers: {
+        echoOutputLine: printCtxOutputMapper,
+        echoInputLine: printCtxInputMapper,
+        addLineNum: addLineNumMapper,
+    },
 
-//
-//:::
-//
-//last
-//
-`
-
-const testLineHandler = compose.all(
-    merge,
-    map(impure.prettyPrint),
-    filterTestLine,
-)
-
-const printAllHandler = ctx => tap(compose(console.log, L.view(ctxL.input)), ctx)
-
-
-
-// const handler = printAllHandler
-const handler = testLineHandler
-
-impure.app(createContext(), handler, str)
+}

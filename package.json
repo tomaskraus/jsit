@@ -5,7 +5,8 @@
   "main": "main.js",
   "dependencies": {
     "folktale": "^2.3.2",
-    "lenses": "^0.1.0"
+    "lenses": "^0.1.0",
+    "pointfree-fantasy": "^0.1.3"
   },
   "devDependencies": {},
   "scripts": {
