@@ -99,7 +99,7 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 // handlers
 // ctx -> Result ctx
 
-//filterTestLineHandler :: ctx -> Result ctx
+//filterTestLineHandler :: ctx -> Monad ctx
 const filterTestLineHandler = compose.all(
     // log,
     chain(filterTestBlock),
@@ -128,11 +128,13 @@ const setContextLine = line => ctx => compose.all(
 )(ctx)
 
 
-//processLine :: (ctx -> ctx) -> s -> ctx -> ctx
-const processLine = (mapper, line, context) => compose.all(
-    mapper,
+//processLine :: (Result R) => (ctx -> R ctx) -> s -> R ctx -> R ctx
+const processLine = (handler, line, context) => compose.all(
+    r => r.merge(),  //ugly, folktale Result specific
+    chain(handler),
     //log2("before Handler"),
     //tap(console.log),
+    Result.of,
     setContextLine(line),
     // log2("start processLine"),
 )(context)

@@ -9,12 +9,12 @@ const lp = require("./lineProcessor")
 
 
 
-const app = (context, mapper, s) => {
+const app = (context, handler, s) => {
     const strs = s.split('\n')
 
     console.log("--START-----------")
     for (let sn of strs) {
-        context = lp.processLine(mapper, sn, context)
+        context = lp.processLine(handler, sn, context)
         // log2("after processLine", context)
     }
     // log(context)
@@ -67,12 +67,11 @@ let hello = "hello"
 
 
 // const handler = printAllHandler
-const mapper = compose.all(
-    r => r.merge(),  //ugly, folktale Result specific
+const handler = compose.all(   
     map(lp.mappers.echoOutputLine),
     // lp.log,
     lp.handlers.extractTestLine,
 )
 
-app(lp.createContext(), mapper, str)
+app(lp.createContext(), handler, str)
 
