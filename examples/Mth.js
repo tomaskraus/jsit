@@ -59,17 +59,23 @@ console.log( ,  )
  * 
  * :::
  * Mth.a = [1,2,3]
- * Mth = "aabbcc"
+ * Mth = "aabbcc"   //assign
  * console.log(Mth.a.toString())
  */
 
+let hello = "hello"
+
+
 //     
 // ::: 
-// let Mth = {}
+  // let Mth = {}
 // Mth.a = [1,2,3]
-// //Mth = "aabbcc"
-// console.log(Mth.a.toString())
+    // //Mth = "aabbcc"
+ // console.log(Mth.a.toString())
+  
 // 
+
+
 
 /**
  *: Mth.a = false;      Mth

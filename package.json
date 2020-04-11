@@ -1,0 +1,36 @@
+{
+  "name": "jsit",
+  "version": "0.0.1",
+  "description": "inline unit testing tool",
+  "main": "main.js",
+  "dependencies": {
+    "folktale": "^2.3.2",
+    "lenses": "^0.1.0",
+    "pointfree-fantasy": "^0.1.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomaskraus/jsit.git"
+  },
+  "keywords": [
+    "test",
+    "testing",
+    "unit",
+    "test",
+    "tool",
+    "simple",
+    "minimalistic",
+    "jsdoc",
+    "documentation"
+  ],
+  "author": "Tomas Kraus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomaskraus/jsit/issues"
+  },
+  "homepage": "https://github.com/tomaskraus/jsit#readme"
+}
