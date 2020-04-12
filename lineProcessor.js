@@ -115,7 +115,7 @@ const filterTestLineHandler = compose.all(
 const printCtxInputMapper = ctx => tap(compose(console.log, L.view(ctxL.input)), ctx)
 const printCtxOutputMapper = ctx => tap(compose(console.log, L.view(ctxL.output)), ctx)
 
-const addLineNumMapper = ctx => L.over(ctxL.output, s => `${L.view(ctxL, lineNum)}:\t${s}`, ctx)
+const addLineNumMapper = ctx => L.over(ctxL.output, s => `${L.view(ctxL.lineNum, ctx)}:\t${s}`, ctx)
 
 //------------------------------------------------------------------------
 
