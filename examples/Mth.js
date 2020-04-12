@@ -82,6 +82,8 @@ let hello = "hello"
  *: Mth.a === false 
  *: Mth.a === 2 
  *: //Mth = "abc"
+ *: var c = 1
+ *: Mth.plus(2, -1) == c
  *: //Mth = "ahhoj"
  */
 
