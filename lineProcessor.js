@@ -90,25 +90,34 @@ const filterContinuousLines = ctx => {
 }
 
 const filterBlockComment = (beginBlockRegex, endBlockRegex, blockModeLens) => ctx => {
-    const inBlockMode = (L.view(blockModeLens, ctx))
-    if (inBlockMode && endBlockRegex.test(ctx.output)) {
+    const inBlockMode = L.view(blockModeLens, ctx)
+    const output = L.view(ctxL.output, ctx)
+    if (inBlockMode && endBlockRegex.test(output)) {
         return Result.Error(L.set(blockModeLens, false, ctx))
     }
-    if (beginBlockRegex.test(ctx.output)) {
-        const ctxUpd = blockModeLens === ctxL.testBlockMode ? setContinuousLine(ctx)    //a little ugly...
-            : ctx
-        return Result.Error(L.set(blockModeLens, true, ctxUpd))
+    if (beginBlockRegex.test(output)) {
+        return Result.Error(L.set(blockModeLens, true, ctx))
     }
     return resultOkErrorIf(ctx, ctx, inBlockMode)
 }
 
+const filterTestBlock = ctx => {
+    const resCtx = filterBlockComment(beginTestCommentMark, endTestCommentMark, ctxL.testBlockMode)(ctx).merge()
+    // log2("----", resCtx)
+    if (beginTestCommentMark.test(L.view(ctxL.output, resCtx))) {
 const filterTestBlock = filterBlockComment(beginTestCommentMark, endTestCommentMark, ctxL.testBlockMode)
+        const ctx2 = setContinuousLine(resCtx)
+        return Result.Error(L.set(ctxL.testBlockMode, true, ctx2))
+    }
+    return resultOkErrorIf(resCtx, resCtx, L.view(ctxL.testBlockMode, resCtx))
+}
 
 
 // line transformers  
 // str -> str
 
 const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
+const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$2")
 
 
 //-----------------------------------------------------------------------------------
