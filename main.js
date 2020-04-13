@@ -79,7 +79,7 @@ impure.createTestHandler = evaluatorObj => ctx => {
             try {
                 // ctx.stats.totalCount++
                 const testPassed = evaluatorObj.eval(L.view(lp.ctxL.output, ctx))
-                if (!testPassed) {
+                if (testPassed === false) {
                     console.log(logFailMessage(ctx, "The result is false"))
                     // ctx.stats.failCount++
                     return Result.Error(ctx)

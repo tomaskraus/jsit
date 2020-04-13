@@ -3,41 +3,50 @@
  * @module Mth
  */
 
+// const assert = require('assert')
+
 //
 //:::jsit 1
 
 
-    /**
-     * subtracts number a from number b
-     * 
-     * @param {number} a first number
-     * @param {number} b second number
-     * @return {number} subtraction of two numbers a, b
-     * 
-     * 
-     * @example
-    //:::
-    //   Mth.minus(1, 1) == 0 
-    //   Mth.minus(1, -1) == 2
-    //   Mth.minus(1, 2) == -1
-    //   assert.strictEqual( Mth.minus(1, 2), -3 )
-    //   Mth.b = 0;     true
-    //   Mth.minus(1, Mth.b) == 1
-     * 
-     */
-    const minus = (a, b) => {
-        return a - b
-    }
+/*
+ :::    
+//1 === 3
+ */
 
-    /** add number a to number b
-     * @example
-     *: Mth.plus(1, 1) =w= 2 
-     *: Mth.plus(1, -1) == 2 
-     *: Mth.plus(1, 2) == 3 
-     */
-    const plus = (a, b) => {
-        return a + b
-    }
+
+/**
+ * subtracts number a from number b
+ * 
+ * @param {number} a first number
+ * @param {number} b second number
+ * @return {number} subtraction of two numbers a, b
+ * 
+ * 
+ * @example
+:::
+Mth.minus(1, 1) == 0
+Mth.minus(1, -1) == 2
+Mth.minus(1, 2) == -1
+assert.strictEqual( Mth.minus(1, 2), -1 )
+Mth.b = 0 
+Mth.minus(1, Mth.b) == 1
+
+ * 
+ */
+const minus = (a, b) => {
+    return a - b
+}
+
+/** add number a to number b
+ * @example
+ *: Mth.plus(1, 1) =w= 2 
+ *: Mth.plus(1, -1) == 2 
+ *: Mth.plus(1, 2) == 3 
+ */
+const plus = (a, b) => {
+    return a + b
+}
 
 
 
@@ -49,7 +58,9 @@ let Mth = {}
 Mth.a = [1,2,3]
 test.equals( Mth.a, [1, 2, 3] )
 test.throws( () => Mth.plus(-1, 1), Error)
-console.log( ,  )
+//console.log( ,  )
+ * 
+
  */
 
 
@@ -69,12 +80,13 @@ let hello = "hello"
 
 //     
 // ::: 
-  // let Mth = {}
+// let Mth = {}
 // Mth.a = [1,2,3]
-    // //Mth = "aabbcc"
- // console.log(Mth.a.toString())
- ////comment
-  
+// //Mth = "aabbcc"
+// console.log(Mth.a.toString())
+//console.log(impure.context)
+////comment
+
 // 
 
 
@@ -101,16 +113,16 @@ let hello = "hello"
  */
 
 
-     /**
-     *: M = {} 
-     *: M.a = [1,2,4]
-     */
-    
-    /**
-     *: M.a.toString() === "1,2,4" 
-     *: M.a.concat([3]) == '1,2,4,3'
-     *: a = 22 
-     */
+/**
+*: M = {} 
+*: M.a = [1,2,4]
+*/
+
+/**
+ *: M.a.toString() === "1,2,4" 
+ *: M.a.concat([3]) == '1,2,4,3'
+ *: a = 22 
+ */
 
 /**
  *: Mth.obj1 = { a: 1, b: "22" }
