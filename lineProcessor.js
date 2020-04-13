@@ -149,8 +149,11 @@ module.exports = {
     //logging
     log, log2,
 
-    //context, context lens
-    createContext, ctxL,
+    //context 
+    createContext, 
+    
+    //context lens
+    ctxL,
 
     //ctx -> Result ctx
     handlers: {
