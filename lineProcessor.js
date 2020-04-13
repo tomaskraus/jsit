@@ -59,6 +59,7 @@ impure.prettyPrint = ctx => {
 // regexes ----------------------------
 
 const lineCommentRegex = /^\s*\/\//
+const lineNotCommentRegex = /^\s*[^\/][^\/]/
 // TODO: add detection of one-line  block comment /*    */
 const beginJSCommentMark = /a/
 const endJSCommentMark = /b/
@@ -116,6 +117,7 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 //filterTestLineHandler :: ctx -> Monad ctx
 const filterTestLineHandler = compose.all(
     // log,
+    chain(filterLine(lineNotCommentRegex)), //remove commented lines in test block
     chain(filterContinuousLines),
     chain(filterTestBlock),
     map(L.over(ctxL.output, removeLineComment)),
