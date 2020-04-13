@@ -1,6 +1,10 @@
 /* Main routine */
 
-const core = require('./core')
+const { compose, curry } = require('folktale/core/lambda')
+const Result = require('folktale/result')
+const { map } = require('pointfree-fantasy')
+const lp = require("./lineProcessor")
+const L = require('lenses')
 
 //place all impure functions under this
 const impure = { error: false }
@@ -18,7 +22,7 @@ impure.summaryOfTest = (ctx) => {
     }
 }
 
-impure.sandbox = (pathForModuleRequire) => {
+impure.createEvalObj = (pathForModuleRequire) => {
     const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
     const moduleName = nameWithoutExt(pathForModuleRequire)
     const requireFileStr = `var ${moduleName} = require("${fileName}")`
@@ -38,9 +42,13 @@ impure.sandbox = (pathForModuleRequire) => {
 
 const fs = require('fs');
 
-impure.app = (filename, evaluationCallback, endCallback, context) => {
+impure.app = (filename, evalHandlerObj, endCallback, context) => {
     try {
-        context.fileName = fileName
+        impure.context.fileName = fileName
+        // lp.log(impure.context)
+
+        testHandler = impure.createTestHandler(evalHandlerObj)
+
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))
 
@@ -50,13 +58,42 @@ impure.app = (filename, evaluationCallback, endCallback, context) => {
             output: process.stdout,
             terminal: false,
         });
-        rl.on('line', (line) => core.impure.processLine(evaluationCallback, line, context))
-        rl.on('close', endCallback)
+        rl.on('line', (line) => { impure.context = lp.processLine(testHandler, line, impure.context) })
+        // rl.on('close', endCallback)
 
     } catch (e) {
         impure.errAndExit(e)
     }
 }
+
+
+const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
+
+// ctx -> Result ctx
+impure.createTestHandler = evaluatorObj => ctx => {
+    // lp.log2("eh", ctx)
+    return lp.handlers.extractTestLine(ctx)
+        .chain(ctx => {
+            // lp.log2("line", ctx)
+            try {
+                // ctx.stats.totalCount++
+                const testPassed = evaluatorObj.eval(L.view(lp.ctxL.output, ctx))
+                if (!testPassed) {
+                    console.log(logFailMessage(ctx, "The result is false"))
+                    return Result.Ok(ctx)
+                }
+                // ctx.stats.failCount++
+                return Result.Error(ctx)
+            } catch (e) {
+                // ctx.stats.failCount++
+                console.log(logFailMessage(ctx, e))
+                return Result.Error(ctx)
+            }
+
+        })
+}
+
+
 
 // ---------------------------------------------------------------------------------------------------------
 
@@ -74,10 +111,13 @@ const fileName = path.resolve(process.argv[2])
 //check if file exists
 try {
     fs.accessSync(fileName, fs.constants.R_OK);
-    const sandB = impure.sandbox(fileName)
+    const evaluatorObj = impure.createEvalObj(fileName)
+
     if (!impure.error) {
-        impure.app(fileName, sandB.eval, onAppEnd(core.context), core.context)
-        
+        impure.context = lp.createContext()
+        //will not work, as initial context will remain the same
+        impure.app(fileName, evaluatorObj, onAppEnd(impure.context), impure.context)
+
     }
 } catch (err) {
     impure.errAndExit(err.message)

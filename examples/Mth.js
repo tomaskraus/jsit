@@ -16,12 +16,13 @@
      * 
      * 
      * @example
-     *: Mth.minus(1, 1) == 0 
-     *: Mth.minus(1, -1) == 2
-     *: Mth.minus(1, 2) == -1
-     *: assert.strictEqual( Mth.minus(1, 2), -3 )
-     *: Mth.b = 0;     true
-     *: Mth.minus(1, Mth.b) == 1
+    //:::
+    //   Mth.minus(1, 1) == 0 
+    //   Mth.minus(1, -1) == 2
+    //   Mth.minus(1, 2) == -1
+    //   assert.strictEqual( Mth.minus(1, 2), -3 )
+    //   Mth.b = 0;     true
+    //   Mth.minus(1, Mth.b) == 1
      * 
      */
     const minus = (a, b) => {
@@ -72,6 +73,7 @@ let hello = "hello"
 // Mth.a = [1,2,3]
     // //Mth = "aabbcc"
  // console.log(Mth.a.toString())
+ ////comment
   
 // 
 
