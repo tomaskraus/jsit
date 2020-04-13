@@ -61,8 +61,8 @@ impure.prettyPrint = ctx => {
 const lineCommentRegex = /^\s*\/\//
 const lineNotCommentRegex = /^\s*[^\/][^\/]/
 // TODO: add detection of one-line  block comment /*    */
-const beginJSCommentMark = /a/
-const endJSCommentMark = /b/
+const beginJSBlockCommentMark = /^\s*\/\*/
+const endJSBlockCommentMark = /^\s*\*\//
 
 const beginTestCommentMark = /^\s*:::.*/
 const endTestCommentMark = /^\s*$/
