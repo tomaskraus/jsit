@@ -105,7 +105,10 @@ const filterTestBlock = ctx => {
     const resCtx = filterBlockComment(beginTestCommentMark, endTestCommentMark, ctxL.testBlockMode)(ctx).merge()
     // log2("----", resCtx)
     if (beginTestCommentMark.test(L.view(ctxL.output, resCtx))) {
-const filterTestBlock = filterBlockComment(beginTestCommentMark, endTestCommentMark, ctxL.testBlockMode)
+        const ln = removeBeginTestBlockComment(L.view(ctxL.output, resCtx)).trim()
+        if (ln) {
+            console.log(ln)
+        }
         const ctx2 = setContinuousLine(resCtx)
         return Result.Error(L.set(ctxL.testBlockMode, true, ctx2))
     }
