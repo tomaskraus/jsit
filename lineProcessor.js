@@ -154,7 +154,7 @@ module.exports = {
 
     //ctx -> Result ctx
     handlers: {
-        extractTestLine: filterTestLineHandler,
+        extractTestLine: ctx => filterTestLineHandler(ctx), //does better IDE code-auto-complete help
     },
 
     //ctx -> Result ctx
