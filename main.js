@@ -25,7 +25,8 @@ impure.summaryOfTest = (ctx) => {
 impure.createEvalObj = (pathForModuleRequire) => {
     const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
     const moduleName = nameWithoutExt(pathForModuleRequire)
-    const requireFileStr = `var ${moduleName} = require("${fileName}")`
+    const sanitizeName = moduleName => moduleName.replace('-', '_')
+    const requireFileStr = `var ${sanitizeName(moduleName)} = require("${fileName}")`
     console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
 
     const outerImpure = impure
