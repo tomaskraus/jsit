@@ -43,7 +43,7 @@ const createContext = () => ({
 })
 
 // context lenses
-const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode'])
+const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode', 'lastContinuousLineNum'])
 
 //--------------------------------------------------------------------------------
 
@@ -75,13 +75,27 @@ const endTestCommentMark = /^\s*$/
 const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
 const filterLineComment = filterLine(lineCommentRegex)
 
+const setContinuousLine = ctx => L.set(ctxL.lastContinuousLineNum, L.view(ctxL.lineNum, ctx), ctx)
+const filterContinuousLines = ctx => {
+    // const UNDEFINED_LINE_NUM = undefined
+    const lastCLineNum = L.view(ctxL.lastContinuousLineNum, ctx)
+    const currentLineNum = L.view(ctxL.lineNum, ctx)
+    if (lastCLineNum) {
+        if (lastCLineNum + 1 < currentLineNum) {
+            return Result.Error(L.set(ctxL.lastContinuousLineNum, -1, ctx))
+        }
+    }
+    return Result.Ok(setContinuousLine(ctx))
+}
+
 const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
     const inBlockMode = (L.view(ctxL.blockMode, ctx))
     if (inBlockMode && endBlockRegex.test(ctx.output)) {
         return Result.Error(L.set(ctxL.blockMode, false, ctx))
     }
     if (beginBlockRegex.test(ctx.output)) {
-        return Result.Error(L.set(ctxL.blockMode, true, ctx))
+        const ctxUpd = setContinuousLine(ctx)
+        return Result.Error(L.set(ctxL.blockMode, true, ctxUpd))
     }
     return resultOkErrorIf(ctx, ctx, inBlockMode)
 }
@@ -102,6 +116,7 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 //filterTestLineHandler :: ctx -> Monad ctx
 const filterTestLineHandler = compose.all(
     // log,
+    chain(filterContinuousLines),
     chain(filterTestBlock),
     map(L.over(ctxL.output, removeLineComment)),
     filterLineComment,

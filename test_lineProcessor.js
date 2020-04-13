@@ -6,6 +6,7 @@ const { compose, curry } = require('folktale/core/lambda')
 // const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
 const lp = require("./lineProcessor")
+const L = require('lenses')
 
 
 
@@ -20,6 +21,82 @@ const app = (context, handler, s) => {
     // log(context)
     console.log("--END-----------")
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const str = `
 /**
@@ -49,7 +126,9 @@ let hello = "hello"
 
 //     
 // ::: 
-// let 2 = 3
+    abc
+
+// let 2 = 3    //should not be tested, because is not follow the test block without an interruption
 //
 //  :::
 //nonsense
@@ -60,15 +139,58 @@ let hello = "hello"
 
 //
 //:::
+
+// let 3 = 3    //should not be tested, because is not follow the test block without an interruption
+
+
+// let 3 = 4    //should not be tested, because is not follow the test block without an interruption
 //
+
+//:::
+// let 4 = 5    
+
+//
+//:::
+// let 5 = 6    
+
+//:::
+// let 5 = 6    
+//
+
+//
+//:::
+// let 5 = 6    
+//
+
+//
+//:::
+//
+// let 6 = 7    //should not be tested, because is not follow the test block without an interruption    
+
+//
+//:::
+//
+// let 7 = 8    //should not be tested, because is not follow the test block without an interruption 
+
+
+//
+//:::
+// let 8 = 9   
+//:::
+// let 10 = 11
+
+//
+//:::
+// 
 //last
 //
 `
 
-
 // const handler = printAllHandler
 const handler = compose.all(   
     map(lp.mappers.echoOutputLine),
+
+    map(lp.mappers.addLineNum),
     // lp.log,
     lp.handlers.extractTestLine,
 )
