@@ -73,7 +73,7 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 impure.createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
     // return lp.handlers.extractTestLine(ctx)
-    return lp.handlers.extractTestLineBlock(ctx)
+    return lp.handlers.extractTestLineInBlock(ctx)
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {

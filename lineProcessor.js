@@ -43,7 +43,7 @@ const createContext = () => ({
 })
 
 // context lenses
-const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode', 'lastContinuousLineNum'])
+const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode', 'testBlockMode', 'lastContinuousLineNum'])
 
 //--------------------------------------------------------------------------------
 
@@ -58,14 +58,13 @@ impure.prettyPrint = ctx => {
 
 // regexes ----------------------------
 
-const lineCommentRegex = /^\s*\/\//
-const lineNotCommentRegex = /^\s*[^\/][^\/]/
+const lineCommentRegex = /^\s*\/\//s
 // TODO: add detection of one-line  block comment /*    */
-const beginJSBlockCommentMark = /^\s*\/\*/
-const endJSBlockCommentMark = /^\s*\*\//
+const beginJSBlockCommentMark = /^\s*\/\*/s
+const endJSBlockCommentMark = /^\s*\*\//s
 
-const beginTestCommentMark = /^\s*:::.*/
-const endTestCommentMark = /^\s*$/
+const beginTestCommentMark = /^\s*:::.*/s
+const endTestCommentMark = /^\s*$|^\s*\*/s      //matches also "*". This is for tests inside documentation-block comment
 
 
 // filters -----------------------------------
@@ -74,6 +73,7 @@ const endTestCommentMark = /^\s*$/
 
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
+const filterNotLine = regex => ctx => resultOkErrorIf(ctx, ctx, !regex.test(ctx.output))
 const filterLineComment = filterLine(lineCommentRegex)
 
 const setContinuousLine = ctx => L.set(ctxL.lastContinuousLineNum, L.view(ctxL.lineNum, ctx), ctx)
@@ -89,19 +89,20 @@ const filterContinuousLines = ctx => {
     return Result.Ok(setContinuousLine(ctx))
 }
 
-const filterBlockComment = (beginBlockRegex, endBlockRegex) => ctx => {
-    const inBlockMode = (L.view(ctxL.blockMode, ctx))
+const filterBlockComment = (beginBlockRegex, endBlockRegex, blockModeLens) => ctx => {
+    const inBlockMode = (L.view(blockModeLens, ctx))
     if (inBlockMode && endBlockRegex.test(ctx.output)) {
-        return Result.Error(L.set(ctxL.blockMode, false, ctx))
+        return Result.Error(L.set(blockModeLens, false, ctx))
     }
     if (beginBlockRegex.test(ctx.output)) {
-        const ctxUpd = setContinuousLine(ctx)
-        return Result.Error(L.set(ctxL.blockMode, true, ctxUpd))
+        const ctxUpd = blockModeLens === ctxL.testBlockMode ? setContinuousLine(ctx)    //a little ugly...
+            : ctx
+        return Result.Error(L.set(blockModeLens, true, ctxUpd))
     }
     return resultOkErrorIf(ctx, ctx, inBlockMode)
 }
 
-const filterTestBlock = filterBlockComment(beginTestCommentMark, endTestCommentMark)
+const filterTestBlock = filterBlockComment(beginTestCommentMark, endTestCommentMark, ctxL.testBlockMode)
 
 
 // line transformers  
@@ -117,11 +118,21 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 //filterTestLineHandler :: ctx -> Monad ctx
 const filterTestLineHandler = compose.all(
     // log,
-    chain(filterLine(lineNotCommentRegex)), //remove commented lines in test block
+    chain(filterNotLine(lineCommentRegex)), //remove commented lines in test block
     chain(filterContinuousLines),
     chain(filterTestBlock),
     map(L.over(ctxL.output, removeLineComment)),
     filterLineComment,
+)
+
+
+const filterTestLineInBlockHandler = compose.all(
+    chain(filterNotLine(lineCommentRegex)), //remove commented lines in test block
+    // log,
+    chain(filterContinuousLines),
+    chain(filterTestBlock),
+    // log,
+    filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark, ctxL.blockMode)
 )
 
 
@@ -167,19 +178,21 @@ module.exports = {
     log, log2,
 
     //context 
-    createContext, 
-    
+    createContext,
+
     //context lens
     ctxL,
 
     //ctx -> Result ctx
     handlers: {
         extractTestLine: ctx => filterTestLineHandler(ctx), //does better IDE code-auto-complete help
+        extractTestLineInBlock: ctx => filterTestLineInBlockHandler(ctx),
     },
 
     //ctx -> Result ctx
     filters: {
         test: filterTestBlock,
+        testBlock: filterTestLineInBlockHandler,
     },
 
     //ctx -> ctx
