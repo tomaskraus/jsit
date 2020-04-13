@@ -66,16 +66,25 @@ FAIL | 45 | /home/examples/my-math.js:45 | The result is false |   my_math.plus(
 ## 5. Turn it into documentation
 
 ``` javascript
-    /**
-     * Adds number a to b
-     * @example
-        :::
-        my_math.add(1, 2) == 3
-        my_math.add(1, 0) == my_math.add(0, 1)  //commutative
-     */
-    module.export.add = function(a, b) {
-        return a + b
-    }
+/**
+ * @module my_math
+ */
+
+/**
+  * Adds number a to b
+  * @example
+     :::
+     my_math.add(1, 2) == 3
+     my_math.add(1, 0) == my_math.add(0, 1)  //commutative
+     my_math.add(1, "2") === "12"
+  */
+add = function (a, b) {
+    return a + b
+}
+
+module.exports = {
+    add
+}
 ```
 
 The [JSDoc](https://jsdoc.app/) tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
