@@ -57,9 +57,6 @@ node jsit.js ./examples/my-math.js
 
 ``` bash
 BEGIN | Module | my-math | File | /home/examples/my-math.js
-FAIL | 29 | /home/examples/my-math.js:29 | The result is false |  my_math.minus(1, -1) == 3
-FAIL | 31 | /home/examples/my-math.js:31 | AssertionError [ERR_ASSERTION]: -1 === -2 |  assert.strictEqual( my_math.minus(1, 2), -2 )
-FAIL | 45 | /home/examples/my-math.js:45 | The result is false |   my_math.plus(1, -1) == 2
 
 ```
 
@@ -89,3 +86,33 @@ module.exports = {
 
 The [JSDoc](https://jsdoc.app/) tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
 Do we need more?
+
+## 6. More...
+
+### Need an assertion?
+
+More real-life example:
+
+``` javascript
+/**
+ * @module my_math
+ */
+
+/**
+ * Swaps first two items in array. Returns a new array, the input array remains untouched. 
+ *
+ * swapA :: [a] -> [a]
+ *
+ * @example
+ ::: 
+ var a = [1, 2, 3]; assert.deepEqual(my_math.swapA(a), [2, 1, 3]); assert.deepEqual(a, [1, 2, 3])
+ *
+ */
+const swapA = ([a, b, ...tail]) => [b, a, ...tail]
+
+module.exports = {
+    swapA,
+}
+```
+
+Yes, we can use the full power of built-in Node `assert` library. By default.
