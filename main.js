@@ -72,7 +72,8 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 // ctx -> Result ctx
 impure.createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
-    return lp.handlers.extractTestLine(ctx)
+    // return lp.handlers.extractTestLine(ctx)
+    return lp.handlers.extractTestLineBlock(ctx)
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
@@ -80,10 +81,10 @@ impure.createTestHandler = evaluatorObj => ctx => {
                 const testPassed = evaluatorObj.eval(L.view(lp.ctxL.output, ctx))
                 if (!testPassed) {
                     console.log(logFailMessage(ctx, "The result is false"))
-                    return Result.Ok(ctx)
-                }
                 // ctx.stats.failCount++
                 return Result.Error(ctx)
+                }
+                return Result.Ok(ctx)
             } catch (e) {
                 // ctx.stats.failCount++
                 console.log(logFailMessage(ctx, e))
