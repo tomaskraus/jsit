@@ -67,7 +67,7 @@ const endJSBlockCommentMark = /^\s*\*\//s
 // ... -> ctx -> Result ctx
 
 
-// filterExcludeLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+// filterExcludeOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Error(ctx)
     : Result.Ok(ctx)
 
