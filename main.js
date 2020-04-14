@@ -41,6 +41,8 @@ impure.createEvalObj = (pathForModuleRequire) => {
 }
 
 
+const beginTestBlockHandler = lp.handlers.printBeginTestBlockOutputHandler
+
 const fs = require('fs');
 
 impure.app = (filename, evalHandlerObj, endCallback, context) => {
@@ -74,7 +76,7 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 impure.createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
     // return lp.handlers.extractTestLine(ctx)
-    return lp.handlers.extractTestLineInBlock(ctx)
+    return lp.handlers.extractTestLineInBlockHandler(beginTestBlockHandler)(ctx)
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {

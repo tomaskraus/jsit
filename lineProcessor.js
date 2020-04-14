@@ -117,10 +117,10 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 // handlers
 // ctx -> Result ctx
 
-const filterTestLineInBlockHandler = compose.all(
+const filterTestLineInBlockHandler = BeginTestBlockHandler => compose.all(
     chain(filterExcludeLine(lineCommentRegex)), //remove line-commented lines in the test block
     chain(filterBlockComment(beginTestCommentMark, endTestCommentMark,
-        ctxL.blockTestLineNum, printBeginTestBlockOutputHandler)),
+        ctxL.blockTestLineNum, BeginTestBlockHandler)),
     filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
         ctxL.blockCommentLineNum, Result.Ok)
 )
@@ -174,7 +174,8 @@ module.exports = {
     //ctx -> Result ctx
     handlers: {
         // extractTestLine: ctx => filterTestLineHandler(ctx), //does better IDE code-auto-complete help
-        extractTestLineInBlock: ctx => filterTestLineInBlockHandler(ctx),
+        extractTestLineInBlockHandler: ctx => filterTestLineInBlockHandler(ctx),
+        printBeginTestBlockOutputHandler,
     },
 
     //ctx -> ctx
