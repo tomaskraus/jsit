@@ -13,10 +13,9 @@ const L = require('lenses')
 //--auxiliary pointfree------------------------------------------------------------------------------
 
 
-//resultOkErrorIf :: a -> a -> (_ -> bool) -> Result a a
-const resultOkErrorIf = curry(3,
-    (OkVal, ErrorVal, fn) => fn ? Result.Ok(OkVal)
-        : Result.Error(ErrorVal)
+//ifElse :: (Bifunctor B) => ((a -> bool) -> B a a -> B a a) -> a -> B a a
+const ifElse = curry(4, ((fn, ifTrue, ifFalse, val) => fn(val) ? ifTrue(val)
+    : ifFalse(val))
 )
 
 const tap = curry(2, (fn, a) => {
@@ -50,10 +49,10 @@ const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockTestLineNum', 'bl
 const impure = {}
 
 
-impure.prettyPrint = ctx => {
-    console.log(`${ctx.lineNum}: ${ctx.output}`)
-    return ctx
-}
+// impure.prettyPrint = ctx => {
+//     console.log(`${L.view(ctxL.lineNum, ctx)}: ${L.view(ctxL.output, ctx)}`)
+//     return ctx
+// }
 
 
 // regexes ----------------------------
@@ -71,14 +70,11 @@ const endTestCommentMark = /^\s*$|^\s*\*/s      //matches also "*". This is for 
 // ... -> ctx -> Result ctx
 
 
-// filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
-const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
-const filterExcludeLine = regex => ctx => resultOkErrorIf(ctx, ctx, !regex.test(ctx.output))
-const filterLineComment = filterLine(lineCommentRegex)
+// filterExcludeLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+const filterExcludeLine = regex => ctx => regex.test(L.view(ctxL.output, ctx)) ? Result.Error(ctx)
+    : Result.Ok(ctx)
 
 const BLOCK_LINE_OFF = -1
-
-
 //setBlockLine :: (lens -> ctx) -> ctx
 const setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(ctxL.lineNum, ctx), ctx)
 const resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
@@ -123,10 +119,10 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 // ctx -> Result ctx
 
 const filterTestLineInBlockHandler = compose.all(
-    chain(filterExcludeLine(lineCommentRegex)), //remove commented lines in test block
-    chain(filterBlockComment(beginTestCommentMark, endTestCommentMark, 
+    chain(filterExcludeLine(lineCommentRegex)), //remove line-commented lines in the test block
+    chain(filterBlockComment(beginTestCommentMark, endTestCommentMark,
         ctxL.blockTestLineNum, printBeginTestBlockOutputCallback)),
-    filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark, 
+    filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
         ctxL.blockCommentLineNum, Result.Ok)
 )
 
