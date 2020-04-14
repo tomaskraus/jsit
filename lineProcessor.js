@@ -46,8 +46,7 @@ const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockTestLineNum', 'bl
 
 //--------------------------------------------------------------------------------
 
-const impure = {}
-
+// const impure = {}
 
 // impure.prettyPrint = ctx => {
 //     console.log(`${L.view(ctxL.lineNum, ctx)}: ${L.view(ctxL.output, ctx)}`)
