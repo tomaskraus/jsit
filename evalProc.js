@@ -29,8 +29,15 @@ const filterTestLineInBlockHandler = beginTestBlockHandler => compose.all(
     lp.handlers.filterBlockHandler,
 )
 
+const filterTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
+    chain(lp.filters.filterExcludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
+    chain(lp.filters.filterBlockComment(beginTestCommentMark, endTestCommentMark,
+        lens.blockTestLineNum, beginTestBlockHandler)),
+    map(lp.mappers.removeLineComment),
+    lp.handlers.filterLineCommentHandler,
+)
 
-const printBeginTestBlockOutputHandler = ctx => {
+const printBeginTestOutputHandler = ctx => {
     const ln = removeBeginTestBlockComment(L.view(lp.lens.output, ctx)).trim()
     if (ln) {
         console.log(ln)
@@ -52,8 +59,8 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 // ctx -> Result ctx
 const createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
-    // return lp.handlers.extractTestLine(ctx)
-    return filterTestLineInBlockHandler(printBeginTestBlockOutputHandler)(ctx)
+    return filterTestLineInBlockHandler(printBeginTestOutputHandler)(ctx)
+    // return filterTestLineInLineCommentHandler(printBeginTestOutputHandler)(ctx)
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
@@ -80,9 +87,9 @@ module.exports = {
     //ctx -> Result ctx
     handlers: {
         filterTestLineInBlockHandler,
-        printBeginTestBlockOutputHandler,
+        printBeginTestOutputHandler,
     },
-    
+
     factory: {
         createTestHandler,
     },

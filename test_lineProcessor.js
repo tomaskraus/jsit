@@ -201,7 +201,9 @@ const handler = compose.all(
 
     map(lp.mappers.addLineNum),
     // lp.log,
-    lp.handlers.filterBlockHandler
+    // lp.handlers.filterBlockHandler
+    lp.handlers.filterLineCommentHandler
+
 )
 
 app(lp.createContext(), handler, str)

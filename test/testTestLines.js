@@ -182,6 +182,89 @@ testTestLines.ok()
  */
 
 
+//:::---------LINE COMMENTS-----------------------------------------------------------------
+
+//:::-  LINE begin-test mark  no mark in comment
+
+// false   //this should not be tested
+
+
+//:::-  LINE begin-test mark  no mark in comment 2
+
+//
+// false   //this should not be tested
+// false   //this should not be tested
+
+
+//:::-  LINE begin-test mark  mark at the beginning
+
+//:::
+//testTestLines.ok()
+false   //this should not be tested
+
+
+//:::-  LINE begin-test mark  mark in the middle
+
+// false   //this should not be tested
+// :::
+// testTestLines.ok()
+// testTestLines.ok()
+//
+// false   //this should not be tested
+
+//:::- LINE begin-test mark   blank line after the mark
+//  
+// false   //this should not be tested
+
+//:::-  LINE begin-test mark  mark in the interrupted 
+
+//:::
+
+// false   //this should not be tested
+// 
+
+
+//:::-  LINE begin-test mark  multiple marks in uninterrupted line comment sequence
+
+// :::
+// testTestLines.ok()
+// testTestLines.ok()
+// :::
+// testTestLines.ok()
+//
+// false   //this should not be tested
+//:::
+//testTestLines.ok()
+//testTestLines.ok()
+
+
+//:::- LINE begin-test mark  commented mark
+
+// //:::
+// false   //this should not be tested
+// //:::
+// false   //this should not be tested
+// :::
+// testTestLines.ok()
+//
+// //:::
+// false   //this should not be tested
+
+
+//:::- LINE begin-test mark  commented lines inside the line comment
+
+// :::
+// //false   //this should not be tested
+// testTestLines.ok()
+////false   //this should not be tested
+// testTestLines.ok()
+//
+// //:::
+// false   //this should not be tested
+//
+
+
+
 const getOk = () => {
     let counter = 0
     return () => {

@@ -44,13 +44,20 @@ const minus = (a, b) => {
   //Mth.plus(1, 1) =w= 2 
   Mth.plus(1, -1) == 2 
   Mth.plus(1, 2) == 3 
+
+// ::: Minus in block comment  
+// Mth.minus(10, 2) == 7
+// assert.strictEqual( Mth.minus(10, 20), -1 )
+
  */
 const plus = (a, b) => {
     return a + b
 }
 
 
-
+// ::: Mth.minus
+// //Mth.minus(10, 2) == 7
+// assert.strictEqual( Mth.minus(10, 20), -1 )
 
 
 module.exports = {

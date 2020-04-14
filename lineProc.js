@@ -66,7 +66,9 @@ const endJSBlockCommentMark = /^\s*\*\//s
 // filters -----------------------------------
 // ... -> ctx -> Result ctx
 
-
+// filterOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+const filterOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Ok(ctx)
+    : Result.Error(ctx)
 // filterExcludeOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Error(ctx)
     : Result.Ok(ctx)
@@ -108,6 +110,9 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 
 const filterBlockHandler = filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
     lens.blockCommentLineNum, Result.Ok)
+
+const filterLineCommentHandler = filterOutputLine(lineComment)
+
 
 // mappers
 // ctx -> ctx
@@ -161,6 +166,7 @@ module.exports = {
 
     handlers: {
         filterBlockHandler,
+        filterLineCommentHandler,
     },
 
     //ctx -> ctx
@@ -168,6 +174,7 @@ module.exports = {
         echoOutputLine: printCtxOutputMapper,
         echoInputLine: printCtxInputMapper,
         addLineNum: addLineNumMapper,
+        removeLineComment: ctx => L.over(lens.output, removeLineComment, ctx),
     },
 
     //regexes
