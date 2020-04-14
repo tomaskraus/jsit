@@ -2,8 +2,8 @@
 
 - **The simplest unit-test framework ever.**
 - No config, no `test_` files!
-- For Node Modules.
 - **Document** &amp; **test** your code at **once**.
+- For Node Modules.
 
 ## 1. Install jsit
 
@@ -11,7 +11,7 @@
 npm install --save-dev jsit
 ```
 
-## 2. Write some code you want to test
+## 2. Write some code
 
 We'll give the file a name: `my-math.js`. It will be our **Node module**. Let's write some code into it:
 
@@ -22,9 +22,9 @@ We'll give the file a name: `my-math.js`. It will be our **Node module**. Let's 
     }
 ```
 
-## 3. Write simple tests
+## 3. Write tests
 
-Directly, in your code! Just under a `:::` mark, in the block comment. One test per line.
+Directly, in your code! Just under a `:::` mark, in the block comment. One test per line. Just a `true`/`false` expressions.
 
 ``` javascript
     /*
@@ -99,12 +99,12 @@ More real-life example:
  */
 
 /**
- * Swaps first two items in array. Returns a new array, the input array remains untouched. 
+ * Swaps first two items in array. Returns a new array, the input array remains untouched.
  *
  * swapA :: [a] -> [a]
  *
  * @example
- ::: 
+ :::
  var a = [1, 2, 3]; assert.deepEqual(my_math.swapA(a), [2, 1, 3]); assert.deepEqual(a, [1, 2, 3])
  *
  */
