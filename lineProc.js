@@ -106,10 +106,8 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 // handlers
 // ctx -> Result ctx
 
-const filterBlockHandler = compose.all(
-    filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
-        lens.blockCommentLineNum, Result.Ok)
-)
+const filterBlockHandler = filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
+    lens.blockCommentLineNum, Result.Ok)
 
 // mappers
 // ctx -> ctx
