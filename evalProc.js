@@ -45,6 +45,35 @@ const printBeginTestBlockOutputHandler = ctx => {
 const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$2")
 
 
+//----------------------------------------------------------------------------------
+
+const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
+
+// ctx -> Result ctx
+const createTestHandler = evaluatorObj => ctx => {
+    // lp.log2("eh", ctx)
+    // return lp.handlers.extractTestLine(ctx)
+    return filterTestLineInBlockHandler(printBeginTestBlockOutputHandler)(ctx)
+        .chain(ctx => {
+            // lp.log2("line", ctx)
+            try {
+                // ctx.stats.totalCount++
+                const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx))
+                if (testPassed === false) {
+                    console.log(logFailMessage(ctx, "The result is false"))
+                    // ctx.stats.failCount++
+                    return Result.Error(ctx)
+                }
+                return Result.Ok(ctx)
+            } catch (e) {
+                // ctx.stats.failCount++
+                console.log(logFailMessage(ctx, e))
+                return Result.Error(ctx)
+            }
+        })
+}
+
+
 //==================================================================================
 
 module.exports = {
@@ -52,6 +81,10 @@ module.exports = {
     handlers: {
         filterTestLineInBlockHandler,
         printBeginTestBlockOutputHandler,
+    },
+    
+    factory: {
+        createTestHandler,
     },
 
     regex: {

@@ -42,8 +42,6 @@ impure.createEvalObj = (pathForModuleRequire) => {
 }
 
 
-const beginTestBlockHandler = ep.handlers.printBeginTestBlockOutputHandler
-
 const fs = require('fs');
 
 impure.app = (filename, evalHandlerObj, endCallback, context) => {
@@ -51,7 +49,7 @@ impure.app = (filename, evalHandlerObj, endCallback, context) => {
         impure.context.fileName = fileName
         // lp.log(impure.context)
 
-        testHandler = impure.createTestHandler(evalHandlerObj)
+        testHandler = ep.factory.createTestHandler(evalHandlerObj)
 
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))
@@ -68,34 +66,6 @@ impure.app = (filename, evalHandlerObj, endCallback, context) => {
     } catch (e) {
         impure.errAndExit(e)
     }
-}
-
-
-const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
-
-// ctx -> Result ctx
-impure.createTestHandler = evaluatorObj => ctx => {
-    // lp.log2("eh", ctx)
-    // return lp.handlers.extractTestLine(ctx)
-    return ep.handlers.filterTestLineInBlockHandler(beginTestBlockHandler)(ctx)
-        .chain(ctx => {
-            // lp.log2("line", ctx)
-            try {
-                // ctx.stats.totalCount++
-                const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx))
-                if (testPassed === false) {
-                    console.log(logFailMessage(ctx, "The result is false"))
-                    // ctx.stats.failCount++
-                    return Result.Error(ctx)
-                }
-                return Result.Ok(ctx)
-            } catch (e) {
-                // ctx.stats.failCount++
-                console.log(logFailMessage(ctx, e))
-                return Result.Error(ctx)
-            }
-
-        })
 }
 
 
