@@ -124,10 +124,8 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 
 const filterTestLineInBlockHandler = compose.all(
     chain(filterExcludeLine(lineCommentRegex)), //remove commented lines in test block
-    // log,
     chain(filterBlockComment(beginTestCommentMark, endTestCommentMark, 
         ctxL.blockTestLineNum, printBeginTestBlockOutputCallback)),
-    //log,
     filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark, 
         ctxL.blockCommentLineNum, Result.Ok)
 )
@@ -157,7 +155,6 @@ const processLine = (handler, line, context) => compose.all(
     r => r.merge(),  //ugly, folktale Result specific
     chain(handler),
     //log2("before Handler"),
-    //tap(console.log),
     Result.of,
     setContextLine(line),
     // log2("start processLine"),
