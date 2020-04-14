@@ -79,13 +79,13 @@ const BLOCK_LINE_OFF = -1
 const setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(ctxL.lineNum, ctx), ctx)
 const resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
 
-const filterBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockCallback) => ctx => {
+const filterBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockHandler) => ctx => {
     const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
     const output = L.view(ctxL.output, ctx)
     //begin block
     if (beginBlockRegex.test(output)) {
         return Result.Ok(setBlockLineNum(blockLineNumLens, ctx))
-            .chain(beginBlockCallback)
+            .chain(beginBlockHandler)
     }
     // block must be continuous
     if (L.view(ctxL.lineNum, ctx) > blockLineNum + 1) {
@@ -98,7 +98,7 @@ const filterBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, be
     return Result.Ok(setBlockLineNum(blockLineNumLens, ctx))
 }
 
-const printBeginTestBlockOutputCallback = ctx => {
+const printBeginTestBlockOutputHandler = ctx => {
     const ln = removeBeginTestBlockComment(L.view(ctxL.output, ctx)).trim()
     if (ln) {
         console.log(ln)
@@ -121,7 +121,7 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 const filterTestLineInBlockHandler = compose.all(
     chain(filterExcludeLine(lineCommentRegex)), //remove line-commented lines in the test block
     chain(filterBlockComment(beginTestCommentMark, endTestCommentMark,
-        ctxL.blockTestLineNum, printBeginTestBlockOutputCallback)),
+        ctxL.blockTestLineNum, printBeginTestBlockOutputHandler)),
     filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
         ctxL.blockCommentLineNum, Result.Ok)
 )
