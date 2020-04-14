@@ -73,7 +73,7 @@ const endTestCommentMark = /^\s*$|^\s*\*/s      //matches also "*". This is for 
 
 // filterLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.output))
-const filterNotLine = regex => ctx => resultOkErrorIf(ctx, ctx, !regex.test(ctx.output))
+const filterExcludeLine = regex => ctx => resultOkErrorIf(ctx, ctx, !regex.test(ctx.output))
 const filterLineComment = filterLine(lineCommentRegex)
 
 const BLOCK_LINE_OFF = -1
@@ -123,7 +123,7 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 // ctx -> Result ctx
 
 const filterTestLineInBlockHandler = compose.all(
-    chain(filterNotLine(lineCommentRegex)), //remove commented lines in test block
+    chain(filterExcludeLine(lineCommentRegex)), //remove commented lines in test block
     // log,
     chain(filterBlockComment(beginTestCommentMark, endTestCommentMark, 
         ctxL.blockTestLineNum, printBeginTestBlockOutputCallback)),
