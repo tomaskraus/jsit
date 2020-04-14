@@ -5,7 +5,7 @@
 const { compose, curry } = require('folktale/core/lambda')
 // const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
-const lp = require("./lineProcessor")
+const lp = require("./lineProc")
 const L = require('lenses')
 
 
@@ -160,6 +160,12 @@ let hello = "hello"
 // let 5 = 6    
 //
 
+/*
+---
+hu!
+---
+*/
+
 //
 //:::
 // let 5 = 6    
@@ -195,7 +201,7 @@ const handler = compose.all(
 
     map(lp.mappers.addLineNum),
     // lp.log,
-    lp.handlers.extractTestLine,
+    lp.handlers.filterBlockHandler
 )
 
 app(lp.createContext(), handler, str)

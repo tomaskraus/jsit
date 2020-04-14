@@ -3,7 +3,8 @@
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
-const lp = require("./lineProcessor")
+const lp = require("./lineProc")
+const ep = require("./evalProc")
 const L = require('lenses')
 
 //place all impure functions under this
@@ -41,7 +42,7 @@ impure.createEvalObj = (pathForModuleRequire) => {
 }
 
 
-const beginTestBlockHandler = lp.handlers.printBeginTestBlockOutputHandler
+const beginTestBlockHandler = ep.handlers.printBeginTestBlockOutputHandler
 
 const fs = require('fs');
 
@@ -76,12 +77,12 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 impure.createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
     // return lp.handlers.extractTestLine(ctx)
-    return lp.handlers.extractTestLineInBlockHandler(beginTestBlockHandler)(ctx)
+    return ep.handlers.filterTestLineInBlockHandler(beginTestBlockHandler)(ctx)
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
                 // ctx.stats.totalCount++
-                const testPassed = evaluatorObj.eval(L.view(lp.ctxL.output, ctx))
+                const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx))
                 if (testPassed === false) {
                     console.log(logFailMessage(ctx, "The result is false"))
                     // ctx.stats.failCount++
