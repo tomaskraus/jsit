@@ -141,7 +141,7 @@ const addLineNumMapper = ctx => L.over(ctxL.output, s => `${L.view(ctxL.lineNum,
 
 //------------------------------------------------------------------------
 
-//updateContextLine :: ctx -> str -> ctx
+//setContextLine :: ctx -> str -> ctx
 const setContextLine = line => ctx => compose.all(
     L.set(ctxL.output, line),
     L.set(ctxL.input, line),
