@@ -1,3 +1,6 @@
+
+  
+  false   //this should not be tested
 /*-
 :::  without begin-test mark
 */ //-
