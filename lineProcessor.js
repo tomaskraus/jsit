@@ -43,7 +43,7 @@ const createContext = () => ({
 })
 
 // context lenses
-const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockMode', 'testBlockMode', 'lastContinuousLineNum'])
+const ctxL = L.makeLenses(['input', 'output', 'lineNum', 'blockTestLineNum', 'blockCommentLineNum'])
 
 //--------------------------------------------------------------------------------
 
@@ -76,43 +76,38 @@ const filterLine = regex => ctx => resultOkErrorIf(ctx, ctx, regex.test(ctx.outp
 const filterNotLine = regex => ctx => resultOkErrorIf(ctx, ctx, !regex.test(ctx.output))
 const filterLineComment = filterLine(lineCommentRegex)
 
-const setContinuousLine = ctx => L.set(ctxL.lastContinuousLineNum, L.view(ctxL.lineNum, ctx), ctx)
-const filterContinuousLines = ctx => {
-    // const UNDEFINED_LINE_NUM = undefined
-    const lastCLineNum = L.view(ctxL.lastContinuousLineNum, ctx)
-    const currentLineNum = L.view(ctxL.lineNum, ctx)
-    if (lastCLineNum) {
-        if (lastCLineNum + 1 < currentLineNum) {
-            return Result.Error(L.set(ctxL.lastContinuousLineNum, -1, ctx))
-        }
-    }
-    return Result.Ok(setContinuousLine(ctx))
-}
+const BLOCK_LINE_OFF = -1
 
-const filterBlockComment = (beginBlockRegex, endBlockRegex, blockModeLens) => ctx => {
-    const inBlockMode = L.view(blockModeLens, ctx)
+
+//setBlockLine :: (lens -> ctx) -> ctx
+const setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(ctxL.lineNum, ctx), ctx)
+const resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
+
+const filterBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockCallback) => ctx => {
+    const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
     const output = L.view(ctxL.output, ctx)
-    if (inBlockMode && endBlockRegex.test(output)) {
-        return Result.Error(L.set(blockModeLens, false, ctx))
-    }
+    //begin block
     if (beginBlockRegex.test(output)) {
-        return Result.Error(L.set(blockModeLens, true, ctx))
+        return Result.Ok(setBlockLineNum(blockLineNumLens, ctx))
+            .chain(beginBlockCallback)
     }
-    return resultOkErrorIf(ctx, ctx, inBlockMode)
+    // block must be continuous
+    if (L.view(ctxL.lineNum, ctx) > blockLineNum + 1) {
+        return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
+    }
+    //end block
+    if (endBlockRegex.test(output)) {
+        return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
+    }
+    return Result.Ok(setBlockLineNum(blockLineNumLens, ctx))
 }
 
-const filterTestBlock = ctx => {
-    const resCtx = filterBlockComment(beginTestCommentMark, endTestCommentMark, ctxL.testBlockMode)(ctx).merge()
-    // log2("----", resCtx)
-    if (beginTestCommentMark.test(L.view(ctxL.output, resCtx))) {
-        const ln = removeBeginTestBlockComment(L.view(ctxL.output, resCtx)).trim()
-        if (ln) {
-            console.log(ln)
-        }
-        const ctx2 = setContinuousLine(resCtx)
-        return Result.Error(L.set(ctxL.testBlockMode, true, ctx2))
+const printBeginTestBlockOutputCallback = ctx => {
+    const ln = removeBeginTestBlockComment(L.view(ctxL.output, ctx)).trim()
+    if (ln) {
+        console.log(ln)
     }
-    return resultOkErrorIf(resCtx, resCtx, L.view(ctxL.testBlockMode, resCtx))
+    return Result.Error(ctx)
 }
 
 
@@ -127,26 +122,15 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 // handlers
 // ctx -> Result ctx
 
-//filterTestLineHandler :: ctx -> Monad ctx
-const filterTestLineHandler = compose.all(
-    // log,
-    chain(filterNotLine(lineCommentRegex)), //remove commented lines in test block
-    chain(filterContinuousLines),
-    chain(filterTestBlock),
-    map(L.over(ctxL.output, removeLineComment)),
-    filterLineComment,
-)
-
-
 const filterTestLineInBlockHandler = compose.all(
     chain(filterNotLine(lineCommentRegex)), //remove commented lines in test block
     // log,
-    chain(filterContinuousLines),
-    chain(filterTestBlock),
-    // log,
-    filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark, ctxL.blockMode)
+    chain(filterBlockComment(beginTestCommentMark, endTestCommentMark, 
+        ctxL.blockTestLineNum, printBeginTestBlockOutputCallback)),
+    //log,
+    filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark, 
+        ctxL.blockCommentLineNum, Result.Ok)
 )
-
 
 
 // mappers
@@ -197,14 +181,8 @@ module.exports = {
 
     //ctx -> Result ctx
     handlers: {
-        extractTestLine: ctx => filterTestLineHandler(ctx), //does better IDE code-auto-complete help
+        // extractTestLine: ctx => filterTestLineHandler(ctx), //does better IDE code-auto-complete help
         extractTestLineInBlock: ctx => filterTestLineInBlockHandler(ctx),
-    },
-
-    //ctx -> Result ctx
-    filters: {
-        test: filterTestBlock,
-        testBlock: filterTestLineInBlockHandler,
     },
 
     //ctx -> ctx
