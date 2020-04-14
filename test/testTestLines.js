@@ -1,10 +1,3 @@
-
-module.exports.ok = () => {
-    console.log("OK")
-    return true
-}
-
-
 /*-
 :::  without begin-test mark
 */ //-
@@ -184,3 +177,17 @@ testTestLines.ok()
  false   //this should not be tested
  * 
  */
+
+
+const getOk = () => {
+    let counter = 0
+    return () => {
+        counter++
+        console.log(`OK:   ${counter}`)
+        return true
+    }
+}
+
+module.exports = {
+    ok: getOk(),
+}
