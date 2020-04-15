@@ -113,15 +113,16 @@ module.exports = {
 
 Yes, we can use the full power of built-in Node `assert` library. By default.
 
-
 ## Not so obvious
 
-#### module names
-If your module name contains a `-` character (e.g. `my-first-module`), replace that `-` with an underscore: `_`, in the code (`my_first_module`) in your tests: 
+### module names
+
+If your module name contains a `-` character (e.g. `my-first-module`), replace that `-` with an underscore: `_`, in the code (`my_first_module`) in your tests:
 
 ##TODO: how jsit names an imported module using its file name
 
 file `my-first-module.js`:
+
 ``` javascript
     // :::
     // my_first_module.add(1, 2) == 3
