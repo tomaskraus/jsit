@@ -20,19 +20,22 @@ const beginTestCommentMark = /^\s*:::.*/s
 const endTestCommentMark = /^\s*$|^\s*\*/s      //matches also "*". This is for tests inside documentation-block comment
 
 // handlers ----------------------------
-// ctx -> Result ctx
+// ctx -> Result ctx ctx
 
-const filterTestLineInBlockHandler = beginTestBlockHandler => compose.all(
+// Result ctx ctx -> Result ctx ctx
+const chainFilterTestLine = beginTestBlockHandler => compose(
     chain(lp.filters.filterExcludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
     chain(lp.filters.filterBlockComment(beginTestCommentMark, endTestCommentMark,
         lens.blockTestLineNum, beginTestBlockHandler)),
+)
+
+const filterTestLineInBlockHandler = beginTestBlockHandler => compose.all(
+    chainFilterTestLine(beginTestBlockHandler),
     lp.handlers.filterBlockHandler,
 )
 
 const filterTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
-    chain(lp.filters.filterExcludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
-    chain(lp.filters.filterBlockComment(beginTestCommentMark, endTestCommentMark,
-        lens.blockTestLineNum, beginTestBlockHandler)),
+    chainFilterTestLine(beginTestBlockHandler),
     map(lp.mappers.removeLineComment),
     lp.handlers.filterLineCommentHandler,
 )
@@ -60,7 +63,7 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 const createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
     return filterTestLineInBlockHandler(printBeginTestOutputHandler)(ctx)
-    // return filterTestLineInLineCommentHandler(printBeginTestOutputHandler)(ctx)
+        // return filterTestLineInLineCommentHandler(printBeginTestOutputHandler)(ctx)
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
