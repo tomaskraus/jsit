@@ -19,18 +19,22 @@ const ifElse = curry(4, ((fn, constructorTrue, constructorFalse, val) => fn(val)
     : constructorFalse(val))
 )
 
+//tap :: (a -> _) -> a -> a
 const tap = curry(2, (fn, a) => {
     fn(a)
     return a
 })
 
+//log2 :: str -> a -> a
 const log2 = curry(2, (descr, a) => tap(s => console.log(`LOG ${descr}:`, s), a)
 )
 
+//log :: a -> a
 const log = log2("")
 
 //--------------------------------------------------------------------------------
 
+//createContext :: () -> ctx
 const createContext = () => ({
     input: '',
     output: '',
@@ -138,12 +142,13 @@ module.exports = {
     //logging
     log, log2,
 
-    //context 
+    //ctx
     createContext,
 
     //context lens
     lens,
 
+    // ctx -> Result ctx ctx
     filters: {
         excludeOutputLine: filterExcludeOutputLine,
         customBlockComment: filterCustomBlockComment,
