@@ -133,7 +133,7 @@ const setContextLine = line => ctx => compose.all(
 )(ctx)
 
 
-//processLine :: (Result R, context c) => ((c -> R c c) -> string -> R c c) -> R c c
+//processLine :: (Result R, context c) => ((c -> R c c) -> string -> c) -> R c c
 const processLine = (handler, line, context) => compose.all(
     r => r.merge(),  //ugly, folktale Result specific
     chain(handler),
