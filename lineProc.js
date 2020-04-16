@@ -45,16 +45,6 @@ const createContext = () => ({
 // context lenses
 const lens = L.makeLenses(['input', 'output', 'lineNum', 'JSBlockCommentLineNum'])
 
-//--------------------------------------------------------------------------------
-
-// const impure = {}
-
-// impure.prettyPrint = ctx => {
-//     console.log(`${L.view(ctxL.lineNum, ctx)}: ${L.view(ctxL.output, ctx)}`)
-//     return ctx
-// }
-
-
 // regexes ----------------------------
 
 const lineCommentRegex = /^\s*\/\//s
