@@ -15,8 +15,8 @@ const L = require('lenses')
 
 
 //ifElse :: (Bifunctor B) => ((a -> bool) -> B a a -> B a a) -> a -> B a a
-const ifElse = curry(4, ((fn, ifTrue, ifFalse, val) => fn(val) ? ifTrue(val)
-    : ifFalse(val))
+const ifElse = curry(4, ((fn, constructorTrue, constructorFalse, val) => fn(val) ? constructorTrue(val)
+    : constructorFalse(val))
 )
 
 const tap = curry(2, (fn, a) => {
@@ -43,7 +43,7 @@ const createContext = () => ({
 })
 
 // context lenses
-const lens = L.makeLenses(['input', 'output', 'lineNum', 'blockCommentLineNum'])
+const lens = L.makeLenses(['input', 'output', 'lineNum', 'JSBlockCommentLineNum'])
 
 //--------------------------------------------------------------------------------
 
@@ -57,10 +57,10 @@ const lens = L.makeLenses(['input', 'output', 'lineNum', 'blockCommentLineNum'])
 
 // regexes ----------------------------
 
-const lineComment = /^\s*\/\//s
+const lineCommentRegex = /^\s*\/\//s
 // TODO: add detection of one-line  block comment /*    */
-const beginJSBlockCommentMark = /^\s*\/\*/s
-const endJSBlockCommentMark = /^\s*\*\//s
+const beginJSBlockCommentRegex = /^\s*\/\*/s
+const endJSBlockCommentRegex = /^\s*\*\//s
 
 
 // filters -----------------------------------
@@ -75,27 +75,34 @@ const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, c
 
 const BLOCK_LINE_OFF = -1
 //setBlockLine :: (lens -> ctx) -> ctx
-const setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
-const resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
+const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
+const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
 
-const filterBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockHandler) => ctx => {
+//filterCustomBlockComment :: regex -> regex -> lens -> (ctx -> Result ctx ctx) -> Result ctx ctx
+const filterCustomBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockHandler) => ctx => {
     const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
     const output = L.view(lens.output, ctx)
     //begin block
     if (beginBlockRegex.test(output)) {
-        return Result.Ok(setBlockLineNum(blockLineNumLens, ctx))
+        return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
             .chain(beginBlockHandler)
     }
     // block must be continuous
     if (L.view(lens.lineNum, ctx) > blockLineNum + 1) {
-        return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
+        return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
     }
     //end block
     if (endBlockRegex.test(output)) {
-        return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
+        return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
     }
-    return Result.Ok(setBlockLineNum(blockLineNumLens, ctx))
+    return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
 }
+
+
+const filterJSBlockComment = filterCustomBlockComment(beginJSBlockCommentRegex, endJSBlockCommentRegex,
+    lens.JSBlockCommentLineNum, Result.Ok)
+
+const filterJSLineComment = filterOutputLine(lineCommentRegex)
 
 
 // line transformers  
@@ -104,23 +111,16 @@ const filterBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, be
 const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 
 
-//-----------------------------------------------------------------------------------
-// handlers
-// ctx -> Result ctx
-
-const filterBlockHandler = filterBlockComment(beginJSBlockCommentMark, endJSBlockCommentMark,
-    lens.blockCommentLineNum, Result.Ok)
-
-const filterLineCommentHandler = filterOutputLine(lineComment)
-
-
 // mappers
 // ctx -> ctx
 
+const removeLineCommentMapper = ctx => L.over(lens.output, removeLineComment, ctx)
 const printCtxInputMapper = ctx => tap(compose(console.log, L.view(lens.input)), ctx)
 const printCtxOutputMapper = ctx => tap(compose(console.log, L.view(lens.output)), ctx)
 
-const addLineNumMapper = ctx => L.over(lens.output, s => `${L.view(lens.lineNum, ctx)}:\t${s}`, ctx)
+const addLineNumMapper = ctx => L.over(lens.output,
+    s => `${L.view(lens.lineNum, ctx)}:\t${s}`,
+    ctx)
 
 //------------------------------------------------------------------------
 
@@ -160,13 +160,10 @@ module.exports = {
     lens,
 
     filters: {
-        filterExcludeOutputLine,
-        filterBlockComment,
-    },
-
-    handlers: {
-        filterBlockHandler,
-        filterLineCommentHandler,
+        excludeOutputLine: filterExcludeOutputLine,
+        customBlockComment: filterCustomBlockComment,
+        lineComment: filterJSLineComment,
+        JSBlockComment: filterJSBlockComment,
     },
 
     //ctx -> ctx
@@ -174,13 +171,13 @@ module.exports = {
         echoOutputLine: printCtxOutputMapper,
         echoInputLine: printCtxInputMapper,
         addLineNum: addLineNumMapper,
-        removeLineComment: ctx => L.over(lens.output, removeLineComment, ctx),
+        removeLineComment: removeLineCommentMapper,
     },
 
     //regexes
     regex: {
-        beginJSBlockCommentMark,
-        endJSBlockCommentMark,
-        lineComment,
+        beginJSBlockComment: beginJSBlockCommentRegex,
+        endJSBlockComment: endJSBlockCommentRegex,
+        lineComment: lineCommentRegex,
     }
 }

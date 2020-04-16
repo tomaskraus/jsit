@@ -202,7 +202,7 @@ const handler = compose.all(
     map(lp.mappers.addLineNum),
     // lp.log,
     // lp.handlers.filterBlockHandler
-    lp.handlers.filterLineCommentHandler
+    lp.filters.lineComment
 
 )
 
