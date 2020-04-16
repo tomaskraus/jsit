@@ -32,14 +32,9 @@ const log = log2("")
 //--------------------------------------------------------------------------------
 
 const createContext = () => ({
+    input: '',
+    output: '',
     lineNum: 0,
-    // stats: {
-    //     failCount: 0,
-    //     totalCount: 0
-    // },
-
-    // input: "",
-    // output: "",
 })
 
 // context lenses
