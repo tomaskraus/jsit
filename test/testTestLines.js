@@ -15,6 +15,12 @@ module.exports = {
 //----------------------------------------------------------------------------------
 
 
+// ::: block withhout commented code below
+false   //this should not be tested
+ 
+//--------------BLOCK COMMENTS------------------------------------------------------
+
+
   false   //this should not be tested
 
 /*-
@@ -193,7 +199,6 @@ false   //this should not be tested
 
 //:::---------LINE COMMENTS-----------------------------------------------------------------
 
- 
 // ::: test block behavior
  
  
