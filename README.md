@@ -24,14 +24,12 @@ We'll give the file a name: `myMath.js`
 
 ## 3. Write tests
 
-Directly, in your code! Just under a `:::` mark, in the block comment. One test per line. Just a `true`/`false` expressions.
+Directly, in your code! Just under a `:::` mark, in the comment. One test per line. Just a `true`/`false` expressions.
 
 ``` javascript
-    /*
-        :::
-        myMath.add(1, 2) == 3
-        myMath.add(1, 0) == myMath.add(0, 1)  //commutative
-    */
+    // :::
+    // myMath.add(1, 2) == 3
+    // myMath.add(1, 0) == myMath.add(0, 1)  //commutative
     module.export.add = function(a, b) {
         return a + b
     }
