@@ -1,5 +1,20 @@
 
-  
+const getOk = () => {
+  let counter = 0
+  return () => {
+      counter++
+      console.log(`OK:   ${counter}`)
+      return true
+  }
+}
+
+module.exports = {
+  ok: getOk(),
+}
+ 
+//----------------------------------------------------------------------------------
+
+
   false   //this should not be tested
 
 /*-
@@ -157,6 +172,24 @@ false   //this should not be tested
 /* 
   false  //this should not be tested. It is different block, with no test block
  */
+
+
+/*-
+:::  begin-test mark - documenting block
+*/ //-
+
+/** 
+  ::: inside minimal documenting block
+   testTestLines.ok()
+  */
+
+/** 
+ * 
+  ::: inside documenting block
+   testTestLines.ok()
+ * 
+ */
+
 
 //:::---------LINE COMMENTS-----------------------------------------------------------------
 
@@ -316,17 +349,17 @@ false   //this should not be tested
 //   false  //this should not be tested. It is different block, with no test block
   
 
+//:::- - - - - - - - - MIXED COMMENTS - - - - - - - - - - - - - - - - - - - - - -
 
 
-const getOk = () => {
-    let counter = 0
-    return () => {
-        counter++
-        console.log(`OK:   ${counter}`)
-        return true
-    }
-}
+/* 
+// ::: line comment test inside block comment
+// false  //this should not be tested.
 
-module.exports = {
-    ok: getOk(),
-}
+// false  //this should not be tested.
+
+
+false  //this should not be tested.
+
+ */
+
