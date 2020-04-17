@@ -67,6 +67,10 @@ const BLOCK_LINE_OFF = -1
 const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
 const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
 
+//isInBlock :: lens -> ctx -> bool
+// gives proper result only if filterCustomBlockComment is called before
+const isInBlock = (blockLineNumLens, ctx) => L.view(lens.lineNum, ctx) === L.view(blockLineNumLens, ctx)
+
 //filterCustomBlockComment :: regex -> regex -> lens -> (ctx -> Result ctx ctx) -> Result ctx ctx
 const filterCustomBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockHandler) => ctx => {
     const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
@@ -169,5 +173,9 @@ module.exports = {
         beginJSBlockComment: beginJSBlockCommentRegex,
         endJSBlockComment: endJSBlockCommentRegex,
         lineComment: lineCommentRegex,
-    }
+    },
+
+    //other
+    //isInBlock :: lens -> ctx -> bool
+    isInBlock,
 }

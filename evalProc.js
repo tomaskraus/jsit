@@ -63,7 +63,12 @@ const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${
 const createTestHandler = evaluatorObj => ctx => {
     // lp.log2("eh", ctx)
     return filterTestLineInBlockHandler(printBeginTestOutputHandler)(ctx)
-        // return filterTestLineInLineCommentHandler(printBeginTestOutputHandler)(ctx)
+        .orElse(ctx => {
+            if (lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)) {
+                return Result.Error(ctx)
+            }
+            return filterTestLineInLineCommentHandler(printBeginTestOutputHandler)(ctx)
+        })
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
