@@ -160,84 +160,161 @@ false   //this should not be tested
 
 //:::---------LINE COMMENTS-----------------------------------------------------------------
 
-//:::-  LINE begin-test mark  no mark in comment
+ 
+// ::: test block behavior
+ 
+ 
+// ::: empty block
 
 // false   //this should not be tested
 
-
-//:::-  LINE begin-test mark  no mark in comment 2
-
-//
-// false   //this should not be tested
-// false   //this should not be tested
-
-
-//:::-  LINE begin-test mark  mark at the beginning
-
-//:::
-//testTestLines.ok()
-false   //this should not be tested
-
-
-//:::-  LINE begin-test mark  mark in the middle
-
-// false   //this should not be tested
-// :::
-// testTestLines.ok()
-// testTestLines.ok()
-//
-// false   //this should not be tested
-
-//:::- LINE begin-test mark   blank line after the mark
-//  
-// false   //this should not be tested
-
-//:::-  LINE begin-test mark  mark in the interrupted 
-
-//:::
-
-// false   //this should not be tested
-// 
-
-
-//:::-  LINE begin-test mark  multiple marks in uninterrupted line comment sequence
+// :::without a label
 
 // :::
 // testTestLines.ok()
-// testTestLines.ok()
-// :::
-// testTestLines.ok()
-//
-// false   //this should not be tested
-//:::
-//testTestLines.ok()
-//testTestLines.ok()
 
-
-//:::- LINE begin-test mark  commented mark
-
-// //:::
-// false   //this should not be tested
-// //:::
-// false   //this should not be tested
-// :::
+// ::: block with one test
 // testTestLines.ok()
-//
-// //:::
+
 // false   //this should not be tested
 
-
-//:::- LINE begin-test mark  commented lines inside the line comment
-
-// :::
-// //false   //this should not be tested
+// ::: block with two or more tests
 // testTestLines.ok()
-////false   //this should not be tested
 // testTestLines.ok()
-//
-// //:::
+
+
+// ::: block with lineCommented lines 1
+// //
+
+// ::: block with lineCommented lines 2
+// // false   //this should not be tested
+
 // false   //this should not be tested
-//
+
+// ::: block with lineCommented lines 3
+// // false   //this should not be tested
+// testTestLines.ok()
+// // false   //this should not be tested
+// testTestLines.ok()
+
+// ::: block with lineCommented lines 4
+// //
+// testTestLines.ok()
+// testTestLines.ok()
+// //
+// testTestLines.ok()
+
+// false   //this should not be tested
+  
+
+ 
+// ::: begin-mark - indentation
+ 
+
+ 
+// ::: no indent
+// testTestLines.ok()
+
+// :::text right after the mark
+// testTestLines.ok()
+
+//  ::: one whitespace before and after
+// testTestLines.ok()
+
+//     :::  many whitespaces before and after
+// testTestLines.ok()
+ 
+
+ 
+// :::  begin-test mark - surrounded lines
+ 
+ 
+// ::: at the beginning of comment block
+// testTestLines.ok()
+
+// false   //this should not be tested
+
+// someting
+// ::: after some not-empty line
+// testTestLines.ok()
+
+// ::: empty line after
+
+// false   //this should not be tested
+
+// ::: whitechars line after
+  
+// false   //this should not be tested
+
+// ::: two begin marks adjacent lines
+// ::: 
+// testTestLines.ok()
+
+// false   //this should not be tested
+
+// ::: test block
+// testTestLines.ok()
+// ::: adjacent test block
+// testTestLines.ok()
+
+ 
+
+   
+// :::  without begin-test mark
+ 
+ 
+// false   //this should not be tested
+//     false   //this should not be tested
+
+//     ::
+//     false   //this should not be tested
+    
+// ::    
+//     false   //this should not be tested
+ 
+
+  
+// :::  begin-test mark commented
+ 
+ 
+ 
+//    //:::
+//    false   //this should not be tested
+//  false   //this should not be tested
+
+//  false   //this should not be tested
+//  ::: other, not commented
+//   testTestLines.ok()
+//  * 
+  
+
+
+ 
+// :::  end after begin-test mark
+ 
+ 
+// ::: 
+ 
+
+ 
+// :::  documentation * after begin-test mark
+ 
+ 
+// :::   
+//   * false   //this should not be tested
+ 
+
+  
+// :::  begin-test mark - separate blocks are independent
+ 
+
+ 
+//   ::: 1st block
+//    testTestLines.ok()
+  
+ 
+//   false  //this should not be tested. It is different block, with no test block
+  
 
 
 
