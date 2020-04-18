@@ -26,7 +26,7 @@ const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for
 const chainFilterTestLine = beginTestBlockHandler => compose(
     chain(lp.filters.excludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
     chain(lp.filters.customBlockComment(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, beginTestBlockHandler)),
+        lens.blockTestLineNum, {onBlockBegin: beginTestBlockHandler})),
 )
 
 const filterTestLineInBlockHandler = beginTestBlockHandler => compose.all(

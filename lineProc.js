@@ -52,6 +52,30 @@ const beginJSBlockCommentRegex = /^\s*\/\*/s
 const endJSBlockCommentRegex = /^\s*\*\//s
 
 
+// event handlers
+// ctx -> Result
+
+defaultBlockBeginHandler = Result.Ok
+
+//defaultBlockHandler = Result.Ok
+
+defaultBlockEndHandler = ctx => {
+    // log2('ev-  endBlock----', ctx)
+    return Result.Error(ctx)
+}
+
+
+// events
+// { eventKey: eventHandler ... }
+
+const createDefaultEventSettings = () => ({
+    onBlockBegin: defaultBlockBeginHandler,
+    onBlockEnd: defaultBlockEndHandler,
+    //onBlock: defaultBlockHandler,     //fired when inside - not the begin nor end of the block
+})
+
+const mergeEventSettings = customEventSettings => ({...createDefaultEventSettings(), ...customEventSettings})
+
 // filters -----------------------------------
 // ... -> ctx -> Result ctx
 
@@ -71,14 +95,15 @@ const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BL
 // gives proper result only if filterCustomBlockComment is called before
 const isInBlock = (blockLineNumLens, ctx) => L.view(lens.lineNum, ctx) === L.view(blockLineNumLens, ctx)
 
-//filterCustomBlockComment :: regex -> regex -> lens -> (ctx -> Result ctx ctx) -> Result ctx ctx
-const filterCustomBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, beginBlockHandler) => ctx => {
+//filterCustomBlockComment :: regex -> regex -> lens -> {eventKey: (ctx -> Result ctx ctx) ...} -> Result ctx ctx
+const filterCustomBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLens, events) => ctx => {
+    const fullEvents = mergeEventSettings(events)
     const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
     const output = L.view(lens.output, ctx)
     //begin block
     if (beginBlockRegex.test(output)) {
         return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
-            .chain(beginBlockHandler)
+            .chain(fullEvents.onBlockBegin)
     }
     // block must be continuous
     if (L.view(lens.lineNum, ctx) > blockLineNum + 1) {
@@ -86,14 +111,16 @@ const filterCustomBlockComment = (beginBlockRegex, endBlockRegex, blockLineNumLe
     }
     //end block
     if (endBlockRegex.test(output)) {
-        return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
+        return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
+            .chain(fullEvents.onBlockEnd)
     }
     return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
+        //.chain(events.onBlock)
 }
 
 
 const filterJSBlockComment = filterCustomBlockComment(beginJSBlockCommentRegex, endJSBlockCommentRegex,
-    lens.JSBlockCommentLineNum, Result.Ok)
+    lens.JSBlockCommentLineNum, createDefaultEventSettings())
 
 const filterJSLineComment = filterOutputLine(lineCommentRegex)
 
@@ -151,6 +178,9 @@ module.exports = {
 
     //context lens
     lens,
+
+    //events
+    createDefaultEventSettings,
 
     // ctx -> Result ctx ctx
     filters: {

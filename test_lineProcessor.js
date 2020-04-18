@@ -3,7 +3,7 @@
  */
 
 const { compose, curry } = require('folktale/core/lambda')
-// const Result = require('folktale/result')
+const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
 const lp = require("./lineProc")
 const L = require('lenses')
@@ -106,6 +106,9 @@ const str = `
  * Mth = "aabbcc"
  * console.log(Mth.a.toString())
  */
+/*
+    hello
+*/
 
 let hello = "hello"
 
@@ -201,8 +204,11 @@ const handler = compose.all(
 
     map(lp.mappers.addLineNum),
     // lp.log,
-    // lp.handlers.filterBlockHandler
-    lp.filters.lineComment
+    lp.filters.customBlockComment(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum, 
+        {}),
+        // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
+    // lp.filters.JSBlockComment,
+    //lp.filters.lineComment
 
 )
 
