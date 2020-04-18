@@ -179,7 +179,12 @@ module.exports = {
     createContext,
 
     //context lens
-    lens,
+    lens: {
+        input: lens.input,
+        output: lens.output,
+        lineNum: lens.lineNum,
+        JSBlockCommentLineNum: lens.JSBlockCommentLineNum,
+    },
 
     //events
     createDefaultEventSettings,
