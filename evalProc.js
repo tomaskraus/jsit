@@ -23,19 +23,19 @@ const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for
 // ctx -> Result ctx ctx
 
 // Result ctx ctx -> Result ctx ctx
-const chainFilterTestLine = beginTestBlockHandler => compose(
+const _createChainFilterTestLine = beginTestBlockHandler => compose(
     chain(lp.filters.excludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
-    chain(lp.filters.customBlockComment(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, beginTestBlockHandler)),
+    chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
+        lens.blockTestLineNum, {onBlockBegin: beginTestBlockHandler})),
 )
 
-const filterTestLineInBlockHandler = beginTestBlockHandler => compose.all(
-    chainFilterTestLine(beginTestBlockHandler),
+const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
+    _createChainFilterTestLine(beginTestBlockHandler),
     lp.filters.JSBlockComment,
 )
 
-const filterTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
-    chainFilterTestLine(beginTestBlockHandler),
+const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
+    _createChainFilterTestLine(beginTestBlockHandler),
     map(lp.mappers.removeLineComment),
     lp.filters.lineComment,
 )
@@ -60,14 +60,16 @@ const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$
 const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
 
 // ctx -> Result ctx
-const createTestHandler = evaluatorObj => ctx => {
+const createTestHandler = evaluatorObj => {
     // lp.log2("eh", ctx)
-    return filterTestLineInBlockHandler(printBeginTestOutputHandler)(ctx)
+    const testLineInBlockHandler = createTestLineInBlockHandler(printBeginTestOutputHandler)
+    const testLineInLineCommentHandler = createTestLineInLineCommentHandler(printBeginTestOutputHandler)
+    return ctx => testLineInBlockHandler(ctx)
         .orElse(ctx => {
             if (lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)) {
                 return Result.Error(ctx)
             }
-            return filterTestLineInLineCommentHandler(printBeginTestOutputHandler)(ctx)
+            return testLineInLineCommentHandler(ctx)
         })
         .chain(ctx => {
             // lp.log2("line", ctx)
@@ -92,12 +94,6 @@ const createTestHandler = evaluatorObj => ctx => {
 //==================================================================================
 
 module.exports = {
-    //ctx -> Result ctx
-    handlers: {
-        filterTestLineInBlockHandler,
-        printBeginTestOutputHandler,
-    },
-
     factory: {
         createTestHandler,
     },

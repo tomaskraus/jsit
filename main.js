@@ -50,6 +50,7 @@ impure.app = (filename, evalHandlerObj, endCallback, context) => {
         // lp.log(impure.context)
 
         testHandler = ep.factory.createTestHandler(evalHandlerObj)
+        const process = lp.createProcessLine(testHandler)
 
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))
@@ -60,7 +61,8 @@ impure.app = (filename, evalHandlerObj, endCallback, context) => {
             output: process.stdout,
             terminal: false,
         });
-        rl.on('line', (line) => { impure.context = lp.processLine(testHandler, line, impure.context) })
+
+        rl.on('line', (line) => { impure.context = process(line, impure.context) })
         // rl.on('close', endCallback)
 
     } catch (e) {
