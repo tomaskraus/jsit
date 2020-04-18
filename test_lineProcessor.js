@@ -13,9 +13,10 @@ const L = require('lenses')
 const app = (context, handler, s) => {
     const strs = s.split('\n')
 
+    const process = lp.createProcessLine(handler)
     console.log("--START-----------")
     for (let sn of strs) {
-        context = lp.processLine(handler, sn, context)
+        context = process(sn, context)
         // log2("after processLine", context)
     }
     // log(context)
@@ -204,7 +205,7 @@ const handler = compose.all(
 
     map(lp.mappers.addLineNum),
     // lp.log,
-    lp.filters.customBlockComment(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum, 
+    lp.filters.createCustomBlockFilter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum, 
         {}),
         // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
     // lp.filters.JSBlockComment,
