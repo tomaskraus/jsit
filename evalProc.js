@@ -92,12 +92,6 @@ const createTestHandler = evaluatorObj => ctx => {
 //==================================================================================
 
 module.exports = {
-    //ctx -> Result ctx
-    handlers: {
-        filterTestLineInBlockHandler,
-        printBeginTestOutputHandler,
-    },
-
     factory: {
         createTestHandler,
     },
