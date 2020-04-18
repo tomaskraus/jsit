@@ -23,19 +23,19 @@ const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for
 // ctx -> Result ctx ctx
 
 // Result ctx ctx -> Result ctx ctx
-const createChainFilterTestLine = beginTestBlockHandler => compose(
+const _createChainFilterTestLine = beginTestBlockHandler => compose(
     chain(lp.filters.excludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
     chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
         lens.blockTestLineNum, {onBlockBegin: beginTestBlockHandler})),
 )
 
 const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
-    createChainFilterTestLine(beginTestBlockHandler),
+    _createChainFilterTestLine(beginTestBlockHandler),
     lp.filters.JSBlockComment,
 )
 
 const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
-    createChainFilterTestLine(beginTestBlockHandler),
+    _createChainFilterTestLine(beginTestBlockHandler),
     map(lp.mappers.removeLineComment),
     lp.filters.lineComment,
 )
