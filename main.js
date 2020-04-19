@@ -44,9 +44,9 @@ impure.createEvalObj = (pathForModuleRequire) => {
 
 const fs = require('fs');
 
-impure.app = (filename, evalHandlerObj, endCallback, context) => {
+impure.app = (filename, evalHandlerObj, context) => {
     try {
-        impure.context.fileName = fileName
+        context.fileName = fileName
         // lp.log(impure.context)
 
         testHandler = ep.factory.createTestHandler(evalHandlerObj)
@@ -62,8 +62,8 @@ impure.app = (filename, evalHandlerObj, endCallback, context) => {
             terminal: false,
         });
 
-        rl.on('line', (line) => { impure.context = process(line, impure.context) })
-        // rl.on('close', endCallback)
+        rl.on('line', (line) => { context = process(line, context) })
+        // rl.on('close', onAppEnd)
 
     } catch (e) {
         impure.errAndExit(e)
@@ -75,7 +75,7 @@ impure.app = (filename, evalHandlerObj, endCallback, context) => {
 // ---------------------------------------------------------------------------------------------------------
 
 //maybe will not work in callback if context variable pointer changes
-const onAppEnd = (ctx) => () => {
+const onAppEnd = (ctx) => {
     console.log(impure.summaryOfTest(ctx)())
 }
 
@@ -93,7 +93,7 @@ try {
     if (!impure.error) {
         impure.context = lp.createContext()
         //will not work, as initial context will remain the same
-        impure.app(fileName, evaluatorObj, onAppEnd(impure.context), impure.context)
+        impure.app(fileName, evaluatorObj, impure.context)
 
     }
 } catch (err) {
