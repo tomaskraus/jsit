@@ -85,7 +85,7 @@ Do we need more?
 
 ### Need an assertion?
 
-More real-life example:
+More real-life (still silly) example:
 
 ``` javascript
 /**
@@ -99,7 +99,8 @@ More real-life example:
  *
  * @example
  //:::
- var a = [1, 2, 3]; assert.deepEqual(myMath.swapA(a), [2, 1, 3]); assert.deepEqual(a, [1, 2, 3])
+ const a = [1, 2, 3]
+ assert.deepEqual(myMath.swapA(a), [2, 1, 3])
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
