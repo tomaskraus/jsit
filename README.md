@@ -24,7 +24,7 @@ We'll give the file a name: `myMath.js`
 
 ## 3. Write tests
 
-Directly, in your code! Just under a `:::` mark, in the comment. One test per line. Just a `true`/`false` expressions.
+Directly, in your code! Just under a `//:::` mark, in the comment. One test per line. Just a `true`/`false` expressions.
 
 ``` javascript
     //:::
