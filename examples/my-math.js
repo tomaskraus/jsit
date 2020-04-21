@@ -22,8 +22,18 @@ add = function (a, b) {
  * swapA :: [a] -> [a]
  *
  * @example
- ::: 
- var a = [1, 2, 3]; assert.deepEqual(my_math.swapA(a), [2, 1, 3]); assert.deepEqual(a, [1, 2, 3])
+ //::: 
+ let a = [1, 2, 3], b = [4, 5] //define some variables
+ let c = 1
+ assert.deepEqual(my_math.swapA(a), [2, 1, 3])
+ const arr = [1, 2, 3] 
+ assert.deepEqual(arr, a)
+ assert.equal(c, 1)
+ //::: 
+ var d = 10 
+ var e = 20
+ //
+ my_math.add(e, d) == 12
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]

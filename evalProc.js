@@ -12,12 +12,14 @@ const lp = require("./lineProc")
 
 
 // lenses   for evaluation-param 
-const lens = L.makeLenses(['blockTestLineNum'])
+const lens = L.makeLenses(['blockTestLineNum', 'vars'])
 
 // regexes ----------------------------
 
 const beginTestCommentRegex = /^\s*\/\/:::.*/s
 const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for tests inside documentation-block comment
+
+const varRegex = /^\s*(const|let|var)\s+/s
 
 // handlers ----------------------------
 // ctx -> Result ctx ctx
@@ -25,14 +27,18 @@ const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for
 // Result ctx ctx -> Result ctx ctx
 const _createChainFilterTestLine = beginTestBlockHandler => 
     chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, {onBlockBegin: beginTestBlockHandler}))
+        lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)}))
 
 const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
+    map(_addVarMapper),
+    chain(_detectVarHandler),
     _createChainFilterTestLine(beginTestBlockHandler),
     lp.filters.JSBlockComment,
 )
 
 const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
+    map(_addVarMapper),
+    chain(_detectVarHandler),
     map(lp.mappers.removeLineComment),
     _createChainFilterTestLine(beginTestBlockHandler),
     lp.filters.lineComment,
@@ -46,11 +52,28 @@ const printBeginTestOutputHandler = ctx => {
     return Result.Error(ctx)
 }
 
+const _detectVarHandler = ctx => {
+    const line = L.view(lp.lens.output, ctx)
+    if (varRegex.test(line)) {
+        const s_line = removeLineCommentAtTheEnd(line).trim()
+        return Result.Error(L.over(lens.vars, s => `${s}${s_line}; `, ctx))
+    }
+    return Result.Ok(ctx)
+}
+
+const _resetVarsHandler = ctx => Result.Ok(L.set(lens.vars, '', ctx))
+
+// mappers
+// ctx -> ctx
+
+const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)}/*ENDVAR*/; ${s}`, ctx)
 
 // line transformers  
 // str -> str
 
 const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
+
+const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
 
 //----------------------------------------------------------------------------------
