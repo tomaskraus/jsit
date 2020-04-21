@@ -27,7 +27,7 @@ We'll give the file a name: `myMath.js`
 Directly, in your code! Just under a `:::` mark, in the comment. One test per line. Just a `true`/`false` expressions.
 
 ``` javascript
-    // :::
+    //:::
     // myMath.add(1, 2) == 3
     // myMath.add(1, 0) == myMath.add(0, 1)  //commutative
     module.export.add = function(a, b) {
@@ -64,7 +64,7 @@ BEGIN | Module | myMath | File | /home/examples/myMath.js
 /**
   * Adds number a to b
   * @example
-     :::
+     //:::
      myMath.add(1, 2) == 3
      myMath.add(1, 0) == myMath.add(0, 1)  //commutative
      myMath.add(1, "2") === "12"
@@ -98,7 +98,7 @@ More real-life example:
  * swapA :: [a] -> [a]
  *
  * @example
- :::
+ //:::
  var a = [1, 2, 3]; assert.deepEqual(myMath.swapA(a), [2, 1, 3]); assert.deepEqual(a, [1, 2, 3])
  *
  */
@@ -122,7 +122,7 @@ If your module name contains a `-` character (e.g. `my-first-module`), replace t
 file `my-first-module.js`:
 
 ``` javascript
-    // :::
+    //:::
     // my_first_module.add(1, 2) == 3
     // my_first_module.add(1, 0) == my_first_module.add(0, 1)  //commutative
     module.export.inc = (x) => {

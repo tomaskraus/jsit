@@ -16,18 +16,16 @@ const lens = L.makeLenses(['blockTestLineNum'])
 
 // regexes ----------------------------
 
-const beginTestCommentRegex = /^\s*:::.*/s
+const beginTestCommentRegex = /^\s*\/\/:::.*/s
 const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for tests inside documentation-block comment
 
 // handlers ----------------------------
 // ctx -> Result ctx ctx
 
 // Result ctx ctx -> Result ctx ctx
-const _createChainFilterTestLine = beginTestBlockHandler => compose(
-    chain(lp.filters.excludeOutputLine(lp.regex.lineComment)), //removes line-commented lines in the test block
+const _createChainFilterTestLine = beginTestBlockHandler => 
     chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, {onBlockBegin: beginTestBlockHandler})),
-)
+        lens.blockTestLineNum, {onBlockBegin: beginTestBlockHandler}))
 
 const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
     _createChainFilterTestLine(beginTestBlockHandler),
@@ -35,8 +33,8 @@ const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
 )
 
 const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
-    _createChainFilterTestLine(beginTestBlockHandler),
     map(lp.mappers.removeLineComment),
+    _createChainFilterTestLine(beginTestBlockHandler),
     lp.filters.lineComment,
 )
 
@@ -52,7 +50,7 @@ const printBeginTestOutputHandler = ctx => {
 // line transformers  
 // str -> str
 
-const removeBeginTestBlockComment = line => line.replace(/^(\s*:::)\s*(.*$)/, "$2")
+const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
 
 
 //----------------------------------------------------------------------------------

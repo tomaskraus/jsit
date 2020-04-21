@@ -15,7 +15,7 @@ module.exports = {
 //----------------------------------------------------------------------------------
 
 
-// ::: block withhout commented code below
+//::: begin test mark without commented code below
 false   //this should not be tested
  
 //--------------BLOCK COMMENTS------------------------------------------------------
@@ -24,43 +24,43 @@ false   //this should not be tested
   false   //this should not be tested
 
 /*-
-::: test block behavior
-*/ //-
+//::: -----   test block behavior
+*/ //----------------------------------------------------
 /* 
-::: empty block
+//::: empty block
 
 false   //this should not be tested
 
-:::without a label
+//:::without a label
 
-:::
+//:::
 testTestLines.ok()
 
-::: block with one test
+//::: block with one test
 testTestLines.ok()
 
 false   //this should not be tested
 
-::: block with two or more tests
+//::: block with two or more tests
 testTestLines.ok()
 testTestLines.ok()
 
 
-::: block with lineCommented lines 1
+//::: block with lineCommented lines 1
 //
 
-::: block with lineCommented lines 2
+//::: block with lineCommented lines 2
 // false   //this should not be tested
 
 false   //this should not be tested
 
-::: block with lineCommented lines 3
+//::: block with lineCommented lines 3
 // false   //this should not be tested
 testTestLines.ok()
 // false   //this should not be tested
 testTestLines.ok()
 
-::: block with lineCommented lines 4
+//::: block with lineCommented lines 4
 //
 testTestLines.ok()
 testTestLines.ok()
@@ -71,108 +71,108 @@ false   //this should not be tested
  */
 
 /*-
-::: begin-mark - indentation
-*/ //-
+//::: -----   begin-mark - indentation
+*/ //----------------------------------------------------
 
 /*
-::: no indent
+//::: no indent
 testTestLines.ok()
 
-:::text right after the mark
+//:::text right after the mark
 testTestLines.ok()
 
- ::: one whitespace before and after
+ //::: one whitespace before and after
 testTestLines.ok()
 
-    :::  many whitespaces before and after
+    //:::  many whitespaces before and after
 testTestLines.ok()
 */
 
 /*-
-:::  begin-test mark - surrounded lines
-*/ //-
+//::: -----    begin-test mark - surrounded lines
+*/ //----------------------------------------------------
 /*
-::: at the beginning of comment block
+//::: at the beginning of comment block
 testTestLines.ok()
 
 false   //this should not be tested
 
 someting
-::: after some not-empty line
+//::: after some not-empty line
 testTestLines.ok()
 
-::: empty line after
+//::: empty line after
 
 false   //this should not be tested
 
-::: whitechars line after
+//::: whitechars line after
   
 false   //this should not be tested
 
-::: two begin marks adjacent lines
-::: 
+//::: two begin marks adjacent lines
+//::: 
 testTestLines.ok()
 
 false   //this should not be tested
 
-::: test block
+//::: test block
 testTestLines.ok()
-::: adjacent test block
+//::: adjacent test block
 testTestLines.ok()
 
 */
 
-  /*-
-:::  without begin-test mark
-*/ //-
+/*-
+//::: -----    without proper begin-test mark
+*/ //----------------------------------------------------
 /*
 false   //this should not be tested
     false   //this should not be tested
 
-    ::
+    :::
     false   //this should not be tested
     
-::    
+/// :::    
     false   //this should not be tested
 */
 
- /*-
-:::  begin-test mark commented
-*/ //-
+/*-
+//::: -----    begin-test mark commented
+*/ //----------------------------------------------------
 /*
  
-   //:::
+   // //:::
    false   //this should not be tested
  false   //this should not be tested
 
  false   //this should not be tested
- ::: other, not commented
+ //::: other, not commented
   testTestLines.ok()
  * 
  */
 
 
 /*-
-:::  end after begin-test mark
-*/ //-
+//::: -----    end after begin-test mark
+*/ //----------------------------------------------------
 /*
-::: 
+//::: 
 */
 
 /*-
-:::  documentation * after begin-test mark
-*/ //-
+//::: -----    documentation * after begin-test mark
+*/ //----------------------------------------------------
 /*
-:::   
+//:::   
   * false   //this should not be tested
 */
 
- /*-
-:::  begin-test mark - separate blocks are independent
-*/ //-
+/*-
+//::: -----    begin-test mark - separate blocks are independent
+*/ //----------------------------------------------------
 
 /* 
-  ::: 1st block
+  //::: 1st block
    testTestLines.ok()
  */
 /* 
@@ -181,61 +181,62 @@ false   //this should not be tested
 
 
 /*-
-:::  begin-test mark - documenting block
-*/ //-
+//::: -----    begin-test mark - documenting block
+*/ //----------------------------------------------------
 
 /** 
-  ::: inside minimal documenting block
+  //::: inside minimal documenting block
    testTestLines.ok()
   */
 
 /** 
  * 
-  ::: inside documenting block
-   testTestLines.ok()
+  //::: inside documenting block
+  testTestLines.ok()
  * 
+  false   //this should not be tested
  */
 
 
-//:::---------LINE COMMENTS-----------------------------------------------------------------
+//::: ---------LINE COMMENTS-----------------------------------------------------------------
 
-// ::: test block behavior
+//::: test block behavior
  
  
-// ::: empty block
+//::: empty block
 
 // false   //this should not be tested
 
-// :::without a label
+//:::without a label
 
-// :::
+//:::
 // testTestLines.ok()
 
-// ::: block with one test
+//::: block with one test
 // testTestLines.ok()
 
 // false   //this should not be tested
 
-// ::: block with two or more tests
+//::: block with two or more tests
 // testTestLines.ok()
 // testTestLines.ok()
 
 
-// ::: block with lineCommented lines 1
+//::: block with lineCommented lines 1
 // //
 
-// ::: block with lineCommented lines 2
+//::: block with lineCommented lines 2
 // // false   //this should not be tested
 
 // false   //this should not be tested
 
-// ::: block with lineCommented lines 3
-// // false   //this should not be tested
+//::: block with lineCommented lines 3
+//// false   //this should not be tested
 // testTestLines.ok()
 // // false   //this should not be tested
 // testTestLines.ok()
 
-// ::: block with lineCommented lines 4
+//::: block with lineCommented lines 4
 // //
 // testTestLines.ok()
 // testTestLines.ok()
@@ -246,108 +247,105 @@ false   //this should not be tested
   
 
  
-// ::: begin-mark - indentation
+//::: begin-mark - indentation
  
 
  
-// ::: no indent
+//::: no indent
 // testTestLines.ok()
 
-// :::text right after the mark
+//:::text right after the mark
 // testTestLines.ok()
 
-//  ::: one whitespace before and after
+//::: one whitespace before and after
 // testTestLines.ok()
 
-//     :::  many whitespaces before and after
-// testTestLines.ok()
+//     //:::  many whitespaces before and after
+// false   //this should not be tested
  
 
  
-// :::  begin-test mark - surrounded lines
+//:::  begin-test mark - surrounded lines
  
  
-// ::: at the beginning of comment block
+//::: at the beginning of comment block
 // testTestLines.ok()
 
 // false   //this should not be tested
 
 // someting
-// ::: after some not-empty line
+//::: after some not-empty line
 // testTestLines.ok()
 
-// ::: empty line after
+//::: empty line after
 
 // false   //this should not be tested
 
-// ::: whitechars line after
+//::: whitechars line after
   
 // false   //this should not be tested
 
-// ::: two begin marks adjacent lines
-// ::: 
+//::: two begin marks adjacent lines
+//::: 
 // testTestLines.ok()
 
 // false   //this should not be tested
 
-// ::: test block
+//::: test block
 // testTestLines.ok()
-// ::: adjacent test block
+//::: adjacent test block
 // testTestLines.ok()
 
  
 
    
-// :::  without begin-test mark
+//:::  without begin-test mark
  
  
 // false   //this should not be tested
 //     false   //this should not be tested
 
-//     ::
+//     :::
 //     false   //this should not be tested
     
-// ::    
+// :::    
 //     false   //this should not be tested
  
 
   
-// :::  begin-test mark commented
+//:::  begin-test mark commented
  
  
  
-//    //:::
+////:::
+//    false   //this should not be tested
+//  false   //this should not be tested
+
+// //:::
 //    false   //this should not be tested
 //  false   //this should not be tested
 
 //  false   //this should not be tested
-//  ::: other, not commented
+//::: other, not commented
 //   testTestLines.ok()
-//  * 
+//  
   
 
 
  
-// :::  end after begin-test mark
+//:::  end after begin-test mark
  
  
-// ::: 
+//::: 
  
-
- 
-// :::  documentation * after begin-test mark
- 
- 
-// :::   
-//   * false   //this should not be tested
  
 
   
-// :::  begin-test mark - separate blocks are independent
+//:::  begin-test mark - separate blocks are independent
  
 
  
-//   ::: 1st block
+//::: 1st block
 //    testTestLines.ok()
   
  
@@ -358,7 +356,7 @@ false   //this should not be tested
 
 
 /* 
-// ::: line comment test inside block comment
+//::: line comment test inside block comment
 // false  //this should not be tested.
 
 // false  //this should not be tested.

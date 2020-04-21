@@ -24,7 +24,7 @@
  * 
  * 
  * @example
- :::
+//:::
  Mth.minus(1, 1) == 0
  Mth.minus(1, -1) == 3
  Mth.minus(1, 2) == -1
@@ -40,12 +40,12 @@ const minus = (a, b) => {
 
 /** add number a to number b
  * @example
-  :::
+  //:::
   //Mth.plus(1, 1) =w= 2 
   Mth.plus(1, -1) == 2 
   Mth.plus(1, 2) == 3 
 
-// ::: Minus in block comment  
+// //::: Minus in block comment  
 // Mth.minus(10, 2) == 7
 // assert.strictEqual( Mth.minus(10, 20), -1 )
 
@@ -55,7 +55,7 @@ const plus = (a, b) => {
 }
 
 
-// ::: Mth.minus
+//::: Mth.minus
 // //Mth.minus(10, 2) == 7
 // assert.strictEqual( Mth.minus(10, 20), -1 )
 
