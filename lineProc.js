@@ -26,6 +26,10 @@ const tap = curry(2, (fn, a) => {
 })
 
 //inc :: num -> num
+//:::
+// const lp = lineProc
+// lp.inc(1) === 2
+// assert.equal(lp.inc(-1), 0)
 const inc = i => i + 1
 
 //log2 :: str -> a -> a
@@ -94,6 +98,12 @@ const mergeEventSettings = customEventSettings => ({ ...createDefaultEventSettin
 // filterOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Ok(ctx)
     : Result.Error(ctx)
+
+//::: filterExcludeOutputLine
+// const filterExcludeOutputLine = lineProc.filters.excludeOutputLine(/--/)
+// filterExcludeOutputLine({ output: "- abc"}).merge().output === "- abc"
+// filterExcludeOutputLine({ output: "-- abc"}) instanceof Result.Error
+//
 // filterExcludeOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Error(ctx)
     : Result.Ok(ctx)
@@ -137,7 +147,12 @@ const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLen
 const filterJSBlockComment = createCustomBlockFilter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
     lens.JSBlockCommentLineNum, createDefaultEventSettings())
 
-const filterJSLineComment = filterOutputLine(lineCommentRegex)
+//::: filterJSLineComment
+// const filterJSLineComment = lineProc.filters.JSLineComment
+// assert.equal(filterJSLineComment({ output: "\/\/ abc"}).merge().output, "\/\/ abc")
+// filterJSLineComment({ output: "\/ abc"}) instanceof Result.Error
+//
+const filterJSLineComment = filterOutputLine(JSLineCommentRegex)
 
 
 // line transformers  
