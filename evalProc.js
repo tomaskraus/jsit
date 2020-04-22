@@ -113,8 +113,8 @@ const createTestHandler = evaluatorObj => {
     const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
     return ctx => {
             // lp.log2("line", ctx)
+            const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
             try {
-                const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
                 const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
                 if (testPassed === false) {
                     console.log(logFailMessage(ctx2, "The result is false"))
@@ -122,8 +122,8 @@ const createTestHandler = evaluatorObj => {
                 }
                 return Result.Ok(ctx2)
             } catch (e) {
-                console.log(logFailMessage(ctx, e))
-                return addFail(ctx)
+                console.log(logFailMessage(ctx2, e))
+                return addFail(ctx2)
             }
         }
 }
