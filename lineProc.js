@@ -49,10 +49,10 @@ const lens = L.makeLenses(['input', 'output', 'lineNum', 'JSBlockCommentLineNum'
 
 // regexes ----------------------------
 
-const lineCommentRegex = /^\s*\/\//s
+const lineCommentRegex = /^\/\//
 // TODO: add detection of one-line  block comment /*    */
-const beginJSBlockCommentRegex = /^\s*\/\*/s
-const endJSBlockCommentRegex = /^\s*\*\//s
+const beginJSBlockCommentRegex = /^\/\*/
+const endJSBlockCommentRegex = /^\*\//
 
 
 // event handlers
@@ -155,7 +155,7 @@ const addLineNumMapper = ctx => L.over(lens.output,
 
 //setContextLine :: ctx -> str -> ctx
 const setContextLine = line => ctx => compose.all(
-    L.set(lens.output, line),
+    L.set(lens.output, line.trim()),
     L.set(lens.input, line),
     L.over(lens.lineNum, inc),
     // log2("contextLine"),
