@@ -24,7 +24,7 @@ const varRegex = /^\s*(const|let|var)\s+/s
 // mappers
 // ctx -> ctx
 
-const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)}/*ENDVAR*/; ${s}`, ctx)
+const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
 
 // line transformers  
 // str -> str
