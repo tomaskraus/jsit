@@ -10,8 +10,6 @@ const Result = require('folktale/result')
 const L = require('lenses')
 const lp = require("./lineProc")
 
-// auxiliary
-const inc = i => i + 1
 
 // lenses   for evaluation-param 
 const lens = L.makeLenses(['blockTestLineNum', 'vars', 'stats', 'numFailed', 'totalTests'])
@@ -102,7 +100,7 @@ const createTestHandler = evaluatorObj => {
     // lp.log2("eh", ctx)
     const testLineInBlockHandler = createTestLineInBlockHandler(printBeginTestOutputHandler)
     const testLineInLineCommentHandler = createTestLineInLineCommentHandler(printBeginTestOutputHandler)
-    const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, inc, ctx))
+    const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
     return ctx => testLineInBlockHandler(ctx)
         .orElse(ctx => 
             lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
@@ -112,7 +110,7 @@ const createTestHandler = evaluatorObj => {
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
-                const ctx2 = L.over(lens.stats_totalTests, inc, ctx)
+                const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
                 const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
                 if (testPassed === false) {
                     console.log(logFailMessage(ctx2, "The result is false"))

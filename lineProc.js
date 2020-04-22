@@ -25,6 +25,9 @@ const tap = curry(2, (fn, a) => {
     return a
 })
 
+//inc :: num -> num
+const inc = i => i + 1
+
 //log2 :: str -> a -> a
 const log2 = curry(2, (descr, a) => tap(s => console.log(`LOG ${descr}:`, s), a)
 )
@@ -154,7 +157,7 @@ const addLineNumMapper = ctx => L.over(lens.output,
 const setContextLine = line => ctx => compose.all(
     L.set(lens.output, line),
     L.set(lens.input, line),
-    L.over(lens.lineNum, x => x + 1),
+    L.over(lens.lineNum, inc),
     // log2("contextLine"),
 )(ctx)
 
@@ -180,7 +183,7 @@ module.exports = {
 
     //ctx
     createContext,
-
+    
     //context lens
     lens: {
         input: lens.input,
@@ -188,7 +191,9 @@ module.exports = {
         lineNum: lens.lineNum,
         JSBlockCommentLineNum: lens.JSBlockCommentLineNum,
     },
-
+    //isInBlock :: lens -> ctx -> bool
+    isInBlock,
+    
     //events
     createDefaultEventSettings,
 
@@ -216,9 +221,11 @@ module.exports = {
         lineComment: lineCommentRegex,
     },
 
+
     //other
-    //isInBlock :: lens -> ctx -> bool
-    isInBlock,
+
     //tap :: (a -> _) -> a -> a
     tap,
+    //inc :: num -> num
+    inc,
 }
