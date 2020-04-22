@@ -57,7 +57,7 @@ const tapCtx = curry(3, (lens, fn, ctx) => {
 
 // regexes ----------------------------
 
-const lineCommentRegex = /^\/\//
+const JSLineCommentRegex = /^\/\//
 // TODO: add detection of one-line  block comment /*    */
 const beginJSBlockCommentRegex = /^\/\*/
 const endJSBlockCommentRegex = /^\*\//
@@ -212,7 +212,7 @@ module.exports = {
     filters: {
         excludeOutputLine: filterExcludeOutputLine,
         createCustomBlockFilter: createCustomBlockFilter,
-        lineComment: filterJSLineComment,
+        JSLineComment: filterJSLineComment,
         JSBlockComment: filterJSBlockComment,
     },
 
@@ -230,7 +230,7 @@ module.exports = {
     regex: {
         beginJSBlockComment: beginJSBlockCommentRegex,
         endJSBlockComment: endJSBlockCommentRegex,
-        lineComment: lineCommentRegex,
+        JSLineComment: JSLineCommentRegex,
         blankLine: blankLineRegex,
     },
 

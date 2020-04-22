@@ -53,7 +53,7 @@ const _createChainFilterTestLine = (beginTestBlockHandler, endTestCommentRegex) 
 
 const filterExcludeNonTestLines = compose.all(
     chain(lp.filters.excludeOutputLine(lp.regex.blankLine)),
-    lp.filters.excludeOutputLine(lp.regex.lineComment),
+    lp.filters.excludeOutputLine(lp.regex.JSLineComment),
     lp.mappers.trimOutput,
 )
 
@@ -72,7 +72,7 @@ const createTestLineInLineCommentFilter = beginTestBlockHandler => compose.all(
     chain(filterExcludeNonTestLines),
     map(lp.mappers.removeLineComment),
     _createChainFilterTestLine(beginTestBlockHandler, endTestLineCommentRegex),
-    lp.filters.lineComment,
+    lp.filters.JSLineComment,
 )
 
 const createTestLineFilter = () => {
