@@ -219,4 +219,6 @@ module.exports = {
     //other
     //isInBlock :: lens -> ctx -> bool
     isInBlock,
+    //tap :: (a -> _) -> a -> a
+    tap,
 }

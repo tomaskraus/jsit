@@ -21,6 +21,20 @@ const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for
 
 const varRegex = /^\s*(const|let|var)\s+/s
 
+// mappers
+// ctx -> ctx
+
+const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)}/*ENDVAR*/; ${s}`, ctx)
+
+// line transformers  
+// str -> str
+
+const removeInnerStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2") 
+
+const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
+
+const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
+
 // handlers ----------------------------
 // ctx -> Result ctx ctx
 
@@ -44,14 +58,17 @@ const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
     lp.filters.lineComment,
 )
 
-const printBeginTestOutputHandler = ctx => {
-    const ctx2 = lp.mappers.addLineNum(ctx)
-    const ln = removeBeginTestBlockComment(L.view(lp.lens.output, ctx2)).trim()
-    if (ln) {
-        console.log(ln)
-    }
-    return Result.Error(ctx)
-}
+const printBeginTestOutputHandler = compose.all(
+    Result.Error,
+    lp.tap(ctx => {
+        let ln = L.view(lp.lens.output, ctx)
+        if (ln) {
+            console.log(ln)
+        }
+    }),
+    lp.mappers.liftCtxOutput(s => s.trim()),
+    lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
+)
 
 const _detectVarHandler = ctx => {
     const line = L.view(lp.lens.output, ctx)
@@ -64,17 +81,6 @@ const _detectVarHandler = ctx => {
 
 const _resetVarsHandler = ctx => Result.Ok(L.set(lens.vars, '', ctx))
 
-// mappers
-// ctx -> ctx
-
-const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)}/*ENDVAR*/; ${s}`, ctx)
-
-// line transformers  
-// str -> str
-
-const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
-
-const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
 
 //----------------------------------------------------------------------------------
