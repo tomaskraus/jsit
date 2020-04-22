@@ -289,7 +289,7 @@ false   //this should not be tested
 // testTestLines.ok()
 
 //::: empty line after
-
+//
 // false   //this should not be tested
 
 //::: whitechars line after
