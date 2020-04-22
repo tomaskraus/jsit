@@ -104,12 +104,11 @@ const createTestHandler = evaluatorObj => {
     const testLineInLineCommentHandler = createTestLineInLineCommentHandler(printBeginTestOutputHandler)
     const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, inc, ctx))
     return ctx => testLineInBlockHandler(ctx)
-        .orElse(ctx => {
-            if (lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)) {
-                return Result.Error(ctx)
-            }
-            return testLineInLineCommentHandler(ctx)
-        })
+        .orElse(ctx => 
+            lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
+                ? Result.Error(ctx)
+                : testLineInLineCommentHandler(ctx)
+        )
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
