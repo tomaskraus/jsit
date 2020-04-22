@@ -45,7 +45,8 @@ const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
 )
 
 const printBeginTestOutputHandler = ctx => {
-    const ln = removeBeginTestBlockComment(L.view(lp.lens.output, ctx)).trim()
+    const ctx2 = lp.mappers.addLineNum(ctx)
+    const ln = removeBeginTestBlockComment(L.view(lp.lens.output, ctx2)).trim()
     if (ln) {
         console.log(ln)
     }
