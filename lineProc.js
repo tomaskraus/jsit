@@ -47,6 +47,14 @@ const createContext = () => ({
 // context lenses
 const lens = L.makeLenses(['input', 'output', 'lineNum', 'JSBlockCommentLineNum'])
 
+
+//tapCtx :: (ctx {a, ...}) => lens -> (a -> _) -> ctx -> ctx
+const tapCtx = curry(3, (lens, fn, ctx) => {
+    fn(L.view(lens, ctx))
+    return ctx
+})
+
+
 // regexes ----------------------------
 
 const lineCommentRegex = /^\/\//
@@ -224,6 +232,8 @@ module.exports = {
 
     //other
 
+    //tapCtx :: (ctx {a, ...}) => lens -> (a -> _) -> ctx -> ctx
+    tapCtx,
     //tap :: (a -> _) -> a -> a
     tap,
     //inc :: num -> num

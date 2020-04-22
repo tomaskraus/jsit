@@ -68,12 +68,10 @@ const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
 
 const printBeginTestOutputHandler = compose.all(
     Result.Error,
-    lp.tap(ctx => {
-        let ln = L.view(lp.lens.output, ctx)
-        if (ln) {
-            console.log(ln)
-        }
-    }),
+    lp.tapCtx(lp.lens.output, ln => (ln)
+        ? console.log(ln)
+        : null
+    ),
     lp.mappers.liftCtxOutput(s => s.trim()),
     lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
 )
