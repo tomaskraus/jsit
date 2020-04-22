@@ -18,7 +18,7 @@ lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 
 // context
 const createContext = () => (
-    { ...lp.createContext(), stats: { numFailed: 0, totalTests: 0 }}
+    { ...lp.factory.createContext(), stats: { numFailed: 0, totalTests: 0 }}
 )
 
 // regexes ----------------------------
@@ -48,7 +48,7 @@ const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
 // Result ctx ctx -> Result ctx ctx
 const _createChainFilterTestLine = (beginTestBlockHandler, endTestCommentRegex) => 
-    chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
+    chain(lp.factory.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
         lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)}))
 
 const filterExcludeNonTestLines = compose.all(

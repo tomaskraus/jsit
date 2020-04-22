@@ -52,7 +52,7 @@ impure.app = (filename, evalHandlerObj) => {
             chain(ep.factory.createTestHandler(evalHandlerObj)),
             ep.factory.createTestLineFilter(),
         )
-        const process = lp.createProcessLine(testHandler)
+        const process = lp.factory.createProcessLine(testHandler)
 
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))

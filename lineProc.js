@@ -201,14 +201,20 @@ const createProcessLine = lineHandler => (line, context) => compose.all(
 //==================================================================================
 
 module.exports = {
-    //workhorse
-    createProcessLine,
+    factory: {
+        //ctx
+        createContext: createContext,
+        //workhorse
+        createProcessLine,
+        //events
+        createDefaultEventSettings,
 
+        createCustomBlockFilter,
+    },
+    
     //logging
     log, log2,
 
-    //ctx
-    createContext,
     
     //context lens
     lens: {
@@ -220,13 +226,10 @@ module.exports = {
     //isInBlock :: lens -> ctx -> bool
     isInBlock,
     
-    //events
-    createDefaultEventSettings,
 
     // ctx -> Result ctx ctx
     filters: {
         excludeOutputLine: filterExcludeOutputLine,
-        createCustomBlockFilter: createCustomBlockFilter,
         JSLineComment: filterJSLineComment,
         JSBlockComment: filterJSBlockComment,
     },
