@@ -159,13 +159,6 @@ false   //this should not be tested
 //::: 
 */
 
-/*-
-//::: -----    documentation * after begin-test mark
-*/ //----------------------------------------------------
-/*
-//:::   
-  * false   //this should not be tested
-*/
 
 /*-
 //::: -----    begin-test mark - separate blocks are independent
@@ -197,6 +190,24 @@ false   //this should not be tested
   false   //this should not be tested
  */
 
+
+ /** 
+ * 
+ * //::: inside documenting block2
+ * testTestLines.ok()
+ *   
+ * false   //this should not be tested
+ */
+
+ /** 
+ * 
+  //::: inside documenting block mixed *
+ * testTestLines.ok()
+  testTestLines.ok()
+ *  
+ * false   //this should not be tested
+ false   //this should not be tested
+ */
 
 //::: ---------LINE COMMENTS-----------------------------------------------------------------
 

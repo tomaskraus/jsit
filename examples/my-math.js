@@ -7,14 +7,29 @@
 /**
   * Adds number a to b
   * @example
-     :::
-     my_math.add(1, 2) == 3
+     //:::
+     my_math.add(1, 2) == 5
      my_math.add(1, 0) == my_math.add(0, 1)  //commutative
      my_math.add(1, "2") === "12"
   */
 add = function (a, b) {
     return a + b
 }
+
+/**
+  * Adds number a to b
+  * @example
+  *   //:::
+  *   my_math.add2(1, 2) == 4
+  * 
+  *   //:::
+  *   my_math.add2(1, 0) == my_math.add2(0, 1)  //commutative
+  *   my_math.add2(1, "2") === "12"
+  */
+ add2 = function (a, b) {
+  return a + b
+}
+
 
 /**
  * Swaps first two items in array. Returns a new array, the input array remains untouched. 
@@ -40,5 +55,6 @@ const swapA = ([a, b, ...tail]) => [b, a, ...tail]
 
 module.exports = {
     add,
+    add2,
     swapA,
 }

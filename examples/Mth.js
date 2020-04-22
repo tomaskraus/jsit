@@ -24,14 +24,14 @@
  * 
  * 
  * @example
-//:::
- Mth.minus(1, 1) == 0
- Mth.minus(1, -1) == 3
- Mth.minus(1, 2) == -1
- assert.strictEqual( Mth.minus(1, 2), -2 )
- Mth.b = 0
- Mth.minus(1, Mth.b) == 1
-
+ *   //:::
+ *   Mth.minus(1, 1) == 0
+ *   Mth.minus(1, -1) == 3
+ *   Mth.minus(1, 2) == -1
+    assert.strictEqual( Mth.minus(1, 2), -2 )
+    Mth.b = 0
+    Mth.minus(1, Mth.b) == 1
+ *
  * 
  */
 const minus = (a, b) => {

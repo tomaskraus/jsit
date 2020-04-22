@@ -17,7 +17,7 @@ const lens = L.makeLenses(['blockTestLineNum', 'vars'])
 // regexes ----------------------------
 
 const beginTestCommentRegex = /^\s*\/\/:::.*/s
-const endTestCommentRegex = /^\s*$|^\s*\*/s      //matches also "*". This is for tests inside documentation-block comment
+const endTestCommentRegex = /^\s*$/s
 
 const varRegex = /^\s*(const|let|var)\s+/s
 
@@ -47,6 +47,7 @@ const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     _createChainFilterTestLine(beginTestBlockHandler),
+    map(lp.mappers.liftCtxOutput(removeInnerStar)),
     lp.filters.JSBlockComment,
 )
 
