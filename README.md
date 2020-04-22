@@ -17,7 +17,7 @@ We'll give the file a name: `myMath.js`
 
 ``` javascript
 
-    module.export.add = function(a, b) {
+    module.exports.add = function(a, b) {
         return a + b
     }
 ```
@@ -30,7 +30,7 @@ Directly, in your code! Just under a `//:::` mark, in the comment. One test per 
     //:::
     // myMath.add(1, 2) == 3
     // myMath.add(1, 0) == myMath.add(0, 1)  //commutative
-    module.export.add = function(a, b) {
+    module.exports.add = function(a, b) {
         return a + b
     }
 ```
@@ -51,6 +51,7 @@ node jsit.js ./examples/myMath.js
 
 ``` bash
 BEGIN | Module | myMath | File | /home/examples/myMath.js
+END | Failures | 0 | Tests | 2
 
 ```
 
@@ -126,7 +127,7 @@ file `my-first-module.js`:
     //:::
     // my_first_module.add(1, 2) == 3
     // my_first_module.add(1, 0) == my_first_module.add(0, 1)  //commutative
-    module.export.inc = (x) => {
+    module.exports.inc = (x) => {
         return x + 1
     }
 ```
