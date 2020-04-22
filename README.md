@@ -98,9 +98,9 @@ More real-life (still silly) example:
  * swapA :: [a] -> [a]
  *
  * @example
- //:::
- const a = [1, 2, 3]
- assert.deepEqual(myMath.swapA(a), [2, 1, 3])
+ * //:::
+ * const a = [1, 2, 3]
+ * assert.deepEqual(myMath.swapA(a), [2, 1, 3])
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
