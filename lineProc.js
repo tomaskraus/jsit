@@ -137,7 +137,10 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 // mappers
 // ctx -> ctx
 
-const removeLineCommentMapper = ctx => L.over(lens.output, removeLineComment, ctx)
+//lift2ctxOutputMapper :: (str -> str) -> ctx -> ctx
+const liftCtxOutputMapper = fn => ctx => L.over(lens.output, fn, ctx)
+
+const removeLineCommentMapper = liftCtxOutputMapper(removeLineComment)
 const printCtxInputMapper = ctx => tap(compose(console.log, L.view(lens.input)), ctx)
 const printCtxOutputMapper = ctx => tap(compose(console.log, L.view(lens.output)), ctx)
 
@@ -203,6 +206,7 @@ module.exports = {
         echoInputLine: printCtxInputMapper,
         addLineNum: addLineNumMapper,
         removeLineComment: removeLineCommentMapper,
+        liftCtxOutput: liftCtxOutputMapper,
     },
 
     //regexes
