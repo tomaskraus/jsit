@@ -61,6 +61,7 @@ const lineCommentRegex = /^\/\//
 // TODO: add detection of one-line  block comment /*    */
 const beginJSBlockCommentRegex = /^\/\*/
 const endJSBlockCommentRegex = /^\*\//
+const blankLineRegex = /^\s*$/s
 
 
 // event handlers
@@ -230,6 +231,7 @@ module.exports = {
         beginJSBlockComment: beginJSBlockCommentRegex,
         endJSBlockComment: endJSBlockCommentRegex,
         lineComment: lineCommentRegex,
+        blankLine: blankLineRegex,
     },
 
 

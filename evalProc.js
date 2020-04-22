@@ -25,6 +25,7 @@ const createContext = () => (
 
 const beginTestCommentRegex = /^\s*\/\/:::.*/s
 const endTestCommentRegex = /^\s*$/s
+const endTestLineCommentRegex = /^\s*\/\/\s*$/s
 
 const varRegex = /^\s*(const|let|var)\s+/s
 
@@ -46,14 +47,21 @@ const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 // ctx -> Result ctx ctx
 
 // Result ctx ctx -> Result ctx ctx
-const _createChainFilterTestLine = beginTestBlockHandler => 
+const _createChainFilterTestLine = (beginTestBlockHandler, endTestCommentRegex) => 
     chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
         lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)}))
+
+const filterExcludeNonTestLines = compose.all(
+    chain(lp.filters.excludeOutputLine(lp.regex.blankLine)),
+    lp.filters.excludeOutputLine(lp.regex.lineComment),
+    lp.mappers.trimOutput,
+)
 
 const createTestLineInBlockFilter = beginTestBlockHandler => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
-    _createChainFilterTestLine(beginTestBlockHandler),
+    chain(filterExcludeNonTestLines),
+    _createChainFilterTestLine(beginTestBlockHandler, endTestCommentRegex),
     map(lp.mappers.liftCtxOutput(removeInnerStar)),
     lp.filters.JSBlockComment,
 )
@@ -61,8 +69,9 @@ const createTestLineInBlockFilter = beginTestBlockHandler => compose.all(
 const createTestLineInLineCommentFilter = beginTestBlockHandler => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
+    chain(filterExcludeNonTestLines),
     map(lp.mappers.removeLineComment),
-    _createChainFilterTestLine(beginTestBlockHandler),
+    _createChainFilterTestLine(beginTestBlockHandler, endTestLineCommentRegex),
     lp.filters.lineComment,
 )
 
