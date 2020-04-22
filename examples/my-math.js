@@ -40,7 +40,8 @@ add = function (a, b) {
  //::: 
  let a = [1, 2, 3], b = [4, 5] //define some variables
  let c = 1
- assert.deepEqual(my_math.swapA(a), [2, 1, 3])
+ const m = my_math
+ assert.deepEqual(m.swapA(a), [2, 1, 3])
  const arr = [1, 2, 3] 
  assert.deepEqual(arr, a)
  assert.equal(c, 1)
