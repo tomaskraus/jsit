@@ -18,10 +18,7 @@ impure.errAndExit = msg => {
 }
 
 impure.summaryOfTest = (ctx) => {
-    console.log(ctx)
-    // return () => {
-    //     return `END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`
-    // }
+        return `END | Failures | ${L.view(ep.lens.stats_numFailed, ctx)} | Tests | ${L.view(ep.lens.stats_totalTests, ctx)}`
 }
 
 impure.createEvalObj = (pathForModuleRequire) => {
@@ -92,7 +89,7 @@ try {
     const evaluatorObj = impure.createEvalObj(fileName)
 
     if (!impure.error) {
-        impure.context = lp.createContext()
+        impure.context = ep.factory.createContext()
         impure.app(fileName, evaluatorObj)
 
     }

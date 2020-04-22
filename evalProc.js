@@ -10,9 +10,18 @@ const Result = require('folktale/result')
 const L = require('lenses')
 const lp = require("./lineProc")
 
+// auxiliary
+const inc = i => i + 1
 
 // lenses   for evaluation-param 
-const lens = L.makeLenses(['blockTestLineNum', 'vars'])
+const lens = L.makeLenses(['blockTestLineNum', 'vars', 'stats', 'numFailed', 'totalTests'])
+lens.stats_numFailed = compose(lens.stats, lens.numFailed) 
+lens.stats_totalTests = compose(lens.stats, lens.totalTests)
+
+// context
+const createContext = () => (
+    { ...lp.createContext(), stats: { numFailed: 0, totalTests: 0 }}
+)
 
 // regexes ----------------------------
 
@@ -93,6 +102,7 @@ const createTestHandler = evaluatorObj => {
     // lp.log2("eh", ctx)
     const testLineInBlockHandler = createTestLineInBlockHandler(printBeginTestOutputHandler)
     const testLineInLineCommentHandler = createTestLineInLineCommentHandler(printBeginTestOutputHandler)
+    const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, inc, ctx))
     return ctx => testLineInBlockHandler(ctx)
         .orElse(ctx => {
             if (lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)) {
@@ -103,18 +113,16 @@ const createTestHandler = evaluatorObj => {
         .chain(ctx => {
             // lp.log2("line", ctx)
             try {
-                // ctx.stats.totalCount++
-                const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx))
+                const ctx2 = L.over(lens.stats_totalTests, inc, ctx)
+                const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
                 if (testPassed === false) {
-                    console.log(logFailMessage(ctx, "The result is false"))
-                    // ctx.stats.failCount++
-                    return Result.Error(ctx)
+                    console.log(logFailMessage(ctx2, "The result is false"))
+                    return addFail(ctx2)
                 }
-                return Result.Ok(ctx)
+                return Result.Ok(ctx2)
             } catch (e) {
-                // ctx.stats.failCount++
                 console.log(logFailMessage(ctx, e))
-                return Result.Error(ctx)
+                return addFail(ctx)
             }
         })
 }
@@ -125,6 +133,13 @@ const createTestHandler = evaluatorObj => {
 module.exports = {
     factory: {
         createTestHandler,
+        createContext,
+    },
+
+    lens: {
+        ...lp.lens,
+        stats_numFailed: lens.stats_numFailed,
+        stats_totalTests: lens.stats_totalTests,
     },
 
     regex: {
