@@ -2,7 +2,7 @@
 
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
-const { map } = require('pointfree-fantasy')
+const { map, chain } = require('pointfree-fantasy')
 const lp = require("./lineProc")
 const ep = require("./evalProc")
 const L = require('lenses')
@@ -47,7 +47,11 @@ impure.app = (filename, evalHandlerObj) => {
         impure.context.fileName = fileName
         // lp.log(impure.context)
 
-        testHandler = ep.factory.createTestHandler(evalHandlerObj)
+        const testHandler = compose.all(
+            // map(lp.tapCtx(lp.lens.output, lp.log2(',,,  '))),
+            chain(ep.factory.createTestHandler(evalHandlerObj)),
+            ep.factory.createTestLineFilter(),
+        )
         const process = lp.createProcessLine(testHandler)
 
         const rs = fs.createReadStream(filename)

@@ -50,7 +50,7 @@ const _createChainFilterTestLine = beginTestBlockHandler =>
     chain(lp.filters.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
         lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)}))
 
-const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
+const createTestLineInBlockFilter = beginTestBlockHandler => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     _createChainFilterTestLine(beginTestBlockHandler),
@@ -58,13 +58,25 @@ const createTestLineInBlockHandler = beginTestBlockHandler => compose.all(
     lp.filters.JSBlockComment,
 )
 
-const createTestLineInLineCommentHandler = beginTestBlockHandler => compose.all(
+const createTestLineInLineCommentFilter = beginTestBlockHandler => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     map(lp.mappers.removeLineComment),
     _createChainFilterTestLine(beginTestBlockHandler),
     lp.filters.lineComment,
 )
+
+const createTestLineFilter = () => {
+    // lp.log('createTestLineFilter - - -')
+    const testLineInBlockHandler = createTestLineInBlockFilter(printBeginTestOutputHandler)
+    const testLineInLineCommentHandler = createTestLineInLineCommentFilter(printBeginTestOutputHandler)
+    return ctx => testLineInBlockHandler(ctx)
+        .orElse(ctx => 
+            lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
+                ? Result.Error(ctx)
+                : testLineInLineCommentHandler(ctx)
+        )
+}
 
 const printBeginTestOutputHandler = compose.all(
     Result.Error,
@@ -93,19 +105,13 @@ const _resetVarsHandler = ctx => Result.Ok(L.set(lens.vars, '', ctx))
 
 const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
 
+
+
 // ctx -> Result ctx
 const createTestHandler = evaluatorObj => {
-    // lp.log2("eh", ctx)
-    const testLineInBlockHandler = createTestLineInBlockHandler(printBeginTestOutputHandler)
-    const testLineInLineCommentHandler = createTestLineInLineCommentHandler(printBeginTestOutputHandler)
+    // lp.log("createTestHandler -- --")   
     const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
-    return ctx => testLineInBlockHandler(ctx)
-        .orElse(ctx => 
-            lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
-                ? Result.Error(ctx)
-                : testLineInLineCommentHandler(ctx)
-        )
-        .chain(ctx => {
+    return ctx => {
             // lp.log2("line", ctx)
             try {
                 const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
@@ -119,7 +125,7 @@ const createTestHandler = evaluatorObj => {
                 console.log(logFailMessage(ctx, e))
                 return addFail(ctx)
             }
-        })
+        }
 }
 
 
@@ -127,6 +133,7 @@ const createTestHandler = evaluatorObj => {
 
 module.exports = {
     factory: {
+        createTestLineFilter,
         createTestHandler,
         createContext,
     },
