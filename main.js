@@ -18,9 +18,10 @@ impure.errAndExit = msg => {
 }
 
 impure.summaryOfTest = (ctx) => {
-    return () => {
-        return `END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`
-    }
+    console.log(ctx)
+    // return () => {
+    //     return `END | Failures | ${ctx.stats.failCount} | Tests | ${ctx.stats.totalCount}`
+    // }
 }
 
 impure.createEvalObj = (pathForModuleRequire) => {
@@ -44,9 +45,9 @@ impure.createEvalObj = (pathForModuleRequire) => {
 
 const fs = require('fs');
 
-impure.app = (filename, evalHandlerObj, context) => {
+impure.app = (filename, evalHandlerObj) => {
     try {
-        context.fileName = fileName
+        impure.context.fileName = fileName
         // lp.log(impure.context)
 
         testHandler = ep.factory.createTestHandler(evalHandlerObj)
@@ -62,8 +63,8 @@ impure.app = (filename, evalHandlerObj, context) => {
             terminal: false,
         });
 
-        rl.on('line', (line) => { context = process(line, context) })
-        // rl.on('close', onAppEnd)
+        rl.on('line', (line) => { impure.context = process(line, impure.context) })
+        rl.on('close', onAppEnd)
 
     } catch (e) {
         impure.errAndExit(e)
@@ -75,8 +76,8 @@ impure.app = (filename, evalHandlerObj, context) => {
 // ---------------------------------------------------------------------------------------------------------
 
 //maybe will not work in callback if context variable pointer changes
-const onAppEnd = (ctx) => {
-    console.log(impure.summaryOfTest(ctx)())
+const onAppEnd = () => {
+    console.log(impure.summaryOfTest(impure.context))
 }
 
 //impure code, that has to be done in global scope: --------------------------------------------------------
@@ -92,8 +93,7 @@ try {
 
     if (!impure.error) {
         impure.context = lp.createContext()
-        //will not work, as initial context will remain the same
-        impure.app(fileName, evaluatorObj, impure.context)
+        impure.app(fileName, evaluatorObj)
 
     }
 } catch (err) {
