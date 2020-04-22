@@ -152,6 +152,7 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 const liftCtxOutputMapper = fn => ctx => L.over(lens.output, fn, ctx)
 
 const removeLineCommentMapper = liftCtxOutputMapper(removeLineComment)
+const trimOutputMapper = liftCtxOutputMapper(s => s.trim())
 const printCtxInputMapper = ctx => tap(compose(console.log, L.view(lens.input)), ctx)
 const printCtxOutputMapper = ctx => tap(compose(console.log, L.view(lens.output)), ctx)
 
@@ -163,7 +164,8 @@ const addLineNumMapper = ctx => L.over(lens.output,
 
 //setContextLine :: ctx -> str -> ctx
 const setContextLine = line => ctx => compose.all(
-    L.set(lens.output, line.trim()),
+    trimOutputMapper,
+    L.set(lens.output, line),
     L.set(lens.input, line),
     L.over(lens.lineNum, inc),
     // log2("contextLine"),
@@ -220,6 +222,7 @@ module.exports = {
         addLineNum: addLineNumMapper,
         removeLineComment: removeLineCommentMapper,
         liftCtxOutput: liftCtxOutputMapper,
+        trimOutput: trimOutputMapper,
     },
 
     //regexes

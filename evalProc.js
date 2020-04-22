@@ -84,7 +84,7 @@ const printBeginTestOutputHandler = compose.all(
         ? console.log(ln)
         : null
     ),
-    lp.mappers.liftCtxOutput(s => s.trim()),
+    lp.mappers.trimOutput,
     lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
 )
 
