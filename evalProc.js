@@ -84,12 +84,12 @@ const createTestLineInLineCommentFilter = events => compose.all(
     lp.filters.JSLineComment,
 )
 
-const printEndBlock = compose.all(
-    Result.Error,
-    lp.tap(
-        () => console.log("---------------------")
-    ),
-)
+// const printEndBlock = compose.all(
+//     Result.Error,
+//     lp.tap(
+//         () => console.log("---------------------")
+//     ),
+// )
 
 const printBeginTestOutputHandler = compose.all(
     Result.Error,
@@ -103,7 +103,7 @@ const printBeginTestOutputHandler = compose.all(
 
 const testLineEvents = {
     onBlockBegin: printBeginTestOutputHandler,
-    onBlockEnd: printEndBlock,
+    // onBlockEnd: printEndBlock,
 }
 
 
