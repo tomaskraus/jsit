@@ -49,6 +49,7 @@ impure.app = (filename, evalHandlerObj) => {
 
         const testHandler = ep.factory.createTestLineFilter({ onTest: ep.factory.createTestHandler(evalHandlerObj)})
         // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
+        //const testHandler = ep.factory.createTestLineFilter({})
 
         const process = lp.factory.createProcessLine(testHandler)
 

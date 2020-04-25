@@ -34,7 +34,8 @@ const varRegex = /^\s*(const|let|var)\s+/s
 // { str: (ctx -> Result), ... }
 
 const createDefaultEventSettings = () => ({
-    onTest: Result.Ok,     //fired when inside the test
+    onTest: Result.Ok,      //fired when inside the test
+    onTestRelated: Result.Ok,   //when inside the test-related line
 })
 
 // mappers
@@ -108,7 +109,7 @@ const testLineEvents = {
 
 
 const createTestLineFilter = (events) => {
-    const fullEvents = {...testLineEvents, ...events}
+    const fullEvents = {...createDefaultEventSettings(), ...testLineEvents,  ...events}
     const testLineInBlockHandler = createTestLineInBlockFilter(fullEvents)
     const testLineInLineCommentHandler = createTestLineInLineCommentFilter(fullEvents)
     return ctx => testLineInBlockHandler(ctx)
