@@ -13,12 +13,12 @@ const lp = require("./lineProc")
 
 // lenses   for evaluation-param 
 const lens = L.makeLenses(['blockTestLineNum', 'vars', 'stats', 'numFailed', 'totalTests'])
-lens.stats_numFailed = compose(lens.stats, lens.numFailed) 
+lens.stats_numFailed = compose(lens.stats, lens.numFailed)
 lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 
 // context
 const createContext = () => (
-    { ...lp.factory.createContext(), stats: { numFailed: 0, totalTests: 0 }}
+    { ...lp.factory.createContext(), stats: { numFailed: 0, totalTests: 0 } }
 )
 
 // regexes ----------------------------
@@ -37,7 +37,7 @@ const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ct
 // line transformers  
 // str -> str
 
-const removeInnerStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2") 
+const removeInnerStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
 
 const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
 
@@ -47,9 +47,10 @@ const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 // ctx -> Result ctx ctx
 
 // Result ctx ctx -> Result ctx ctx
-const _createFilterTestLine = (beginTestBlockHandler, endTestCommentRegex) => 
+const _createFilterTestLine = (events, endTestCommentRegex) =>
     lp.factory.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)})
+        lens.blockTestLineNum, lp.addEventHandlerBefore(_resetVarsHandler, 'onBlockBegin', events)
+    )
 
 const filterExcludeNonTestLines = compose.all(
     chain(lp.filters.excludeOutputLine(lp.regex.blankLine)),
@@ -57,35 +58,30 @@ const filterExcludeNonTestLines = compose.all(
     lp.mappers.trimOutput,
 )
 
-const createTestLineInBlockFilter = beginTestBlockHandler => compose.all(
+const createTestLineInBlockFilter = events => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     chain(filterExcludeNonTestLines),
-    chain(_createFilterTestLine(beginTestBlockHandler, endTestCommentRegex)),
+    chain(_createFilterTestLine(events, endTestCommentRegex)),
     map(lp.mappers.liftCtxOutput(removeInnerStar)),
-    lp.filters.JSBlockComment,
+    lp.factory.createJSBlockCommentFilter({}),
 )
 
-const createTestLineInLineCommentFilter = beginTestBlockHandler => compose.all(
+const createTestLineInLineCommentFilter = events => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     chain(filterExcludeNonTestLines),
     map(lp.mappers.removeLineComment),
-    chain(_createFilterTestLine(beginTestBlockHandler, endTestLineCommentRegex)),
+    chain(_createFilterTestLine(events, endTestLineCommentRegex)),
     lp.filters.JSLineComment,
 )
 
-const createTestLineFilter = () => {
-    // lp.log('createTestLineFilter - - -')
-    const testLineInBlockHandler = createTestLineInBlockFilter(printBeginTestOutputHandler)
-    const testLineInLineCommentHandler = createTestLineInLineCommentFilter(printBeginTestOutputHandler)
-    return ctx => testLineInBlockHandler(ctx)
-        .orElse(ctx => 
-            lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
-                ? Result.Error(ctx)
-                : testLineInLineCommentHandler(ctx)
-        )
-}
+const printEndBlock = compose.all(
+    Result.Error,
+    lp.tap(
+        () => console.log("---------------------")
+    ),
+)
 
 const printBeginTestOutputHandler = compose.all(
     Result.Error,
@@ -96,6 +92,25 @@ const printBeginTestOutputHandler = compose.all(
     lp.mappers.trimOutput,
     lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
 )
+
+const testLineEvents = {
+    onBlockBegin: printBeginTestOutputHandler,
+    onBlockEnd: printEndBlock,
+}
+
+
+const createTestLineFilter = () => {
+    const testLineInBlockHandler = createTestLineInBlockFilter(testLineEvents)
+    const testLineInLineCommentHandler = createTestLineInLineCommentFilter(testLineEvents)
+    return ctx => testLineInBlockHandler(ctx)
+        .orElse(ctx =>
+            lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
+                ? Result.Error(ctx)
+                : testLineInLineCommentHandler(ctx)
+        )
+}
+
+
 
 const _detectVarHandler = ctx => {
     const line = L.view(lp.lens.output, ctx)
@@ -121,20 +136,20 @@ const createTestHandler = evaluatorObj => {
     // lp.log("createTestHandler -- --")   
     const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
     return ctx => {
-            // lp.log2("line", ctx)
-            const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
-            try {
-                const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
-                if (testPassed === false) {
-                    console.log(logFailMessage(ctx2, "The result is false"))
-                    return addFail(ctx2)
-                }
-                return Result.Ok(ctx2)
-            } catch (e) {
-                console.log(logFailMessage(ctx2, e))
+        // lp.log2("line", ctx)
+        const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
+        try {
+            const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
+            if (testPassed === false) {
+                console.log(logFailMessage(ctx2, "The result is false"))
                 return addFail(ctx2)
             }
+            return Result.Ok(ctx2)
+        } catch (e) {
+            console.log(logFailMessage(ctx2, e))
+            return addFail(ctx2)
         }
+    }
 }
 
 

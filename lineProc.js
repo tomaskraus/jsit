@@ -73,7 +73,7 @@ const blankLineRegex = /^\s*$/s
 
 defaultBlockBeginHandler = Result.Ok
 
-//defaultBlockHandler = Result.Ok
+defaultBlockHandler = Result.Ok
 
 defaultBlockEndHandler = ctx => {
     // log2('ev-  endBlock----', ctx)
@@ -87,13 +87,37 @@ defaultBlockEndHandler = ctx => {
 const createDefaultEventSettings = () => ({
     onBlockBegin: defaultBlockBeginHandler,
     onBlockEnd: defaultBlockEndHandler,
-    //onBlock: defaultBlockHandler,     //fired when inside - not the begin nor end of the block
+    onBlock: defaultBlockHandler,     //fired when inside - not the begin nor end of the block
 })
 
 const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEventSettings(), ...customEventSettings })
 
+
+//::: addEventHandlerBefore
+// const add1 = x => Result.Ok(x + 1)
+// const mult10 = x => Result.Ok(x * 10)
+// const comps = compose(chain(add1), mult10) 
+// const evts = { something: 1, onStart: add1 }
+// //
+// assert.deepEqual({...evts}, evts)
+// assert.deepEqual(lineProc.addEventHandlerBefore(comps, 'onEnd', evts), {...evts, onEnd: comps})
+// evts.onStart(10).merge() == 11
+// ({...evts, onStart: comps}).onStart(10).merge() == 101
+// lineProc.addEventHandlerBefore(mult10, 'onStart', evts).onStart(10).merge() == 101
+
+// addEventHandlerBefore :: (events { str: (ctx -> Result ctx ctx) ...}) => (ctx -> Result ctx ctx) -> str -> events -> events
+const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
+    events2 = {...events}
+    if (events2[eventName]) {
+        events2[eventName] = compose(chain(events2[eventName]), handler)
+    } else {
+        events2[eventName] = handler
+    }
+    return events2
+})
+
 // filters -----------------------------------
-// ... -> ctx -> Result ctx
+// ... -> ctx -> Result ctx ctx
 
 // filterOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const filterOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Ok(ctx)
@@ -121,6 +145,7 @@ const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLen
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
     const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
     const fullEvents = mergeDefaultEventSettings(events)
+    // log(fullEvents)
     return ctx => {
         const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
         const output = L.view(lens.output, ctx)
@@ -136,16 +161,17 @@ const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLen
         //end block
         if (endBlockRegex.test(output)) {
             return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
+                // .map(tap(() => console.log('- - - - - - - ')))
                 .chain(fullEvents.onBlockEnd)
         }
         return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
-        //.chain(events.onBlock)
+            .chain(fullEvents.onBlock)
     }
 }
 
 
-const filterJSBlockComment = createCustomBlockFilter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
-    lens.JSBlockCommentLineNum, {})
+const createJSBlockCommentFilter = events => createCustomBlockFilter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
+    lens.JSBlockCommentLineNum, events)
 
 //::: filterJSLineComment
 // const filterJSLineComment = lineProc.filters.JSLineComment
@@ -209,13 +235,17 @@ module.exports = {
         //events
         createDefaultEventSettings,
 
+        createJSBlockCommentFilter,
         createCustomBlockFilter,
     },
-    
+
+    //events
+    addEventHandlerBefore: addEventHandlerBefore,
+
     //logging
     log, log2,
 
-    
+
     //context lens
     lens: {
         input: lens.input,
@@ -225,13 +255,12 @@ module.exports = {
     },
     //isInBlock :: lens -> ctx -> bool
     isInBlock,
-    
+
 
     // ctx -> Result ctx ctx
     filters: {
         excludeOutputLine: filterExcludeOutputLine,
         JSLineComment: filterJSLineComment,
-        JSBlockComment: filterJSBlockComment,
     },
 
     //ctx -> ctx
