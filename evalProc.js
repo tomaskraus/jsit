@@ -144,27 +144,27 @@ const _resetVarsHandler = ctx => Result.Ok(L.set(lens.vars, '', ctx))
 
 //----------------------------------------------------------------------------------
 
-const logFailMessage = (ctx, msg) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
+const failMessage = (msg, ctx) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
 
 
 
 // ctx -> Result ctx
 const createTestHandler = evaluatorObj => {
     // lp.log("createTestHandler -- --")   
-    const addFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
+    const resultAddFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
     return ctx => {
         // lp.log2("line", ctx)
         const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
         try {
             const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
             if (testPassed === false) {
-                console.log(logFailMessage(ctx2, "The result is false"))
-                return addFail(ctx2)
+                console.log(failMessage("The result is false", ctx2))
+                return resultAddFail(ctx2)
             }
             return Result.Ok(ctx2)
         } catch (e) {
-            console.log(logFailMessage(ctx2, e))
-            return addFail(ctx2)
+            console.log(failMessage(e, ctx2))
+            return resultAddFail(ctx2)
         }
     }
 }
@@ -174,7 +174,7 @@ const createTestHandler = evaluatorObj => {
 
 module.exports = {
     factory: {
-        createTestLineObj: createTestLineObj,
+        createTestLineObj,
         createTestHandler,
         createContext,
         createDefaultEventSettings,
