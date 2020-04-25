@@ -37,6 +37,7 @@ const createDefaultEventSettings = () => ({
     onTestBegin: printBeginTestOutputHandler,
     onTest: Result.Ok,      //fired when inside the test
     onTestRelated: Result.Ok,   //when inside the test-related line
+    onEnd: Result.Ok,   //fired at the very end, when flush method is called
 })
 
 // mappers
@@ -107,7 +108,7 @@ const printBeginTestOutputHandler = compose.all(
 )
 
 
-const createTestLineFilter = (events) => {
+const createTestLineObj = (events) => {
     const defaultEvs = createDefaultEventSettings()
     const fullEvents = {
         ...defaultEvs, ...events,
@@ -115,12 +116,15 @@ const createTestLineFilter = (events) => {
     }
     const testLineInBlockHandler = createTestLineInBlockFilter(fullEvents)
     const testLineInLineCommentHandler = createTestLineInLineCommentFilter(fullEvents)
-    return ctx => testLineInBlockHandler(ctx)
-        .orElse(ctx =>
-            lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
-                ? Result.Error(ctx)
-                : testLineInLineCommentHandler(ctx)
-        ).chain(fullEvents.onTest)
+    return {
+        filter: ctx => testLineInBlockHandler(ctx)
+            .orElse(ctx =>
+                lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
+                    ? Result.Error(ctx)
+                    : testLineInLineCommentHandler(ctx)
+            ).chain(fullEvents.onTest),
+        flush: ctx => fullEvents.onEnd(ctx)
+    }
 }
 
 
@@ -170,7 +174,7 @@ const createTestHandler = evaluatorObj => {
 
 module.exports = {
     factory: {
-        createTestLineFilter,
+        createTestLineObj: createTestLineObj,
         createTestHandler,
         createContext,
         createDefaultEventSettings,

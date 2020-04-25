@@ -47,11 +47,14 @@ impure.app = (filename, evalHandlerObj) => {
         impure.context.fileName = fileName
         // lp.log(impure.context)
 
-        const testHandler = ep.factory.createTestLineFilter({ onTest: ep.factory.createTestHandler(evalHandlerObj) })
+        const testHandlerObj = ep.factory.createTestLineObj({
+            onTest: ep.factory.createTestHandler(evalHandlerObj),
+            onEnd: ctx => console.log(impure.summaryOfTest(ctx)),
+        })
         // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
         // const testHandler = ep.factory.createTestLineFilter({onTestRelated: ctx => Result.Ok(lp.tapCtx(lp.lens.output, console.log, ctx))})
 
-        const process = lp.factory.createProcessLine(testHandler)
+        const process = lp.factory.createProcessLine(testHandlerObj.filter)
 
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))
@@ -64,7 +67,7 @@ impure.app = (filename, evalHandlerObj) => {
         });
 
         rl.on('line', (line) => { impure.context = process(line, impure.context) })
-        rl.on('close', onAppEnd)
+        rl.on('close', () => testHandlerObj.flush(impure.context))
 
     } catch (e) {
         impure.errAndExit(e)
@@ -75,10 +78,6 @@ impure.app = (filename, evalHandlerObj) => {
 
 // ---------------------------------------------------------------------------------------------------------
 
-//maybe will not work in callback if context variable pointer changes
-const onAppEnd = () => {
-    console.log(impure.summaryOfTest(impure.context))
-}
 
 //impure code, that has to be done in global scope: --------------------------------------------------------
 
