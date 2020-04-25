@@ -145,7 +145,7 @@ const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLen
 
 
 const filterJSBlockComment = createCustomBlockFilter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
-    lens.JSBlockCommentLineNum, createDefaultEventSettings())
+    lens.JSBlockCommentLineNum, {})
 
 //::: filterJSLineComment
 // const filterJSLineComment = lineProc.filters.JSLineComment
