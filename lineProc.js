@@ -64,7 +64,7 @@ const tapCtx = curry(3, (lens, fn, ctx) => {
 const JSLineCommentRegex = /^\/\//
 // TODO: add detection of one-line  block comment /*    */
 const beginJSBlockCommentRegex = /^\/\*+\s*$/
-const endJSBlockCommentRegex = /^\*\//
+const endJSBlockCommentRegex = /^.*\*\//
 const blankLineRegex = /^\s*$/s
 
 

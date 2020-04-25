@@ -411,3 +411,11 @@ false  //this should not be tested.
 
 //::: plain line comment test after one-line documenting block comment
 //testTestLines.ok()
+
+//:::-------- TRICKY BLOCK COMMENTS - - - - - - - - - - - - - - - - - - - - - -
+
+/*   
+    ------- */  
+
+//::: in-block line comment test after tricky block comment
+false  //this should not be tested.
