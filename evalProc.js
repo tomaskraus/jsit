@@ -70,6 +70,7 @@ const filterExcludeNonTestLines = compose.all(
 const createTestLineInBlockFilter = events => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
+    chain(events.onTestRelated),
     chain(filterExcludeNonTestLines),
     chain(_createFilterTestLine(events, endTestCommentRegex)),
     map(lp.mappers.liftCtxOutput(removeInnerStar)),
@@ -79,6 +80,7 @@ const createTestLineInBlockFilter = events => compose.all(
 const createTestLineInLineCommentFilter = events => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
+    chain(events.onTestRelated),
     chain(filterExcludeNonTestLines),
     map(lp.mappers.removeLineComment),
     chain(_createFilterTestLine(events, endTestLineCommentRegex)),
