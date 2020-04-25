@@ -29,6 +29,14 @@ const endTestLineCommentRegex = /^\s*\/\/\s*$/s
 
 const varRegex = /^\s*(const|let|var)\s+/s
 
+
+// events
+// { str: (ctx -> Result), ... }
+
+const createDefaultEventSettings = () => ({
+    onTest: Result.Ok,     //fired when inside the test
+})
+
 // mappers
 // ctx -> ctx
 
@@ -99,15 +107,16 @@ const testLineEvents = {
 }
 
 
-const createTestLineFilter = () => {
-    const testLineInBlockHandler = createTestLineInBlockFilter(testLineEvents)
-    const testLineInLineCommentHandler = createTestLineInLineCommentFilter(testLineEvents)
+const createTestLineFilter = (events) => {
+    const fullEvents = {...testLineEvents, ...events}
+    const testLineInBlockHandler = createTestLineInBlockFilter(fullEvents)
+    const testLineInLineCommentHandler = createTestLineInLineCommentFilter(fullEvents)
     return ctx => testLineInBlockHandler(ctx)
         .orElse(ctx =>
             lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
                 ? Result.Error(ctx)
                 : testLineInLineCommentHandler(ctx)
-        )
+        ).chain(fullEvents.onTest)
 }
 
 
@@ -160,6 +169,7 @@ module.exports = {
         createTestLineFilter,
         createTestHandler,
         createContext,
+        createDefaultEventSettings,
     },
 
     lens: {

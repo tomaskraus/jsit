@@ -68,26 +68,14 @@ const endJSBlockCommentRegex = /^\*\//
 const blankLineRegex = /^\s*$/s
 
 
-// event handlers
-// ctx -> Result
-
-defaultBlockBeginHandler = Result.Ok
-
-defaultBlockHandler = Result.Ok
-
-defaultBlockEndHandler = ctx => {
-    // log2('ev-  endBlock----', ctx)
-    return Result.Error(ctx)
-}
-
 
 // events
-// { eventKey: eventHandler ... }
+// { str: (ctx -> Result), ... }
 
 const createDefaultEventSettings = () => ({
-    onBlockBegin: defaultBlockBeginHandler,
-    onBlockEnd: defaultBlockEndHandler,
-    onBlock: defaultBlockHandler,     //fired when inside - not the begin nor end of the block
+    onBlockBegin: Result.Ok,
+    onBlockEnd: Result.Error,
+    onBlock: Result.Ok,     //fired when inside - not the begin nor end of the block
 })
 
 const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEventSettings(), ...customEventSettings })
@@ -138,7 +126,7 @@ const BLOCK_LINE_OFF = -1
 // gives proper result only if some customBlockFilter (from createCustomBlockFilter) is called before
 const isInBlock = (blockLineNumLens, ctx) => L.view(lens.lineNum, ctx) === L.view(blockLineNumLens, ctx)
 
-//createCustomBlockFilter :: regex -> regex -> lens -> {eventKey: (ctx -> Result ctx ctx) ...} -> Result ctx ctx
+//createCustomBlockFilter :: regex -> regex -> lens -> {str: (ctx -> Result ctx ctx), ...} -> Result ctx ctx
 const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLens, events) => {
     // log("CREATING customBlockFilter --- ---- ---- ---- ---- ------")
     //setBlockLine :: (lens -> ctx) -> ctx

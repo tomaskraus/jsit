@@ -47,11 +47,9 @@ impure.app = (filename, evalHandlerObj) => {
         impure.context.fileName = fileName
         // lp.log(impure.context)
 
-        const testHandler = compose.all(
-            // map(lp.tapCtx(lp.lens.output, lp.log2(',,,  '))),
-            chain(ep.factory.createTestHandler(evalHandlerObj)),
-            ep.factory.createTestLineFilter(),
-        )
+        const testHandler = ep.factory.createTestLineFilter({ onTest: ep.factory.createTestHandler(evalHandlerObj)})
+        // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
+
         const process = lp.factory.createProcessLine(testHandler)
 
         const rs = fs.createReadStream(filename)
