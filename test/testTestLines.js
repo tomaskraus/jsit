@@ -377,3 +377,37 @@ false  //this should not be tested.
 
  */
 
+
+//:::-------- ONE-LINE BLOCK COMMENTS - - - - - - - - - - - - - - - - - - - - - -
+
+/**/                     
+
+//::: in-block line comment test after one-line block comment
+false  //this should not be tested.
+
+  /*      */                     
+
+//::: in-block line comment test after one-line block comment 2
+false  //this should not be tested.
+
+
+  /**       */                     
+
+//::: in-block line comment test after one-line documenting block comment
+false  //this should not be tested.
+
+
+/**/                     
+
+//::: plain line comment test after one-line block comment
+//testTestLines.ok()
+
+  /*      */                     
+
+//::: plain line comment test after one-line block comment 2
+//testTestLines.ok()
+
+/**      */                     
+
+//::: plain line comment test after one-line documenting block comment
+//testTestLines.ok()
