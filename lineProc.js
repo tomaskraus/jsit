@@ -95,13 +95,13 @@ const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEven
 
 // addEventHandlerBefore :: (events { str: (ctx -> Result ctx ctx) ...}) => (ctx -> Result ctx ctx) -> str -> events -> events
 const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
-    events2 = {...events}
-    if (events2[eventName]) {
-        events2[eventName] = compose(chain(events2[eventName]), handler)
+    const newEvents = {...events}
+    if (newEvents[eventName]) {
+        newEvents[eventName] = compose(chain(newEvents[eventName]), handler)
     } else {
-        events2[eventName] = handler
+        newEvents[eventName] = handler
     }
-    return events2
+    return newEvents
 })
 
 // filters -----------------------------------
