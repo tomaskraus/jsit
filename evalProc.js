@@ -47,9 +47,9 @@ const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 // ctx -> Result ctx ctx
 
 // Result ctx ctx -> Result ctx ctx
-const _createChainFilterTestLine = (beginTestBlockHandler, endTestCommentRegex) => 
-    chain(lp.factory.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)}))
+const _createFilterTestLine = (beginTestBlockHandler, endTestCommentRegex) => 
+    lp.factory.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
+        lens.blockTestLineNum, {onBlockBegin: compose(chain(beginTestBlockHandler), _resetVarsHandler)})
 
 const filterExcludeNonTestLines = compose.all(
     chain(lp.filters.excludeOutputLine(lp.regex.blankLine)),
@@ -61,7 +61,7 @@ const createTestLineInBlockFilter = beginTestBlockHandler => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     chain(filterExcludeNonTestLines),
-    _createChainFilterTestLine(beginTestBlockHandler, endTestCommentRegex),
+    chain(_createFilterTestLine(beginTestBlockHandler, endTestCommentRegex)),
     map(lp.mappers.liftCtxOutput(removeInnerStar)),
     lp.filters.JSBlockComment,
 )
@@ -71,7 +71,7 @@ const createTestLineInLineCommentFilter = beginTestBlockHandler => compose.all(
     chain(_detectVarHandler),
     chain(filterExcludeNonTestLines),
     map(lp.mappers.removeLineComment),
-    _createChainFilterTestLine(beginTestBlockHandler, endTestLineCommentRegex),
+    chain(_createFilterTestLine(beginTestBlockHandler, endTestLineCommentRegex)),
     lp.filters.JSLineComment,
 )
 
