@@ -34,6 +34,7 @@ const varRegex = /^\s*(const|let|var)\s+/s
 // { str: (ctx -> Result), ... }
 
 const createDefaultEventSettings = () => ({
+    onTestBegin: printBeginTestOutputHandler,
     onTest: Result.Ok,      //fired when inside the test
     onTestRelated: Result.Ok,   //when inside the test-related line
 })
@@ -104,14 +105,11 @@ const printBeginTestOutputHandler = compose.all(
     lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
 )
 
-const testLineEvents = {
-    onBlockBegin: printBeginTestOutputHandler,
-    // onBlockEnd: printEndBlock,
-}
-
 
 const createTestLineFilter = (events) => {
-    const fullEvents = {...createDefaultEventSettings(), ...testLineEvents,  ...events}
+    const defaultEvs = createDefaultEventSettings()
+    const fullEvents = {...defaultEvs,  ...events, 
+        onBlockBegin: events.onTestBegin || defaultEvs.onTestBegin}
     const testLineInBlockHandler = createTestLineInBlockFilter(fullEvents)
     const testLineInLineCommentHandler = createTestLineInLineCommentFilter(fullEvents)
     return ctx => testLineInBlockHandler(ctx)
