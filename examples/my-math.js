@@ -8,7 +8,7 @@
   * Adds number a to b
   * @example
      //:::
-     my_math.add(1, 2) == 5
+     my_math.add(1, 2) =w= 5
      my_math.add(1, 0) == my_math.add(0, 1)  //commutative
      my_math.add(1, "2") === "12"
   */
