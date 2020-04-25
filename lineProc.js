@@ -90,7 +90,7 @@ const createDefaultEventSettings = () => ({
     //onBlock: defaultBlockHandler,     //fired when inside - not the begin nor end of the block
 })
 
-const mergeEventSettings = customEventSettings => ({ ...createDefaultEventSettings(), ...customEventSettings })
+const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEventSettings(), ...customEventSettings })
 
 // filters -----------------------------------
 // ... -> ctx -> Result ctx
@@ -120,7 +120,7 @@ const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLen
     //setBlockLine :: (lens -> ctx) -> ctx
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
     const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
-    const fullEvents = mergeEventSettings(events)
+    const fullEvents = mergeDefaultEventSettings(events)
     return ctx => {
         const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
         const output = L.view(lens.output, ctx)
