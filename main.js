@@ -18,7 +18,7 @@ impure.errAndExit = msg => {
 }
 
 impure.summaryOfTest = (ctx) => {
-        return `END | Failures | ${L.view(ep.lens.stats_numFailed, ctx)} | Tests | ${L.view(ep.lens.stats_totalTests, ctx)}`
+    return `END | Failures | ${L.view(ep.lens.stats_numFailed, ctx)} | Tests | ${L.view(ep.lens.stats_totalTests, ctx)}`
 }
 
 impure.createEvalObj = (pathForModuleRequire) => {
@@ -47,7 +47,7 @@ impure.app = (filename, evalHandlerObj) => {
         impure.context.fileName = fileName
         // lp.log(impure.context)
 
-        const testHandler = ep.factory.createTestLineFilter({ onTest: ep.factory.createTestHandler(evalHandlerObj)})
+        const testHandler = ep.factory.createTestLineFilter({ onTest: ep.factory.createTestHandler(evalHandlerObj) })
         // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
         // const testHandler = ep.factory.createTestLineFilter({onTestRelated: ctx => Result.Ok(lp.tapCtx(lp.lens.output, console.log, ctx))})
 
