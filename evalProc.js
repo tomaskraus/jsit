@@ -68,21 +68,22 @@ const filterExcludeNonTestLines = compose.all(
     lp.mappers.trimOutput,
 )
 
-const createTestLineInBlockFilter = events => compose.all(
+const _createTestRelatedFilter = events => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     chain(events.onTestRelated),
-    chain(filterExcludeNonTestLines),
+    filterExcludeNonTestLines,
+)
+
+const createTestLineInBlockFilter = events => compose.all(
+    chain(_createTestRelatedFilter(events)),
     chain(_createFilterTestLine(events, endTestCommentRegex)),
     map(lp.mappers.liftCtxOutput(removeInnerStar)),
     lp.factory.createJSBlockCommentFilter({}),
 )
 
 const createTestLineInLineCommentFilter = events => compose.all(
-    map(_addVarMapper),
-    chain(_detectVarHandler),
-    chain(events.onTestRelated),
-    chain(filterExcludeNonTestLines),
+    chain(_createTestRelatedFilter(events)),
     map(lp.mappers.removeLineComment),
     chain(_createFilterTestLine(events, endTestLineCommentRegex)),
     lp.filters.JSLineComment,
@@ -108,8 +109,10 @@ const printBeginTestOutputHandler = compose.all(
 
 const createTestLineFilter = (events) => {
     const defaultEvs = createDefaultEventSettings()
-    const fullEvents = {...defaultEvs,  ...events, 
-        onBlockBegin: events.onTestBegin || defaultEvs.onTestBegin}
+    const fullEvents = {
+        ...defaultEvs, ...events,
+        onBlockBegin: events.onTestBegin || defaultEvs.onTestBegin
+    }
     const testLineInBlockHandler = createTestLineInBlockFilter(fullEvents)
     const testLineInLineCommentHandler = createTestLineInLineCommentFilter(fullEvents)
     return ctx => testLineInBlockHandler(ctx)
