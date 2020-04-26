@@ -22,7 +22,7 @@ add = function (a, b) {
   *   //:::
   *   my_math.add2(1, 2) == 4
   * 
-  *   //:::
+  *   //::: add
   *   my_math.add2(1, 0) == my_math.add2(0, 1)  //commutative
   *   my_math.add2(1, "2") === "12"
   */
@@ -46,7 +46,7 @@ add = function (a, b) {
  assert.deepEqual(arr, a)
  // assert.deepEqual(arr, [1,2])
  assert.equal(c, 1)
- //::: 
+ //::: vars
  var d = 10 
  var e = 20
  //
