@@ -125,9 +125,13 @@ testTestLines.ok()
 
 false   //this should not be tested
 
-//::: test block
+//::: test block (var/const block scope)
 testTestLines.ok()
+const a = 5
+const a = 5
 //::: adjacent test block
+const a = 5
+a == 5
 testTestLines.ok()
 
 */
