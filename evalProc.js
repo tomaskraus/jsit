@@ -34,10 +34,10 @@ const varRegex = /^\s*(const|let|var)\s+/s
 // { str: (ctx -> Result), ... }
 
 const createDefaultEventSettings = () => ({
-    onTestBegin: printBeginTestOutputHandler,
-    onTest: Result.Ok,      //fired when inside the test
-    onTestRelated: Result.Ok,   //when inside the test-related line
-    onEnd: Result.Ok,   //fired at the very end, when flush method is called
+    onTestBegin: printBeginTestOutputHandler,   //begin of test block
+    onTest: Result.Ok,                          //fired when inside the test
+    onTestRelated: Result.Ok,                   //when inside the test-related line
+    onEnd: Result.Ok,                           //fired at the very end, when flush method is called
 })
 
 // mappers
