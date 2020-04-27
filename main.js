@@ -66,7 +66,7 @@ impure.app = (filename, evalHandlerObj) => {
             terminal: false,
         });
 
-        rl.on('line', (line) => { impure.context = process(line, impure.context) })
+        rl.on('line', (line) => { impure.context = process(impure.context, line) })
         rl.on('close', () => testHandlerObj.flush(impure.context))
 
     } catch (e) {
