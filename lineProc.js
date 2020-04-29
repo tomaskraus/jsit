@@ -179,7 +179,7 @@ const removeLineComment = line => line.replace(/^(\s*\/\/)\s*(.*$)/, "$2")
 // ctx -> ctx
 
 //lift2ctxOutputMapper :: (str -> str) -> ctx -> ctx
-const liftCtxOutputMapper = fn => ctx => L.over(lens.output, fn, ctx)
+const liftCtxOutputMapper = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
 
 const removeLineCommentMapper = liftCtxOutputMapper(removeLineComment)
 const trimOutputMapper = liftCtxOutputMapper(s => s.trim())
