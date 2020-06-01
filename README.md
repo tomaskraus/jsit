@@ -29,13 +29,13 @@ Directly, in your code! Just under a `//:::` mark, in the comment. One test per 
 ``` javascript
     //:::
     // myMath.add(1, 2) == 3
-    // myMath.add(1, 0) == myMath.add(0, 1)  //commutative
+    // myMath.add(1, 0) == myMath.add(0, 1)  //we want try the commutativity
     module.exports.add = function(a, b) {
         return a + b
     }
 ```
 
-Use a module name as an `object` that contains our tested function. (`add` becomes `myMath.add`)
+`add` becomes `myMath.add` here.
 
 These tests are valid javascript expressions.
 
