@@ -93,7 +93,7 @@ const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEven
 // ({...evts, onStart: comps}).onStart(10).merge() == 101
 // lineProc.addEventHandlerBefore(mult10, 'onStart', evts).onStart(10).merge() == 101
 
-// addEventHandlerBefore :: (events { str: (ctx -> Result ctx ctx) ...}) => (ctx -> Result ctx ctx) -> str -> events -> events
+// addEventHandlerBefore :: (events { key: (ctx -> Result ctx ctx), ...}) => (ctx -> Result ctx ctx) -> key -> events -> events
 const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
     const newEvents = {...events}
     if (newEvents[eventName]) {
