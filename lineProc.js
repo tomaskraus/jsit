@@ -14,11 +14,6 @@ const L = require('lenses')
 //--auxiliary pointfree------------------------------------------------------------------------------
 
 
-//ifElse :: (Bifunctor B) => ((a -> bool) -> B a a -> B a a) -> a -> B a a
-const ifElse = curry(4, ((fn, constructorTrue, constructorFalse, val) => fn(val) ? constructorTrue(val)
-    : constructorFalse(val))
-)
-
 //tap :: (a -> _) -> a -> a
 const tap = curry(2, (fn, a) => {
     fn(a)
