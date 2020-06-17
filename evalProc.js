@@ -29,6 +29,14 @@ const endTestLineCommentRegex = /^\s*\/\/\s*$/s
 
 const varRegex = /^\s*(const|let|var)\s+/s
 
+// line transformers  
+// str -> str
+
+const removeInnerStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
+const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
+const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
+const removeLineCommentExceptTestBegin = line => line.replace(/^(\s*\/\/)\s*([^:][^:][^:].*$)/, "$2")
+
 
 // events
 // { str: (ctx -> Result), ... }
@@ -40,22 +48,51 @@ const createDefaultEventSettings = () => ({
     onEnd: Result.Ok,                           //fired at the very end, when flush method is called
 })
 
+
+
 // mappers
 // ctx -> ctx
 
 const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
 
-// line transformers  
-// str -> str
-
-const removeInnerStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
-
-const removeBeginTestBlockComment = line => line.replace(/^(\s*\/\/:::)\s*(.*$)/, "$2")
-
-const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
 // handlers ----------------------------
 // ctx -> Result ctx ctx
+
+
+const createTestRelatedFilter = events => {
+    const commentBlockFilter = lp.factory.createJSBlockCommentFilter({})
+    const lineTestRelatedFilter = createTestRelatedLineFilter(events)
+    const inBlockTestRelatedFilter = createTestRelatedInBlockFilter(events)
+    return ctx =>
+        commentBlockFilter(ctx)
+            .matchWith({
+                Ok: chain(inBlockTestRelatedFilter),
+
+                Error: reslt => Result.Ok(reslt.value) //here, value holds a ctx inside the Result obj
+                    // .map(lp.log)
+                    .chain(lp.filters.JSLineComment)
+                    .chain(lineTestRelatedFilter),
+            })
+            .map(lp.mappers.trimOutput)
+}
+
+const createTestRelatedLineFilter = events => compose.all(
+    chain(_createAfterTestRelatedFilter(events)),
+    map(lp.mappers.liftCtxOutput(removeLineCommentExceptTestBegin)),
+    _createFilterTestLine(events, endTestLineCommentRegex),
+)
+
+const createTestRelatedInBlockFilter = events => {
+    const atrf = _createAfterTestRelatedFilter(events)
+    return compose.all(
+        // lp.log2("aatrf"),
+        chain(atrf),
+        _createFilterTestLine(events, endTestCommentRegex),
+        lp.mappers.liftCtxOutput(removeInnerStar),
+    )
+}
+
 
 // Result ctx ctx -> Result ctx ctx
 const _createFilterTestLine = (events, endTestCommentRegex) =>
@@ -69,26 +106,13 @@ const filterExcludeNonTestLines = compose.all(
     lp.mappers.trimOutput,
 )
 
-const _createTestRelatedFilter = events => compose.all(
+const _createAfterTestRelatedFilter = events => compose.all(
     map(_addVarMapper),
     chain(_detectVarHandler),
     chain(events.onTestRelated),
     filterExcludeNonTestLines,
 )
 
-const createTestLineInBlockFilter = events => compose.all(
-    chain(_createTestRelatedFilter(events)),
-    chain(_createFilterTestLine(events, endTestCommentRegex)),
-    map(lp.mappers.liftCtxOutput(removeInnerStar)),
-    lp.factory.createJSBlockCommentFilter({}),
-)
-
-const createTestLineInLineCommentFilter = events => compose.all(
-    chain(_createTestRelatedFilter(events)),
-    map(lp.mappers.removeLineComment),
-    chain(_createFilterTestLine(events, endTestLineCommentRegex)),
-    lp.filters.JSLineComment,
-)
 
 // const printEndBlock = compose.all(
 //     Result.Error,
@@ -114,15 +138,10 @@ const createTestLineObj = (events) => {
         ...defaultEvs, ...events,
         onBlockBegin: events.onTestBegin || defaultEvs.onTestBegin
     }
-    const testLineInBlockHandler = createTestLineInBlockFilter(fullEvents)
-    const testLineInLineCommentHandler = createTestLineInLineCommentFilter(fullEvents)
+    const testFilter = createTestRelatedFilter(fullEvents)
     return {
-        filter: ctx => testLineInBlockHandler(ctx)
-            .orElse(ctx =>
-                lp.isInBlock(lp.lens.JSBlockCommentLineNum, ctx)
-                    ? Result.Error(ctx)
-                    : testLineInLineCommentHandler(ctx)
-            ).chain(fullEvents.onTest),
+        filter: ctx => testFilter(ctx)
+            .chain(fullEvents.onTest),
         flush: ctx => fullEvents.onEnd(ctx)
     }
 }
@@ -178,6 +197,8 @@ module.exports = {
         createTestHandler,
         createContext,
         createDefaultEventSettings,
+
+        createTestRelatedFilter,
     },
 
     lens: {
