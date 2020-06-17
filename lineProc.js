@@ -200,7 +200,7 @@ const setContextLine = line => ctx => compose.all(
 )(ctx)
 
 
-//createProcessLine :: (Result R, context c) => (c -> R c c) -> (string -> c) -> R c c
+//createProcessLine :: (Result R, context c) => (c -> R c c) -> ((c-> string) -> R c c)
 const createProcessLine = lineHandler => (context, line) => compose.all(
     r => r.merge(),  //ugly, folktale Result specific
     chain(lineHandler),
