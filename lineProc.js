@@ -47,7 +47,7 @@ const createContext = () => ({
 const lens = L.makeLenses(['input', 'output', 'lineNum', 'JSBlockCommentLineNum'])
 
 
-//tapCtx :: (ctx {a, ...}) => lens -> (a -> _) -> ctx -> ctx
+//tapCtx :: (ctx {a, ...}) => lens a -> (a -> _) -> ctx -> ctx
 const tapCtx = curry(3, (lens, fn, ctx) => {
     fn(L.view(lens, ctx))
     return ctx
