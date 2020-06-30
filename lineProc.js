@@ -245,6 +245,9 @@ module.exports = {
     },
 
 
+    //logging
+    log, log2,
+
     //other
 
     //tapCtx :: (ctx {a, ...}) => lens -> (a -> _) -> ctx -> ctx
