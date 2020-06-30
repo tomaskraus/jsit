@@ -5,15 +5,16 @@ const lp = require('../lineProc')
 
 
 
-const printHandler = compose.all(
+const printAction = compose.all(
+    res => res.merge(),
     map(lp.tapCtx(lp.lens.input, s => console.log(`str='${s}'`))),
-    // lp.log,
     lp.factory.createJSCommentCtxBlockResulter({
         onBlockBegin: ctx => Result.Error(lp.tap(() => console.log(`begin-----`), ctx)),
         onBlockEnd: ctx => Result.Error(lp.tap(() => console.log(`----end`), ctx)),
     }),
+    //lp.log,
 )
-const printReducer = lp.factory.createCtxReducer(printHandler)
+const printReducer = lp.factory.createCtxReducer(printAction)
 
 
 const main = strArr => {

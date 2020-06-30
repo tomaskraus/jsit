@@ -244,13 +244,9 @@ const setContextLine = line => ctx => compose.all(
     // log2("contextLine"),
 )(ctx)
 
- //TODO change function signature to match the documentation
-//createCtxReducer :: CtxResulter -> ((ctx -> string) -> ctx)
-const createCtxReducer = ctxMapper => (ctx, line) => compose.all(
-    r => r.merge(),  //ugly, folktale Result specific: return just the inner value of the Result
-    chain(ctxMapper),
-    //log2("before Handler"),
-    Result.of,
+//createCtxReducer :: CtxAction -> CtxReducer
+const createCtxReducer = ctxAction => (ctx, line) => compose.all(
+    ctxAction,
     setContextLine(line),
 )(ctx)
 
@@ -261,7 +257,7 @@ module.exports = {
     factory: {
         //ctx
         createContext,
-        //createCtxReducer :: CtxResulter -> ((ctx -> string) -> ctx)
+        //createCtxReducer :: CtxAction -> CtxReducer
         createCtxReducer: createCtxReducer,
         //ctx filters
         createJSCommentCtxBlockResulter: createJSCommentCtxBlockResulter,

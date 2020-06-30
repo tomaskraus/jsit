@@ -141,7 +141,8 @@ const createTestLineObj = (events) => {
     const testFilter = createTestRelatedFilter(fullEvents)
     return {
         filter: ctx => testFilter(ctx)
-            .chain(fullEvents.onTest),
+            .chain(fullEvents.onTest)
+            .merge(),
         flush: ctx => fullEvents.onEnd(ctx)
     }
 }

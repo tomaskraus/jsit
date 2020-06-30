@@ -10,12 +10,12 @@ const L = require('lenses')
 
 
 
-const app = (context, handler, s) => {
+const app = (context, action, s) => {
     const strs = s.split('\n')
-    const process = lp.factory.createCtxReducer(handler)
+    const reducer = lp.factory.createCtxReducer(action)
     console.log("--START-----------")
 
-    const resultCtx = strs.reduce(process, context)
+    const resultCtx = strs.reduce(reducer, context)
     // log2("after processLine", context)
 
     console.log("--END-----------")
@@ -199,7 +199,8 @@ hu!
 `
 
 // const handler = printAllHandler
-const handler = compose.all(
+const testLineAction = compose.all(
+    res => res.merge(),
     map(lp.mapper.echoOutputLine),
 
     map(lp.mapper.addLineNum),
@@ -212,5 +213,5 @@ const handler = compose.all(
 
 )
 
-console.log(app(lp.factory.createContext(), handler, str))
+console.log(app(lp.factory.createContext(), testLineAction, str))
 
