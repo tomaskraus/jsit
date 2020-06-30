@@ -115,7 +115,6 @@ const filterOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? 
 const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Error(ctx)
     : Result.Ok(ctx)
 
-const BLOCK_LINE_OFF = -1
 
 //isInBlock :: lens -> ctx -> bool
 // gives proper result only if some customBlockFilter (from createCustomBlockFilter) is called before
@@ -125,6 +124,7 @@ const isInBlock = (blockLineNumLens, ctx) => L.view(lens.lineNum, ctx) === L.vie
 const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLens, events) => {
     // log("CREATING customBlockFilter --- ---- ---- ---- ---- ------")
     //setBlockLine :: (lens -> ctx) -> ctx
+    const BLOCK_LINE_OFF = -1
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
     const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
     const fullEvents = mergeDefaultEventSettings(events)
