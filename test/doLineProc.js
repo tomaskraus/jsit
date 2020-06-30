@@ -13,7 +13,7 @@ const printHandler = compose.all(
         onBlockEnd: ctx => Result.Error(lp.tap(() => console.log(`----end`), ctx)),
     }),
 )
-const processLine = lp.factory.createProcessLine(printHandler)
+const processLine = lp.factory.createLineProcessor(printHandler)
 
 
 const main = strArr => {
@@ -28,6 +28,7 @@ ahoj
  jak se
  */
 mas
+/* huhu */
 /*
 ja
   ok

@@ -71,15 +71,15 @@ const createTestRelatedFilter = events => {
 
                 Error: reslt => Result.Ok(reslt.value) //here, value holds a ctx inside the Result obj
                     // .map(lp.log)
-                    .chain(lp.filters.JSLineComment)
+                    .chain(lp.filter.JSLineComment)
                     .chain(lineTestRelatedFilter),
             })
-            .map(lp.mappers.trimOutput)
+            .map(lp.mapper.trimOutput)
 }
 
 const createTestRelatedLineFilter = events => compose.all(
     chain(_createAfterTestRelatedFilter(events)),
-    map(lp.mappers.liftCtxOutput(removeLineCommentExceptTestBegin)),
+    map(lp.mapper.liftCtxOutput(removeLineCommentExceptTestBegin)),
     _createFilterTestLine(events, endTestLineCommentRegex),
 )
 
@@ -89,7 +89,7 @@ const createTestRelatedInBlockFilter = events => {
         // lp.log2("aatrf"),
         chain(atrf),
         _createFilterTestLine(events, endTestCommentRegex),
-        lp.mappers.liftCtxOutput(removeInnerStar),
+        lp.mapper.liftCtxOutput(removeInnerStar),
     )
 }
 
@@ -101,9 +101,9 @@ const _createFilterTestLine = (events, endTestCommentRegex) =>
     )
 
 const filterExcludeNonTestLines = compose.all(
-    chain(lp.filters.excludeOutputLine(lp.regex.blankLine)),
-    lp.filters.excludeOutputLine(lp.regex.JSLineComment),
-    lp.mappers.trimOutput,
+    chain(lp.filter.excludeOutputLine(lp.regex.blankLine)),
+    lp.filter.excludeOutputLine(lp.regex.JSLineComment),
+    lp.mapper.trimOutput,
 )
 
 const _createAfterTestRelatedFilter = events => compose.all(
@@ -127,8 +127,8 @@ const printBeginTestOutputHandler = compose.all(
         ? console.log(ln)
         : null
     ),
-    lp.mappers.trimOutput,
-    lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
+    lp.mapper.trimOutput,
+    lp.mapper.liftCtxOutput(removeBeginTestBlockComment),
 )
 
 
