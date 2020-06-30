@@ -61,7 +61,7 @@ const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ct
 
 
 const createTestRelatedFilter = events => {
-    const commentBlockFilter = lp.factory.createJSBlockCommentFilter({})
+    const commentBlockFilter = lp.factory.createJSCommentCtxBlockResulter({})
     const lineTestRelatedFilter = createTestRelatedLineFilter(events)
     const inBlockTestRelatedFilter = createTestRelatedInBlockFilter(events)
     return ctx =>
@@ -96,7 +96,7 @@ const createTestRelatedInBlockFilter = events => {
 
 // Result ctx ctx -> Result ctx ctx
 const _createFilterTestLine = (events, endTestCommentRegex) =>
-    lp.factory.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
+    lp.factory.createCtxBlockResulter(beginTestCommentRegex, endTestCommentRegex,
         lens.blockTestLineNum, lp.addEventHandlerBefore(_resetVarsHandler, 'onBlockBegin', events)
     )
 

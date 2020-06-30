@@ -12,7 +12,7 @@ const L = require('lenses')
 
 const app = (context, handler, s) => {
     const strs = s.split('\n')
-    const process = lp.factory.createLineProcessor(handler)
+    const process = lp.factory.createCtxReducer(handler)
     console.log("--START-----------")
 
     const resultCtx = strs.reduce(process, context)
@@ -204,7 +204,7 @@ const handler = compose.all(
 
     map(lp.mapper.addLineNum),
     // lp.log,
-    lp.factory.createCustomBlockFilter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum,
+    lp.factory.createCtxBlockResulter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum,
         {}),
     // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
     // lp.filter.JSBlockComment,

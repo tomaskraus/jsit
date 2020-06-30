@@ -8,16 +8,16 @@ const lp = require('../lineProc')
 const printHandler = compose.all(
     map(lp.tapCtx(lp.lens.input, s => console.log(`str='${s}'`))),
     // lp.log,
-    lp.factory.createJSBlockCommentFilter({
+    lp.factory.createJSCommentCtxBlockResulter({
         onBlockBegin: ctx => Result.Error(lp.tap(() => console.log(`begin-----`), ctx)),
         onBlockEnd: ctx => Result.Error(lp.tap(() => console.log(`----end`), ctx)),
     }),
 )
-const processLine = lp.factory.createLineProcessor(printHandler)
+const printReducer = lp.factory.createCtxReducer(printHandler)
 
 
 const main = strArr => {
-    return strArr.reduce(processLine, lp.factory.createContext())
+    return strArr.reduce(printReducer, lp.factory.createContext())
 }
 
 
