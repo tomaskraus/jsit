@@ -14,12 +14,12 @@ const app = (context, handler, s) => {
     const strs = s.split('\n')
     const process = lp.factory.createLineProcessor(handler)
     console.log("--START-----------")
-    for (let sn of strs) {
-        context = process(context, sn)
-        // log2("after processLine", context)
-    }
-    // log(context)
+
+    const resultCtx = strs.reduce(process, context)
+    // log2("after processLine", context)
+
     console.log("--END-----------")
+    return resultCtx
 }
 
 
@@ -199,18 +199,18 @@ hu!
 `
 
 // const handler = printAllHandler
-const handler = compose.all(   
+const handler = compose.all(
     map(lp.mapper.echoOutputLine),
 
     map(lp.mapper.addLineNum),
     // lp.log,
-    lp.factory.createCustomBlockFilter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum, 
+    lp.factory.createCustomBlockFilter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum,
         {}),
-        // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
+    // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
     // lp.filter.JSBlockComment,
     //lp.filter.lineComment
 
 )
 
-app(lp.factory.createContext(), handler, str)
+console.log(app(lp.factory.createContext(), handler, str))
 
