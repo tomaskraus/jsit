@@ -214,6 +214,9 @@ module.exports = {
         createCustomBlockFilter,
     },
 
+    //ctx lens
+    lens,   
+
     //events
     addEventHandlerBefore: addEventHandlerBefore,
 
