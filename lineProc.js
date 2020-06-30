@@ -90,7 +90,7 @@ const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEven
 
 // addEventHandlerBefore :: (events { key: (ctx -> Result ctx ctx), ...}) => (ctx -> Result ctx ctx) -> key -> events -> events
 const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
-    const newEvents = {...events}
+    const newEvents = { ...events }
     if (newEvents[eventName]) {
         newEvents[eventName] = compose(chain(newEvents[eventName]), handler)
     } else {
@@ -192,7 +192,7 @@ const setContextLine = line => ctx => compose.all(
 
 
 //createLineProcessor :: (Result R, context c) => (c -> R c c) -> ((c-> string) -> c)
-const createLineProcessor = lineHandler => (context, line) => compose.all(    
+const createLineProcessor = lineHandler => (context, line) => compose.all(
     r => r.merge(),  //ugly, folktale Result specific: return just the inner value of the Result
     chain(lineHandler),
     //log2("before Handler"),
@@ -215,7 +215,7 @@ module.exports = {
     },
 
     //ctx lens
-    lens,   
+    lens,
 
     //events
     addEventHandlerBefore: addEventHandlerBefore,
