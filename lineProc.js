@@ -107,7 +107,7 @@ const filterOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? 
     : Result.Error(ctx)
 
 //::: filterExcludeOutputLine
-// const filterExcludeOutputLine = lineProc.filters.excludeOutputLine(/--/)
+// const filterExcludeOutputLine = lineProc.filter.excludeOutputLine(/--/)
 // filterExcludeOutputLine({ output: "- abc"}).merge().output === "- abc"
 // filterExcludeOutputLine({ output: "-- abc"}) instanceof Result.Error
 //
@@ -157,7 +157,7 @@ const createJSBlockCommentFilter = events => createCustomBlockFilter(beginJSBloc
     lens.JSBlockCommentLineNum, events)
 
 //::: filterJSLineComment
-// const filterJSLineComment = lineProc.filters.JSLineComment
+// const filterJSLineComment = lineProc.filter.JSLineComment
 // assert.equal(filterJSLineComment({ output: "\/\/ abc"}).merge().output, "\/\/ abc")
 // filterJSLineComment({ output: "\/ abc"}) instanceof Result.Error
 //
@@ -223,29 +223,14 @@ module.exports = {
     //events
     addEventHandlerBefore: addEventHandlerBefore,
 
-    //logging
-    log, log2,
-
-
-    //context lens
-    lens: {
-        input: lens.input,
-        output: lens.output,
-        lineNum: lens.lineNum,
-        JSBlockCommentLineNum: lens.JSBlockCommentLineNum,
-    },
-    //isInBlock :: lens -> ctx -> bool
-    isInBlock,
-
-
-    // ctx -> Result ctx ctx
-    filters: {
+    // (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+    filter: {
         excludeOutputLine: filterExcludeOutputLine,
         JSLineComment: filterJSLineComment,
     },
 
     //ctx -> ctx
-    mappers: {
+    mapper: {
         echoOutputLine: printCtxOutputMapper,
         echoInputLine: printCtxInputMapper,
         addLineNum: addLineNumMapper,
