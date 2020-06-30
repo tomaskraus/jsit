@@ -75,7 +75,7 @@ const createDefaultEventSettings = () => ({
 
 const mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEventSettings(), ...customEventSettings })
 
-
+//TODO: REMOVE
 //::: addEventHandlerBefore
 // const add1 = x => Result.Ok(x + 1)
 // const mult10 = x => Result.Ok(x * 10)
