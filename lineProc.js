@@ -116,10 +116,6 @@ const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, c
     : Result.Ok(ctx)
 
 
-//isInBlock :: lens -> ctx -> bool
-// gives proper result only if some customBlockFilter (from createCustomBlockFilter) is called before
-const isInBlock = (blockLineNumLens, ctx) => L.view(lens.lineNum, ctx) === L.view(blockLineNumLens, ctx)
-
 //createCustomBlockFilter :: regex -> regex -> lens -> {str: (ctx -> Result ctx ctx), ...} -> Result ctx ctx
 const createCustomBlockFilter = (beginBlockRegex, endBlockRegex, blockLineNumLens, events) => {
     // log("CREATING customBlockFilter --- ---- ---- ---- ---- ------")
