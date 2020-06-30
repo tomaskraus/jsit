@@ -193,7 +193,7 @@ const setContextLine = line => ctx => compose.all(
 
 //createLineProcessor :: (Result R, context c) => (c -> R c c) -> ((c-> string) -> c)
 const createLineProcessor = lineHandler => (context, line) => compose.all(    
-    r => r.merge(),  //ugly, folktale Result specific
+    r => r.merge(),  //ugly, folktale Result specific: return just the inner value of the Result
     chain(lineHandler),
     //log2("before Handler"),
     Result.of,
