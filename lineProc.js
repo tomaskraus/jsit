@@ -191,8 +191,8 @@ const setContextLine = line => ctx => compose.all(
 )(ctx)
 
 
-//createProcessLine :: (Result R, context c) => (c -> R c c) -> ((c-> string) -> R c c)
-const createProcessLine = lineHandler => (context, line) => compose.all(
+//createLineProcessor :: (Result R, context c) => (c -> R c c) -> ((c-> string) -> c)
+const createLineProcessor = lineHandler => (context, line) => compose.all(    
     r => r.merge(),  //ugly, folktale Result specific
     chain(lineHandler),
     //log2("before Handler"),
@@ -206,12 +206,10 @@ const createProcessLine = lineHandler => (context, line) => compose.all(
 module.exports = {
     factory: {
         //ctx
-        createContext: createContext,
-        //workhorse
-        createProcessLine,
-        //events
-        createDefaultEventSettings,
-
+        createContext,
+        //createLineProcessor :: (Result R, context c) => (c -> R c c) -> ((c-> string) -> c)
+        createLineProcessor: createLineProcessor,
+        //filters
         createJSBlockCommentFilter,
         createCustomBlockFilter,
     },
