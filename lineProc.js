@@ -219,6 +219,7 @@ module.exports = {
 
     // (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
     filter: {
+        outputLine: filterOutputLine,
         excludeOutputLine: filterExcludeOutputLine,
         JSLineComment: filterJSLineComment,
     },
