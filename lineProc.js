@@ -34,6 +34,8 @@
  *      - CtxResulter
  *      - CtxBlockResulter
  * 
+ *  CtxFilter, CtxResulter, CtxBlockResulter :: CtxResultable
+ * 
  * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing the same, unmodified ctx:
  * It just returns Result.Ok or Result.Error, based on internal testing criteria. 
  *   CtxFilter :: CtxResultable
@@ -45,7 +47,9 @@
  * CtxResulter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
  *   CtxResulter :: CtxResultable
  *  
- * CtxBlockResulter: same as CtxResulter, but with block awareness. Fires some block-related BlockEvents (see below).
+ * CtxBlockResulter: same as CtxResulter, but with block awareness. 
+ * Fires some SYNCHRONOUS block-related BlockEvents (see below).
+ * Result of these events is known before the call of CtxBlockResulter returns.
  *   CtxBlockResulter :: CtxResultable
  * 
  *   create the CtxBlockResulter by using the factory function:
@@ -55,7 +59,8 @@
  *   ctxResultable2Action :: CtxResultable -> CtxAction
  * 
  * BlockEvents: a bunch of named CtxResultable objects.
- *   They are called SYNCHRONOUSLY by CtxBlockResulter object when a certain block state is reached. 
+ *   They are called SYNCHRONOUSLY within the CtxBlockResulter object when a certain block state is reached.  
+ * 
  *   Those event names are:
  *      - onBlockBegin
  *      - onBlockEnd
@@ -272,10 +277,14 @@ module.exports = {
     /** signatures:     
       ctx :: { input: string, output: string, lineNum: number }
       CtxAction :: ctx -> ctx
-      CtxReducer :: (ctx, string) -> ctx
+      
       Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
       CtxResultable :: ctx -> Result ctx ctx
+      CtxFilter, CtxResulter, CtxBlockResulter :: CtxResultable
+      
       BlockEvents :: { onBlockBegin: CtxResultable, onBlockEnd: CtxResultable, onBlock: CtxResultable }
+      
+      CtxReducer :: (ctx, string) -> ctx
     */
 
 
