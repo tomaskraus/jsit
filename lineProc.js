@@ -217,8 +217,8 @@ const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComme
 // CtxActions
 // ctx -> ctx
 
-//ctxOutputAction takes a string manipulation function and applies it to the output field if the ctx context object
-//ctxOutputAction :: (str -> str) -> ctx -> ctx
+//ctxMapOutputAction takes a string manipulation function and applies it to the output field if the ctx context object
+//ctxMapOutputAction :: (str -> str) -> CtxAction
 const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
 
 //trims the output line of the context
