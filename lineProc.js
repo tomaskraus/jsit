@@ -239,7 +239,7 @@ const trimCtxOutputAction = ctxMapOutputAction(s => s.trim())
     evenResulter({num: 3}) instanceof Result.Error
     evenAction({num: 3}).num === 3  
  */
-ctxResultable2Action = curry(2, 
+const ctxResultable2Action = curry(2, 
     (resultable, ctx) => resultable(ctx).merge()
 ) 
 
