@@ -16,10 +16,14 @@
  *      - output: (string) line modified by some CtxActions, ...
  *      - lineNum: (number) a line number
  * 
+ *   ctx :: { input: string, output: string, lineNum: number }
+ * 
+ * 
  * CtxAction is a function that "changes" the state of the ctx object (by creating a new ctx object...)
  *   CtxAction :: ctx -> ctx
  * 
  * CtxResultable :: every function, that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
+ *   Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
  *   CtxResultable :: ctx -> Result ctx ctx
  * 
  *   CtxResultable can act as a filter (returning a "fail" Result type), but, unlike the filter, it can 
@@ -50,15 +54,14 @@
  * For convenience, there is a conversion function:
  *   ctxResultable2Action :: CtxResultable -> CtxAction
  * 
- * BlockEvents: a bunch of named CtxResulter objects.
- *   They are called by CtxBlockResulter object when a certain block state is reached. 
+ * BlockEvents: a bunch of named CtxResultable objects.
+ *   They are called SYNCHRONOUSLY by CtxBlockResulter object when a certain block state is reached. 
  *   Those event names are:
  *      - onBlockBegin
  *      - onBlockEnd
  *      - onBlock
  * 
- *   BlockEvents :: { block_event_name: CtxResulter, ...}
- *   - These CtxResulters can be named as "CtxHandlers"
+ *   BlockEvents :: { onBlockBegin: CtxResultable, onBlockEnd: CtxResultable, onBlock: CtxResultable }
  *   - How to create BlockEvents object: by hand...
  * 
  * CtxReducer: a function that takes a state (ctx) and a line (string), and returns the new state, using its internal CtxAction
@@ -265,6 +268,17 @@ const createCtxReducer = ctxAction => (ctx, line) => compose.all(
 //==================================================================================
 
 module.exports = {
+
+    /** signatures:     
+      ctx :: { input: string, output: string, lineNum: number }
+      CtxAction :: ctx -> ctx
+      CtxReducer :: (ctx, string) -> ctx
+      Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
+      CtxResultable :: ctx -> Result ctx ctx
+      BlockEvents :: { onBlockBegin: CtxResultable, onBlockEnd: CtxResultable, onBlock: CtxResultable }
+    */
+
+
     Regex: {
         beginJSBlockComment: beginJSBlockCommentRegex,
         endJSBlockComment: endJSBlockCommentRegex,
