@@ -32,17 +32,17 @@
  * 
  * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing the same, unmodified ctx:
  * It just returns Result.Ok or Result.Error, based on internal testing criteria. 
- *   CtxFilter :: ctx -> Result ctx ctx
+ *   CtxFilter :: CtxResultable
  * 
  *   Use createCtxFilter function to create a CtxFilter with a desired testing function in it:
- *     createCtxFilter :: (ctx -> boolean) -> (ctx -> Result ctx ctx)   
+ *     createCtxFilter :: (ctx -> boolean) -> CtxResultable   
  * 
  * 
  * CtxResulter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
- *   CtxResulter :: ctx -> Result ctx ctx
+ *   CtxResulter :: CtxResultable
  *  
  * CtxBlockResulter: same as CtxResulter, but with block awareness. Fires some block-related BlockEvents (see below).
- *   CtxBlockResulter :: ctx -> Result ctx ctx
+ *   CtxBlockResulter :: CtxResultable
  * 
  *   create the CtxBlockResulter by using the factory function:
  *      createCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
@@ -142,7 +142,7 @@ const _mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEve
 // ({...evts, onStart: comps}).onStart(10).merge() == 101
 // lineProc.addEventHandlerBefore(mult10, 'onStart', evts).onStart(10).merge() == 101
 
-// addEventHandlerBefore :: (events { key: (ctx -> Result ctx ctx), ...}) => (ctx -> Result ctx ctx) -> key -> events -> events
+// addEventHandlerBefore :: (events { key: CtxResultable, ...}) => CtxResultable -> key -> events -> events
 const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
     const newEvents = { ...events }
     if (newEvents[eventName]) {
@@ -154,14 +154,14 @@ const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
 })
 
 // ctxFilters -----------------------------------
-// (ctx -> boolean) -> (ctx -> Result ctx ctx)
+// (ctx -> boolean) -> CtxResultable
 
-//createCtxFilter :: (ctx -> boolean) -> (ctx -> Result ctx ctx)
+//createCtxFilter :: (ctx -> boolean) -> CtxResultable
 const createCtxFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     ? Result.Ok(ctx)
     : Result.Error(ctx)
 
-//ctxFilterOutput :: (string -> boolean) -> (ctx -> Result ctx ctx)
+//ctxFilterOutput :: (string -> boolean) -> CtxResultable
 const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.output, ctx)))
 
 // ctxFilterOutputMatch :: (context ctx, Result Res) => regex -> (ctx -> Res ctx ctx)
@@ -177,7 +177,7 @@ const ctxFilterOutputNotMatch = regex => ctxFilterOutput(s => !regex.test(s))
 
 //creates a new CtxBlockResulter. 
 //The id parameter should differ among nested ctxBlockResulters.
-//createCtxBlockResulter :: string -> regex -> regex -> BlockEvents -> CtxBlockResulter
+//createCtxBlockResulter :: (string -> regex -> regex -> BlockEvents) -> CtxBlockResulter
 const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
     //TODO: place blockLineNumLens under the new "id lens"
     const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
@@ -272,12 +272,15 @@ module.exports = {
     },
 
     Factory: {
-        //ctx
+        //createContext :: () -> ctx
         createContext,
-        //ctxFilter :: (ctx -> boolean) -> CtxReducer
+
+        //createCtxFilter :: (ctx -> boolean) -> CtxResultable
         createCtxFilter,
-        //CtxBlockResulter :: ctx -> Result ctx ctx
+
+        //createCtxBlockResulter :: (string -> regex -> regex -> BlockEvents) -> CtxResultable
         createCtxBlockResulter,
+
         //createCtxReducer :: CtxAction -> CtxReducer
         createCtxReducer,
     },
