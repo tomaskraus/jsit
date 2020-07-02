@@ -1,54 +1,65 @@
 /**
  * Basics of block-of-lines processing, in a functional way
  * 
- * - You can create custom block "filters" by specifying block marks (beginning and end) via regex.
- * - You can chain these block filters
+ * You can:
+ * - create custom block "filters" by specifying block marks (beginning and end) via regex.
+ * - react to block-related events
+ * - chain these block filters
  *
  * 
  * There are bunch of objects:
- *   context, mappers, resultables, events, ctxReducer
+ *   context, actions, resultables, blockEvents, reducers
  * 
- * Ctx is a "context" object, which stores a state.
+ * ctx is a "context" object, which stores a state.
  *   Has three main properties:
  *      - input: (string) the original line read
  *      - output: (string) line modified by some CtxActions, ...
  *      - lineNum: (number) a line number
  * 
- * CtxAction is a function that "changes" the state of the Ctx object (by creating a new Ctx object...)
- *   CtxAction :: Ctx -> Ctx
+ * CtxAction is a function that "changes" the state of the ctx object (by creating a new ctx object...)
+ *   CtxAction :: ctx -> ctx
  * 
- * CtxResultable :: every function, that accepts a Ctx and returns a Result monad (Folktale's Result object), containing a new Ctx:
- *   CtxResultable :: Ctx -> Result Ctx Ctx
+ * CtxResultable :: every function, that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
+ *   CtxResultable :: ctx -> Result ctx ctx
  * 
  *   CtxResultable can act as a filter (returning a "fail" Result type), but, unlike the filter, it can 
- *   also "change" the state (represented by Ctx object)
+ *   also "change" the state (represented by ctx object)
  * 
- *   it has two implementations there:
+ *   it has three implementations there:
+ *      - CtxFilter
  *      - CtxResulter
  *      - CtxBlockResulter
  * 
- * CtxResulter is a CtxResultable function that accepts a Ctx and returns a Result monad (Folktale's Result object), containing a new Ctx:
- *   CtxResulter :: Ctx -> Result Ctx Ctx
+ * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing the same, unmodified ctx:
+ * It just returns Result.Ok or Result.Error, based on internal testing criteria. 
+ *   CtxFilter :: ctx -> Result ctx ctx
+ * 
+ *   Use createCtxFilter function to create a CtxFilter with a desired testing function in it:
+ *     createCtxFilter :: (ctx -> boolean) -> (ctx -> Result ctx ctx)   
+ * 
+ * 
+ * CtxResulter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
+ *   CtxResulter :: ctx -> Result ctx ctx
  *  
- * CtxBlockResulter: same as CtxResulter, but with block awareness. Fires some block-related CtxEvents (see below).
- *   CtxResulter :: Ctx -> Result Ctx Ctx
+ * CtxBlockResulter: same as CtxResulter, but with block awareness. Fires some block-related BlockEvents (see below).
+ *   CtxBlockResulter :: ctx -> Result ctx ctx
  * 
  *   create the CtxBlockResulter by using the factory function:
- *      createCtxBlockResulter :: regex -> regex -> lens -> CtxEvents -> CtxBlockResulter
+ *      createCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
  *
- * CtxEvents: a bunch of CtxResulter objects.
+ * BlockEvents: a bunch of CtxResulter objects.
  *   They are called by CtxBlockResulter object when a certain block state is reached. 
  *   Those events are:
  *      - onBlockBegin
  *      - onBlockEnd
  *      - onBlock
  * 
- *   CtxEvents :: { name: CtxResulter, ...}
+ *   BlockEvents :: { block_event_name: CtxResulter, ...}
  *   - These CtxResulters can be named as "CtxHandlers"
- *   - How to create CtxEvents object: by hand...
+ *   - How to create BlockEvents object: by hand...
  * 
- * CtxReducer: a function that takes a state (Ctx) and a line (string), and returns the new state, using its internal CtxAction
- *   CtxReducer :: (Ctx, string) -> Ctx
+ * CtxReducer: a function that takes a state (ctx) and a line (string), and returns the new state, using its internal CtxAction
+ *   CtxReducer :: (ctx, string) -> ctx
  * 
  *   create the CtxReducer by using the factory function:
  *      createCtxReducer :: CtxAction -> CtxReducer
@@ -103,8 +114,18 @@ const lens = L.makeLenses([
 ])
 
 
-//tapCtx :: (ctx {a, ...}) => lens a -> (a -> _) -> ctx -> ctx
-const tapCtx = curry(3, (lens, fn, ctx) => {
+/**
+    Runs a custom function fn with "some property p of context ctx" as an argument.
+    Leaves that context unchanged.
+
+    tapCtxProp :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
+
+    //::: tapCtxProp   
+    const newCtx = lineProc.tapCtxProp(lineProc.Lens.input, x => x + 1, {input: 1})
+    assert.equal(newCtx.input, 1)   //should stay unchanged
+*/
+
+const tapCtxProp = curry(3, (lens, fn, ctx) => {
     fn(L.view(lens, ctx))
     return ctx
 })
@@ -120,7 +141,7 @@ const blankLineRegex = /^\s*$/s
 
 
 
-//CtxEvents :: { name: CtxResulter, ...}
+//BlockEvents :: { name: CtxResulter, ...}
 
 const createDefaultEventSettings = () => ({
     onBlockBegin: Result.Ok,
@@ -154,25 +175,30 @@ const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
     return newEvents
 })
 
-// filters -----------------------------------
-// ... -> ctx -> Result ctx ctx
+// ctxFilters -----------------------------------
+// (ctx -> boolean) -> (ctx -> Result ctx ctx)
 
-// createOutputLineFilter :: (context ctx, Result Res) => regex -> (ctx -> Res ctx ctx)
-const createOutputLineFilter = regex => ctx => regex.test(L.view(lens.output, ctx)) 
+//createCtxFilter :: (ctx -> boolean) -> (ctx -> Result ctx ctx)
+const createCtxFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     ? Result.Ok(ctx)
     : Result.Error(ctx)
 
-//::: filterExcludeOutputLine
-// const filterExcludeOutputLine = lineProc.filter.excludeOutputLine(/--/)
-// filterExcludeOutputLine({ output: "- abc"}).merge().output === "- abc"
-// filterExcludeOutputLine({ output: "-- abc"}) instanceof Result.Error
+//ctxFilterOutput :: (string -> boolean) -> (ctx -> Result ctx ctx)
+const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.output, ctx)))
+
+// ctxFilterOutputMatch :: (context ctx, Result Res) => regex -> (ctx -> Res ctx ctx)
+const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
+
+//::: ctxFilterOutputNotMatch
+// const ctxFilterOutputNotMatch = lineProc.CtxFilter.outputNotMatch(/--/)
+// ctxFilterOutputNotMatch({ output: "- abc"}).merge().output === "- abc"
+// ctxFilterOutputNotMatch({ output: "-- abc"}) instanceof Result.Error
 //
-// filterExcludeOutputLine :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
-const filterExcludeOutputLine = regex => ctx => regex.test(L.view(lens.output, ctx)) ? Result.Error(ctx)
-    : Result.Ok(ctx)
+// ctxFilterOutputNotMatch :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+const ctxFilterOutputNotMatch = regex => ctxFilterOutput(s => !regex.test(s))
 
 
-//createCtxBlockResulter :: regex -> regex -> lens -> CtxEvents -> CtxBlockResulter
+//createCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
 const createCtxBlockResulter = (beginBlockRegex, endBlockRegex, blockLineNumLens, events) => {
     const BLOCK_LINE_OFF = -1
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
@@ -202,42 +228,26 @@ const createCtxBlockResulter = (beginBlockRegex, endBlockRegex, blockLineNumLens
     }
 }
 
-//createJSCommentCtxBlockResulter :: regex -> regex -> lens -> CtxEvents -> CtxBlockResulter
-const createJSCommentCtxBlockResulter = events => createCtxBlockResulter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
+//jsCommentCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
+const jsCommentCtxBlockResulter = events => createCtxBlockResulter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
     lens.JSBlockCommentLineNum, events)
 
-//::: filterJSLineComment
-// const filterJSLineComment = lineProc.filter.JSLineComment
-// assert.equal(filterJSLineComment({ output: "\/\/ abc"}).merge().output, "\/\/ abc")
-// filterJSLineComment({ output: "\/ abc"}) instanceof Result.Error
-//
-const filterJSLineComment = createOutputLineFilter(JSLineCommentRegex)
 
-
-// line transformers  
-// str -> str
-
-
-
-// mappers
+// CtxActions
 // ctx -> ctx
 
-//lift2ctxOutputMapper :: (str -> str) -> ctx -> ctx
-const liftCtxOutputMapper = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
+//ctxOutputAction takes a string manipulation function and applies it to the output field if the ctx context object
+//ctxOutputAction :: (str -> str) -> ctx -> ctx
+const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
 
-const trimOutputMapper = liftCtxOutputMapper(s => s.trim())
-const printCtxInputMapper = ctx => tap(compose(console.log, L.view(lens.input)), ctx)
-const printCtxOutputMapper = ctx => tap(compose(console.log, L.view(lens.output)), ctx)
-
-const addLineNumMapper = ctx => L.over(lens.output,
-    s => `${L.view(lens.lineNum, ctx)}:\t${s}`,
-    ctx)
+//trims the output line of the context
+const trimCtxOutputAction = ctxMapOutputAction(s => s.trim())
 
 //------------------------------------------------------------------------
 
-//setContextLine :: ctx -> str -> ctx
-const setContextLine = line => ctx => compose.all(
-    trimOutputMapper,
+//setCtxLine :: ctx -> str -> ctx
+const setCtxLine = line => ctx => compose.all(
+    trimCtxOutputAction,
     L.set(lens.output, line),
     L.set(lens.input, line),
     L.over(lens.lineNum, inc),
@@ -247,61 +257,75 @@ const setContextLine = line => ctx => compose.all(
 //createCtxReducer :: CtxAction -> CtxReducer
 const createCtxReducer = ctxAction => (ctx, line) => compose.all(
     ctxAction,
-    setContextLine(line),
+    setCtxLine(line),
 )(ctx)
 
 
 //==================================================================================
 
 module.exports = {
-    factory: {
-        //ctx
-        createContext,
-        //createCtxReducer :: CtxAction -> CtxReducer
-        createCtxReducer: createCtxReducer,
-        //ctx filters
-        createJSCommentCtxBlockResulter: createJSCommentCtxBlockResulter,
-        createCtxBlockResulter: createCtxBlockResulter,
-    },
-
-    //ctx lens
-    lens,
-
-    //events
-    addEventHandlerBefore: addEventHandlerBefore,
-
-    // (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
-    filter: {
-        outputLine: createOutputLineFilter,
-        excludeOutputLine: filterExcludeOutputLine,
-        JSLineComment: filterJSLineComment,
-    },
-
-    //ctx -> ctx
-    mapper: {
-        echoOutputLine: printCtxOutputMapper,
-        echoInputLine: printCtxInputMapper,
-        addLineNum: addLineNumMapper,
-        liftCtxOutput: liftCtxOutputMapper,
-        trimOutput: trimOutputMapper,
-    },
-
-    //regexes
-    regex: {
+    Regex: {
         beginJSBlockComment: beginJSBlockCommentRegex,
         endJSBlockComment: endJSBlockCommentRegex,
         JSLineComment: JSLineCommentRegex,
         blankLine: blankLineRegex,
     },
 
+    Factory: {
+        //ctx
+        createContext,
+        //ctxFilter :: (ctx -> boolean) -> CtxReducer
+        createCtxFilter,
+        //CtxBlockResulter :: ctx -> Result ctx ctx
+        createCtxBlockResulter,
+        //createCtxReducer :: CtxAction -> CtxReducer
+        createCtxReducer,
+    },
+
+    //ctx lens  //to help the IDE with auto-complete
+    Lens: {
+        input: lens.input,    //original input line
+        output: lens.output,   //modified line
+        lineNum: lens.lineNum,
+        //JSBlockCommentLineNum: lens.JSBlockCommentLineNum,    //internal
+    },
+
+    //ctx
+
+    //tapCtxProp :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
+    tapCtxProp,
+    
+    //events
+    //TODO: remove
+    addEventHandlerBefore,
+
+    // (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+    CtxFilter: {
+        output: ctxFilterOutput,
+        outputMatch: ctxFilterOutputMatch,
+        outputNotMatch: ctxFilterOutputNotMatch,
+    },
+
+    //ctxAction :: ctx -> ctx
+    CtxAction: {
+        mapOutput: ctxMapOutputAction,
+        trimOutput: trimCtxOutputAction,
+    },
+
+    //CtxResulters
+    ctxBlockResulter: {
+        jsCommentBlock: jsCommentCtxBlockResulter,
+    },
+    
+
+    //---------------------------------------------------
 
     //logging
     log, log2,
 
     //other
 
-    //tapCtx :: (ctx {a, ...}) => lens -> (a -> _) -> ctx -> ctx
-    tapCtx,
+    
     //tap :: (a -> _) -> a -> a
     tap,
     //inc :: num -> num

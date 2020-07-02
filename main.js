@@ -54,7 +54,7 @@ impure.app = (filename, evalHandlerObj) => {
         // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
         // const testHandler = ep.factory.createTestLineFilter({onTestRelated: ctx => Result.Ok(lp.tapCtx(lp.lens.output, console.log, ctx))})
 
-        const process = lp.factory.createCtxReducer(testHandlerObj.filter)
+        const process = lp.Factory.createCtxReducer(testHandlerObj.filter)
 
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))

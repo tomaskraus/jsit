@@ -12,7 +12,7 @@ const L = require('lenses')
 
 const app = (context, action, s) => {
     const strs = s.split('\n')
-    const reducer = lp.factory.createCtxReducer(action)
+    const reducer = lp.Factory.createCtxReducer(action)
     console.log("--START-----------")
 
     const resultCtx = strs.reduce(reducer, context)
@@ -201,17 +201,18 @@ hu!
 // const handler = printAllHandler
 const testLineAction = compose.all(
     res => res.merge(),
-    map(lp.mapper.echoOutputLine),
+    map(ctx => lp.tap(compose(console.log, L.view(lp.Lens.output)), ctx)),
 
-    map(lp.mapper.addLineNum),
+    map(ctx => L.over(lp.Lens.output,
+        s => `${L.view(lp.Lens.lineNum, ctx)}:\t${s}`,
+        ctx)),
     // lp.log,
-    lp.factory.createCtxBlockResulter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum,
-        {}),
+    lp.ctxBlockResulter.jsCommentBlock({}),
     // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
     // lp.filter.JSBlockComment,
     //lp.filter.lineComment
 
 )
 
-console.log(app(lp.factory.createContext(), testLineAction, str))
+console.log(app(lp.Factory.createContext(), testLineAction, str))
 
