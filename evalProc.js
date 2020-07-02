@@ -12,7 +12,7 @@ const lp = require("./lineProc")
 
 
 // lenses   for evaluation-param 
-const lens = L.makeLenses(['blockTestLineNum', 'vars', 'stats', 'numFailed', 'totalTests'])
+const lens = L.makeLenses(['vars', 'stats', 'numFailed', 'totalTests'])
 lens.stats_numFailed = compose(lens.stats, lens.numFailed)
 lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 
@@ -96,8 +96,8 @@ const createTestRelatedInBlockFilter = events => {
 
 // Result ctx ctx -> Result ctx ctx
 const _createFilterTestLine = (events, endTestCommentRegex) =>
-    lp.Factory.createCtxBlockResulter(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, lp.addEventHandlerBefore(_resetVarsHandler, 'onBlockBegin', events)
+    lp.Factory.createCtxBlockResulter('testBlock', beginTestCommentRegex, endTestCommentRegex,
+        lp.addEventHandlerBefore(_resetVarsHandler, 'onBlockBegin', events)
     )
 
 const filterExcludeNonTestLines = compose.all(

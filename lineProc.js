@@ -110,7 +110,6 @@ const lens = L.makeLenses([
     'input',    //original input line
     'output',   //modified line
     'lineNum',
-    'JSBlockCommentLineNum' //javascript comment block handling
 ])
 
 
@@ -197,9 +196,12 @@ const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
 // ctxFilterOutputNotMatch :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
 const ctxFilterOutputNotMatch = regex => ctxFilterOutput(s => !regex.test(s))
 
-
-//createCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
-const createCtxBlockResulter = (beginBlockRegex, endBlockRegex, blockLineNumLens, events) => {
+//creates a new CtxBlockResulter. 
+//The id parameter should differ among nested ctxBlockResulters.
+//createCtxBlockResulter :: string -> regex -> regex -> BlockEvents -> CtxBlockResulter
+const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
+    //TODO: place blockLineNumLens under the new "id lens"
+    const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
     const BLOCK_LINE_OFF = -1
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
     const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
@@ -229,8 +231,9 @@ const createCtxBlockResulter = (beginBlockRegex, endBlockRegex, blockLineNumLens
 }
 
 //jsCommentCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
-const jsCommentCtxBlockResulter = events => createCtxBlockResulter(beginJSBlockCommentRegex, endJSBlockCommentRegex,
-    lens.JSBlockCommentLineNum, events)
+const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComment',
+    beginJSBlockCommentRegex, endJSBlockCommentRegex,
+    events)
 
 
 // CtxActions
@@ -287,14 +290,13 @@ module.exports = {
         input: lens.input,    //original input line
         output: lens.output,   //modified line
         lineNum: lens.lineNum,
-        //JSBlockCommentLineNum: lens.JSBlockCommentLineNum,    //internal
     },
 
     //ctx
 
     //tapCtxProp :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
     tapCtxProp,
-    
+
     //events
     //TODO: remove
     addEventHandlerBefore,
@@ -316,7 +318,7 @@ module.exports = {
     ctxBlockResulter: {
         jsCommentBlock: jsCommentCtxBlockResulter,
     },
-    
+
 
     //---------------------------------------------------
 
@@ -325,7 +327,7 @@ module.exports = {
 
     //other
 
-    
+
     //tap :: (a -> _) -> a -> a
     tap,
     //inc :: num -> num
