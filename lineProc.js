@@ -164,7 +164,7 @@ const createCtxFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
 //ctxFilterOutput :: (string -> boolean) -> CtxResultable
 const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.output, ctx)))
 
-// ctxFilterOutputMatch :: (context ctx, Result Res) => regex -> (ctx -> Res ctx ctx)
+// ctxFilterOutputMatch :: (context ctx, Result Res) => regex -> CtxResultable
 const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
 
 //::: ctxFilterOutputNotMatch
@@ -172,7 +172,7 @@ const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
 // ctxFilterOutputNotMatch({ output: "- abc"}).merge().output === "- abc"
 // ctxFilterOutputNotMatch({ output: "-- abc"}) instanceof Result.Error
 //
-// ctxFilterOutputNotMatch :: (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+// ctxFilterOutputNotMatch :: regex -> CtxResultable
 const ctxFilterOutputNotMatch = regex => ctxFilterOutput(s => !regex.test(s))
 
 //creates a new CtxBlockResulter. 
@@ -301,7 +301,7 @@ module.exports = {
     //TODO: remove
     addEventHandlerBefore,
 
-    // (context ctx, Result Res) => regex -> ctx -> Res ctx ctx
+    // regex -> CtxResultable
     CtxFilter: {
         output: ctxFilterOutput,
         outputMatch: ctxFilterOutputMatch,
@@ -314,6 +314,7 @@ module.exports = {
         trimOutput: trimCtxOutputAction,
     },
 
+    //ctxResultable2Action :: CtxResultable -> CtxAction 
     ctxResultable2Action,
 
     //CtxResulters
