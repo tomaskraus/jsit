@@ -200,18 +200,19 @@ hu!
 `
 
 // const handler = printAllHandler
-const testLineAction = compose.all(
-    res => res.merge(),
-    map(ctx => utils.tap(compose(console.log, L.view(lp.Lens.output)), ctx)),
+const testLineAction = lp.ctxResultable2Action(
+    compose.all(
+        map(ctx => utils.tap(compose(console.log, L.view(lp.Lens.output)), ctx)),
 
-    map(ctx => L.over(lp.Lens.output,
-        s => `${L.view(lp.Lens.lineNum, ctx)}:\t${s}`,
-        ctx)),
-    // utils.log,
-    lp.ctxBlockResulter.jsCommentBlock({}),
-    // { onBlockEnd: ctx => { utils.log("----------block end"); return Result.Error(ctx) } } )
-    // lp.filter.JSBlockComment,
-    //lp.filter.lineComment
+        map(ctx => L.over(lp.Lens.output,
+            s => `${L.view(lp.Lens.lineNum, ctx)}:\t${s}`,
+            ctx)),
+        // utils.log,
+        lp.ctxBlockResulter.jsCommentBlock({}),
+        // { onBlockEnd: ctx => { utils.log("----------block end"); return Result.Error(ctx) } } )
+        // lp.filter.JSBlockComment,
+        //lp.filter.lineComment
+    )
 
 )
 

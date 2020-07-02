@@ -47,6 +47,9 @@
  *   create the CtxBlockResulter by using the factory function:
  *      createCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
  *
+ * For convenience, there is a conversion function:
+ *   ctxResultable2Action :: CtxResultable -> CtxAction
+ * 
  * BlockEvents: a bunch of CtxResulter objects.
  *   They are called by CtxBlockResulter object when a certain block state is reached. 
  *   Those events are:
@@ -221,6 +224,25 @@ const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
 //trims the output line of the context
 const trimCtxOutputAction = ctxMapOutputAction(s => s.trim())
 
+/**
+    ctxResultable2Action :: CtxResultable -> CtxAction 
+  
+    //::: ctxResultable2Action
+    //    
+    const ctxResultable2Action = lineProc.ctxResultable2Action
+    const evenResulter = ctx => ctx.num % 2 === 0 ? Result.Ok(ctx) : Result.Error(ctx)
+    const evenAction = ctxResultable2Action(evenResulter)    
+    //
+    evenResulter({num: 4}).merge().num === 4
+    evenAction({num: 4}).num === 4
+    //
+    evenResulter({num: 3}) instanceof Result.Error
+    evenAction({num: 3}).num === 3  
+ */
+ctxResultable2Action = curry(2, 
+    (resultable, ctx) => resultable(ctx).merge()
+) 
+
 //------------------------------------------------------------------------
 
 //setCtxLine :: ctx -> str -> ctx
@@ -288,6 +310,8 @@ module.exports = {
         mapOutput: ctxMapOutputAction,
         trimOutput: trimCtxOutputAction,
     },
+
+    ctxResultable2Action,
 
     //CtxResulters
     ctxBlockResulter: {

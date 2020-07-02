@@ -141,9 +141,10 @@ const createTestLineObj = (events) => {
     }
     const testFilter = createTestRelatedFilter(fullEvents)
     return {
-        filter: ctx => testFilter(ctx)
-            .chain(fullEvents.onTest)
-            .merge(),
+        filter: lp.ctxResultable2Action(
+                    ctx => testFilter(ctx)
+                        .chain(fullEvents.onTest)
+            ),
         flush: ctx => fullEvents.onEnd(ctx)
     }
 }
