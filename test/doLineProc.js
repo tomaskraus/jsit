@@ -6,7 +6,7 @@ const utils = require('../utils')
 
 
 const printResulter = compose.all(
-        map(lp.tapCtxProp(lp.Lens.input, s => console.log(`str='${s}'`))),
+        map(lp.tapCtxLens(lp.Lens.input, s => console.log(`str='${s}'`))),
         lp.ctxBlockResulter.jsCommentBlock({
             onBlockBegin: ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),
             onBlockEnd: ctx => Result.Error(utils.tap(() => console.log(`----end`), ctx)),

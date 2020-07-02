@@ -96,14 +96,14 @@ const lens = L.makeLenses([
     Runs a custom function fn with "some property p of context ctx" as an argument.
     Leaves that context unchanged.
 
-    tapCtxProp :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
+    tapCtxLens :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
 
-    //::: tapCtxProp   
-    const newCtx = lineProc.tapCtxProp(lineProc.Lens.input, x => x + 1, {input: 1})
+    //::: tapCtxLens   
+    const newCtx = lineProc.tapCtxLens(lineProc.Lens.input, x => x + 1, {input: 1})
     assert.equal(newCtx.input, 1)   //should stay unchanged
 */
 
-const tapCtxProp = curry(3, (lens, fn, ctx) => {
+const tapCtxLens = curry(3, (lens, fn, ctx) => {
     fn(L.view(lens, ctx))
     return ctx
 })
@@ -294,8 +294,8 @@ module.exports = {
 
     //ctx
 
-    //tapCtxProp :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
-    tapCtxProp,
+    //tapCtxLens :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
+    tapCtxLens: tapCtxLens,
 
     //events
     //TODO: remove

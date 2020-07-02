@@ -124,7 +124,7 @@ const _createAfterTestRelatedFilter = events => compose.all(
 
 const printBeginTestOutputHandler = compose.all(
     Result.Error,
-    lp.tapCtxProp(lp.Lens.output, ln => (ln)
+    lp.tapCtxLens(lp.Lens.output, ln => (ln)
         ? console.log(ln)
         : null
     ),
