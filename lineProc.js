@@ -50,9 +50,9 @@
  * For convenience, there is a conversion function:
  *   ctxResultable2Action :: CtxResultable -> CtxAction
  * 
- * BlockEvents: a bunch of CtxResulter objects.
+ * BlockEvents: a bunch of named CtxResulter objects.
  *   They are called by CtxBlockResulter object when a certain block state is reached. 
- *   Those events are:
+ *   Those event names are:
  *      - onBlockBegin
  *      - onBlockEnd
  *      - onBlock
@@ -164,7 +164,7 @@ const createCtxFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
 //ctxFilterOutput :: (string -> boolean) -> CtxResultable
 const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.output, ctx)))
 
-// ctxFilterOutputMatch :: (context ctx, Result Res) => regex -> CtxResultable
+// ctxFilterOutputMatch :: regex -> CtxResultable
 const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
 
 //::: ctxFilterOutputNotMatch
@@ -208,7 +208,7 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
     }
 }
 
-//jsCommentCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
+//jsCommentCtxBlockResulter :: BlockEvents -> CtxBlockResulter
 const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComment',
     beginJSBlockCommentRegex, endJSBlockCommentRegex,
     events)
@@ -222,6 +222,7 @@ const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComme
 const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
 
 //trims the output line of the context
+//trimCtxOutputAction :: CtxAction
 const trimCtxOutputAction = ctxMapOutputAction(s => s.trim())
 
 /**
@@ -285,14 +286,12 @@ module.exports = {
         createCtxReducer,
     },
 
-    //ctx lens  //to help the IDE with auto-complete
+    //...helps the IDE with auto-complete
     Lens: {
-        input: lens.input,    //original input line
-        output: lens.output,   //modified line
-        lineNum: lens.lineNum,
+        input: lens.input,      //original input line
+        output: lens.output,    //modified line
+        lineNum: lens.lineNum,  //line number
     },
-
-    //ctx
 
     //tapCtxLens :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
     tapCtxLens: tapCtxLens,
@@ -301,24 +300,30 @@ module.exports = {
     //TODO: remove
     addEventHandlerBefore,
 
-    // regex -> CtxResultable
     CtxFilter: {
+        //ctxFilterOutput :: (string -> boolean) -> CtxResultable
         output: ctxFilterOutput,
+
+        //ctxFilterOutputMatch :: regex -> CtxResultable
         outputMatch: ctxFilterOutputMatch,
+
+        //ctxFilterOutputNotMatch :: regex -> CtxResultable
         outputNotMatch: ctxFilterOutputNotMatch,
     },
 
-    //ctxAction :: ctx -> ctx
     CtxAction: {
+        //ctxMapOutputAction :: (str -> str) -> CtxAction
         mapOutput: ctxMapOutputAction,
+
+        //trimCtxOutputAction :: CtxAction
         trimOutput: trimCtxOutputAction,
     },
 
     //ctxResultable2Action :: CtxResultable -> CtxAction 
     ctxResultable2Action,
 
-    //CtxResulters
     ctxBlockResulter: {
+        //jsCommentCtxBlockResulter :: BlockEvents -> CtxBlockResulter
         jsCommentBlock: jsCommentCtxBlockResulter,
     },
 
