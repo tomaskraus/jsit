@@ -5,8 +5,7 @@ const lp = require('../lineProc')
 const utils = require('../utils')
 
 
-const printAction = lp.ctxResultable2Action(
-    compose.all(
+const printResulter = compose.all(
         map(lp.tapCtxProp(lp.Lens.input, s => console.log(`str='${s}'`))),
         lp.ctxBlockResulter.jsCommentBlock({
             onBlockBegin: ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),
@@ -14,8 +13,10 @@ const printAction = lp.ctxResultable2Action(
         }),
         //utils.log,
     )
+
+const printReducer = lp.Factory.createCtxReducer(
+    lp.ctxResultable2Action(printResulter)
 )
-const printReducer = lp.Factory.createCtxReducer(printAction)
 
 
 const main = strArr => {
