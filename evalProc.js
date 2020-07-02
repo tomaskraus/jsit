@@ -9,6 +9,7 @@ const { map, chain } = require('pointfree-fantasy')
 const Result = require('folktale/result')
 const L = require('lenses')
 const lp = require("./lineProc")
+const utils = require('./utils')
 
 
 // lenses   for evaluation-param 
@@ -70,7 +71,7 @@ const createTestRelatedFilter = events => {
                 Ok: chain(inBlockTestRelatedFilter),
 
                 Error: reslt => Result.Ok(reslt.value) //here, value holds a ctx inside the Result obj
-                    // .map(lp.log)
+                    // .map(utils.log)
                     .chain(lp.CtxFilter.outputMatch(lp.Regex.JSLineComment))
                     .chain(lineTestRelatedFilter),
             })
@@ -86,7 +87,7 @@ const createTestRelatedLineFilter = events => compose.all(
 const createTestRelatedInBlockFilter = events => {
     const atrf = _createAfterTestRelatedFilter(events)
     return compose.all(
-        // lp.log2("aatrf"),
+        // utils.log2("aatrf"),
         chain(atrf),
         _createFilterTestLine(events, endTestCommentRegex),
         lp.CtxAction.mapOutput(removeInnerStar),
@@ -116,7 +117,7 @@ const _createAfterTestRelatedFilter = events => compose.all(
 
 // const printEndBlock = compose.all(
 //     Result.Error,
-//     lp.tap(
+//     utils.tap(
 //         () => console.log("---------------------")
 //     ),
 // )
@@ -170,11 +171,11 @@ const failMessage = (msg, ctx) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx
 
 // ctx -> Result ctx
 const createTestHandler = evaluatorObj => {
-    // lp.log("createTestHandler -- --")   
-    const resultAddFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
+    // utils.log("createTestHandler -- --")   
+    const resultAddFail = ctx => Result.Error(L.over(lens.stats_numFailed, utils.inc, ctx))
     return ctx => {
-        // lp.log2("line", ctx)
-        const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
+        // utils.log2("line", ctx)
+        const ctx2 = L.over(lens.stats_totalTests, utils.inc, ctx)
         try {
             const testPassed = evaluatorObj.eval(L.view(lp.Lens.output, ctx2))
             if (testPassed === false) {

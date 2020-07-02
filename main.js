@@ -45,7 +45,7 @@ const fs = require('fs');
 impure.app = (filename, evalHandlerObj) => {
     try {
         impure.context.fileName = fileName
-        // lp.log(impure.context)
+        // utils.log(impure.context)
 
         const testHandlerObj = ep.factory.createTestLineObj({
             onTest: ep.factory.createTestHandler(evalHandlerObj),

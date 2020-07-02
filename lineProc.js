@@ -72,31 +72,7 @@ const { compose, curry } = require('folktale/core/lambda')
 const { chain } = require('pointfree-fantasy')
 const Result = require('folktale/result')
 const L = require('lenses')
-
-//--auxiliary pointfree------------------------------------------------------------------------------
-
-
-//tap :: (a -> _) -> a -> a
-const tap = curry(2, (fn, a) => {
-    fn(a)
-    return a
-})
-
-//inc :: num -> num
-//:::
-// const lp = lineProc
-// lp.inc(1) === 2
-// assert.equal(lp.inc(-1), 0)
-const inc = i => i + 1
-
-//log2 :: str -> a -> a
-const log2 = curry(2, (descr, a) => tap(s => console.log(`LOG ${descr}:`, s), a)
-)
-
-//log :: a -> a
-const log = log2("")
-
-//--------------------------------------------------------------------------------
+const utils = require('./utils')
 
 //createContext :: () -> ctx
 const createContext = () => ({
@@ -222,7 +198,6 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
         //end block
         if (endBlockRegex.test(output)) {
             return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
-                // .map(tap(() => console.log('- - - - - - - ')))
                 .chain(fullEvents.onBlockEnd)
         }
         return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
@@ -253,7 +228,7 @@ const setCtxLine = line => ctx => compose.all(
     trimCtxOutputAction,
     L.set(lens.output, line),
     L.set(lens.input, line),
-    L.over(lens.lineNum, inc),
+    L.over(lens.lineNum, utils.inc),
     // log2("contextLine"),
 )(ctx)
 
@@ -319,17 +294,4 @@ module.exports = {
         jsCommentBlock: jsCommentCtxBlockResulter,
     },
 
-
-    //---------------------------------------------------
-
-    //logging
-    log, log2,
-
-    //other
-
-
-    //tap :: (a -> _) -> a -> a
-    tap,
-    //inc :: num -> num
-    inc,
 }

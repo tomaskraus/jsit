@@ -7,6 +7,7 @@ const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
 const lp = require("./lineProc")
 const L = require('lenses')
+const utils = require('./utils')
 
 
 
@@ -201,14 +202,14 @@ hu!
 // const handler = printAllHandler
 const testLineAction = compose.all(
     res => res.merge(),
-    map(ctx => lp.tap(compose(console.log, L.view(lp.Lens.output)), ctx)),
+    map(ctx => utils.tap(compose(console.log, L.view(lp.Lens.output)), ctx)),
 
     map(ctx => L.over(lp.Lens.output,
         s => `${L.view(lp.Lens.lineNum, ctx)}:\t${s}`,
         ctx)),
-    // lp.log,
+    // utils.log,
     lp.ctxBlockResulter.jsCommentBlock({}),
-    // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
+    // { onBlockEnd: ctx => { utils.log("----------block end"); return Result.Error(ctx) } } )
     // lp.filter.JSBlockComment,
     //lp.filter.lineComment
 
