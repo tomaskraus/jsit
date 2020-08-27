@@ -5,7 +5,7 @@
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
-const lp = require("./lineProc")
+const lp = require("./blockProc")
 const L = require('lenses')
 const utils = require('./utils')
 

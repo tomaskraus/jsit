@@ -3,14 +3,11 @@
  * 
  * You can:
  * - create custom block "filters" by specifying block marks (beginning and end) via regex.
- * - react to block-related events
  * - chain these block filters
  *
  * 
  * There are bunch of objects:
- *   context, actions, resultables, blockEvents, reducers
  * 
- * ctx is a "context" object, which stores a state.
  *   Has three main properties:
  *      - input: (string) the original line read
  *      - output: (string) line modified by some CtxActions, ...
@@ -75,7 +72,7 @@
  *   create the CtxReducer by using the factory function:
  *      createCtxReducer :: CtxAction -> CtxReducer
  * 
- * @module lineProc
+ * @module blockProc
  */
 
 
@@ -107,7 +104,7 @@ const lens = L.makeLenses([
     tapCtxLens :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
 
     //::: tapCtxLens   
-    const newCtx = lineProc.tapCtxLens(lineProc.Lens.input, x => x + 1, {input: 1})
+    const newCtx = blockProc.tapCtxLens(blockProc.Lens.input, x => x + 1, {input: 1})
     assert.equal(newCtx.input, 1)   //should stay unchanged
 */
 
@@ -145,10 +142,10 @@ const _mergeDefaultEventSettings = customEventSettings => ({ ...createDefaultEve
 // const evts = { something: 1, onStart: add1 }
 // //
 // assert.deepEqual({...evts}, evts)
-// assert.deepEqual(lineProc.addEventHandlerBefore(comps, 'onEnd', evts), {...evts, onEnd: comps})
+// assert.deepEqual(blockProc.addEventHandlerBefore(comps, 'onEnd', evts), {...evts, onEnd: comps})
 // evts.onStart(10).merge() == 11
 // ({...evts, onStart: comps}).onStart(10).merge() == 101
-// lineProc.addEventHandlerBefore(mult10, 'onStart', evts).onStart(10).merge() == 101
+// blockProc.addEventHandlerBefore(mult10, 'onStart', evts).onStart(10).merge() == 101
 
 // addEventHandlerBefore :: (events { key: CtxResultable, ...}) => CtxResultable -> key -> events -> events
 const addEventHandlerBefore = curry(3, (handler, eventName, events) => {
@@ -176,7 +173,7 @@ const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(len
 const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
 
 //::: ctxFilterOutputNotMatch
-// const ctxFilterOutputNotMatch = lineProc.CtxFilter.outputNotMatch(/--/)
+// const ctxFilterOutputNotMatch = blockProc.CtxFilter.outputNotMatch(/--/)
 // ctxFilterOutputNotMatch({ output: "- abc"}).merge().output === "- abc"
 // ctxFilterOutputNotMatch({ output: "-- abc"}) instanceof Result.Error
 //
@@ -238,7 +235,7 @@ const trimCtxOutputAction = ctxMapOutputAction(s => s.trim())
   
     //::: ctxResultable2Action
     //    
-    const ctxResultable2Action = lineProc.ctxResultable2Action
+    const ctxResultable2Action = blockProc.ctxResultable2Action
     const evenResulter = ctx => ctx.num % 2 === 0 ? Result.Ok(ctx) : Result.Error(ctx)
     const evenAction = ctxResultable2Action(evenResulter)    
     //
