@@ -8,12 +8,13 @@
  * 
  * There are bunch of objects:
  * 
+ * ctx (context) is the object, that stores a line state.
  *   Has three main properties:
- *      - input: (string) the original line read
- *      - output: (string) line modified by some CtxActions, ...
- *      - lineNum: (number) a line number
+ *      - lineNum: (number) a line number (row counter)
+ *      - line: (string) line modified by some CtxActions, ...
+ *      - original: (string) the original line read
  * 
- *   ctx :: { input: string, output: string, lineNum: number }
+ *   ctx :: { lineNum: number, line: string, original: string }
  * 
  * 
  * CtxAction is a function that "changes" the state of the ctx object (by creating a new ctx object...)
@@ -84,7 +85,7 @@ const utils = require('./utils')
 
 //createContext :: () -> ctx
 const createContext = () => ({
-    lineNum: 0,     //line number (counter)
+    lineNum: 0,     //line number (row counter)
     line: '',       //line read
     original: '',   //original line read (for read only purpose)
 })
