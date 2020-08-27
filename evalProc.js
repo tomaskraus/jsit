@@ -43,7 +43,7 @@ const removeLineCommentExceptTestBegin = line => line.replace(/^(\s*\/\/)\s*([^:
 // { str: (ctx -> Result), ... }
 
 const createDefaultEventSettings = () => ({
-    onTestBegin: printBeginTestOutputHandler,   //begin of test block
+    onTestBegin: printBeginTestLineHandler,   //begin of test block
     onTest: Result.Ok,                          //fired when inside the test
     onTestRelated: Result.Ok,                   //when inside the test-related line
     onEnd: Result.Ok,                           //fired at the very end, when flush method is called
@@ -72,15 +72,15 @@ const createTestRelatedFilter = events => {
 
                 Error: reslt => Result.Ok(reslt.value) //here, value holds a ctx inside the Result obj
                     // .map(utils.log)
-                    .chain(lp.CtxFilter.outputMatch(lp.Regex.JSLineComment))
+                    .chain(lp.CtxFilter.lineMatch(lp.Regex.JSLineComment))
                     .chain(lineTestRelatedFilter),
             })
-            .map(lp.CtxAction.trimOutput)
+            .map(lp.CtxAction.trimLine)
 }
 
 const createTestRelatedLineFilter = events => compose.all(
     chain(_createAfterTestRelatedFilter(events)),
-    map(lp.CtxAction.mapOutput(removeLineCommentExceptTestBegin)),
+    map(lp.CtxAction.mapLine(removeLineCommentExceptTestBegin)),
     _createFilterTestLine(events, endTestLineCommentRegex),
 )
 
@@ -90,7 +90,7 @@ const createTestRelatedInBlockFilter = events => {
         // utils.log2("aatrf"),
         chain(atrf),
         _createFilterTestLine(events, endTestCommentRegex),
-        lp.CtxAction.mapOutput(removeInnerStar),
+        lp.CtxAction.mapLine(removeInnerStar),
     )
 }
 
@@ -102,9 +102,9 @@ const _createFilterTestLine = (events, endTestCommentRegex) =>
     )
 
 const filterExcludeNonTestLines = compose.all(
-    chain(lp.CtxFilter.outputNotMatch(lp.Regex.blankLine)),
-    lp.CtxFilter.outputNotMatch(lp.Regex.JSLineComment),
-    lp.CtxAction.trimOutput,
+    chain(lp.CtxFilter.lineNotMatch(lp.Regex.blankLine)),
+    lp.CtxFilter.lineNotMatch(lp.Regex.JSLineComment),
+    lp.CtxAction.trimLine,
 )
 
 const _createAfterTestRelatedFilter = events => compose.all(
@@ -122,14 +122,14 @@ const _createAfterTestRelatedFilter = events => compose.all(
 //     ),
 // )
 
-const printBeginTestOutputHandler = compose.all(
+const printBeginTestLineHandler = compose.all(
     Result.Error,
     lp.tapCtxLens(lp.Lens.line, ln => (ln)
         ? console.log(ln)
         : null
     ),
-    lp.CtxAction.trimOutput,
-    lp.CtxAction.mapOutput(removeBeginTestBlockComment),
+    lp.CtxAction.trimLine,
+    lp.CtxAction.mapLine(removeBeginTestBlockComment),
 )
 
 

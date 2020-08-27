@@ -4,9 +4,13 @@
  * You can:
  * - create custom block "filters" by specifying block marks (beginning and end) via regex.
  * - chain these block filters
+ * - react to block-related events
  *
  * 
+ * TODO: resolve keyword clash: reducer vs. action
+ * 
  * There are bunch of objects:
+ *   context (a.k.a. ctx), reducers, resultables, blockEvents
  * 
  * ctx (context) is the object, that stores a line state.
  *   Has three main properties:
@@ -167,19 +171,19 @@ const createCtxFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     ? Result.Ok(ctx)
     : Result.Error(ctx)
 
-//ctxFilterOutput :: (string -> boolean) -> CtxResultable
-const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.line, ctx)))
+//ctxFilterLine :: (string -> boolean) -> CtxResultable
+const ctxFilterLine = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.line, ctx)))
 
-// ctxFilterOutputMatch :: regex -> CtxResultable
-const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
+// ctxFilterLineMatch :: regex -> CtxResultable
+const ctxFilterLineMatch = regex => ctxFilterLine(s => regex.test(s))
 
-//::: ctxFilterOutputNotMatch
-// const ctxFilterOutputNotMatch = blockProc.CtxFilter.outputNotMatch(/--/)
-// ctxFilterOutputNotMatch({ line: "- abc"}).merge().line === "- abc"
-// ctxFilterOutputNotMatch({ line: "-- abc"}) instanceof Result.Error
+//::: ctxFilterLineNotMatch
+// const ctxFilterLineNotMatch = blockProc.CtxFilter.lineNotMatch(/--/)
+// ctxFilterLineNotMatch({ line: "- abc"}).merge().line === "- abc"
+// ctxFilterLineNotMatch({ line: "-- abc"}) instanceof Result.Error
 //
-// ctxFilterOutputNotMatch :: regex -> CtxResultable
-const ctxFilterOutputNotMatch = regex => ctxFilterOutput(s => !regex.test(s))
+// ctxFilterLineNotMatch :: regex -> CtxResultable
+const ctxFilterLineNotMatch = regex => ctxFilterLine(s => !regex.test(s))
 
 //creates a new CtxBlockResulter. 
 //The id parameter should differ among nested ctxBlockResulters.
@@ -223,13 +227,13 @@ const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComme
 // CtxActions
 // ctx -> ctx
 
-//ctxMapOutputAction takes a string manipulation function and applies it to the output field if the ctx context object
-//ctxMapOutputAction :: (str -> str) -> CtxAction
-const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.line, fn, ctx))
+//ctxMapLineAction takes a string manipulation function and applies it to the 'line' field if the ctx context object
+//ctxMapLineAction :: (str -> str) -> CtxAction
+const ctxMapLineAction = curry(2, (fn, ctx) => L.over(lens.line, fn, ctx))
 
-//trims the output line of the context
-//trimCtxOutputAction :: CtxAction
-const trimCtxOutputAction = ctxMapOutputAction(s => s.trim())
+//trims the line line of the context
+//trimCtxLineAction :: CtxAction
+const trimCtxLineAction = ctxMapLineAction(s => s.trim())
 
 /**
     ctxResultable2Action :: CtxResultable -> CtxAction 
@@ -254,7 +258,7 @@ const ctxResultable2Action = curry(2,
 
 //setCtxLine :: ctx -> str -> ctx
 const setCtxLine = line => ctx => compose.all(
-    trimCtxOutputAction,
+    trimCtxLineAction,
     L.set(lens.line, line),
     L.set(lens.original, line),
     L.over(lens.lineNum, utils.inc),
@@ -322,22 +326,25 @@ module.exports = {
     addEventHandlerBefore,
 
     CtxFilter: {
-        //ctxFilterOutput :: (string -> boolean) -> CtxResultable
-        line: ctxFilterOutput,
+        //ctxFilterLine :: (string -> boolean) -> CtxResultable
+        line: ctxFilterLine,
 
-        //ctxFilterOutputMatch :: regex -> CtxResultable
-        outputMatch: ctxFilterOutputMatch,
+        //ctxFilterLineMatch :: regex -> CtxResultable
+        lineMatch: ctxFilterLineMatch,
 
-        //ctxFilterOutputNotMatch :: regex -> CtxResultable
-        outputNotMatch: ctxFilterOutputNotMatch,
+        //ctxFilterLineNotMatch :: regex -> CtxResultable
+        lineNotMatch: ctxFilterLineNotMatch,
     },
 
     CtxAction: {
-        //ctxMapOutputAction :: (str -> str) -> CtxAction
-        mapOutput: ctxMapOutputAction,
+        /**
+         * maps a function to ctx's line
+         * //ctxMapLineAction :: (str -> str) -> CtxAction
+         */
+        mapLine: ctxMapLineAction,
 
-        //trimCtxOutputAction :: CtxAction
-        trimOutput: trimCtxOutputAction,
+        //trimCtxLineAction :: CtxAction
+        trimLine: trimCtxLineAction,
     },
 
     //ctxResultable2Action :: CtxResultable -> CtxAction 
