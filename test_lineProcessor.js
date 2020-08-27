@@ -202,9 +202,9 @@ hu!
 // const handler = printAllHandler
 const testLineAction = lp.ctxResultable2Action(
     compose.all(
-        map(ctx => utils.tap(compose(console.log, L.view(lp.Lens.output)), ctx)),
+        map(ctx => utils.tap(compose(console.log, L.view(lp.Lens.line)), ctx)),
 
-        map(ctx => L.over(lp.Lens.output,
+        map(ctx => L.over(lp.Lens.line,
             s => `${L.view(lp.Lens.lineNum, ctx)}:\t${s}`,
             ctx)),
         // utils.log,

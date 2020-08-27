@@ -84,16 +84,16 @@ const utils = require('./utils')
 
 //createContext :: () -> ctx
 const createContext = () => ({
-    input: '',  //original input line
-    output: '', //modified line
-    lineNum: 0, //line number
+    lineNum: 0,     //line number (counter)
+    line: '',       //line read
+    original: '',   //original line read (for read only purpose)
 })
 
 // context lenses (to access ctx's fields)
 const lens = L.makeLenses([
-    'input',    //original input line
-    'output',   //modified line
-    'lineNum',
+    'lineNum',  //line number (counter)
+    'line',     //line read
+    'original', //original line read (for read only purpose)
 ])
 
 
@@ -104,8 +104,8 @@ const lens = L.makeLenses([
     tapCtxLens :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
 
     //::: tapCtxLens   
-    const newCtx = blockProc.tapCtxLens(blockProc.Lens.input, x => x + 1, {input: 1})
-    assert.equal(newCtx.input, 1)   //should stay unchanged
+    const newCtx = blockProc.tapCtxLens(blockProc.Lens.original, x => x + 1, {original: 1})
+    assert.equal(newCtx.original, 1)   //should stay unchanged
 */
 
 const tapCtxLens = curry(3, (lens, fn, ctx) => {
@@ -167,15 +167,15 @@ const createCtxFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     : Result.Error(ctx)
 
 //ctxFilterOutput :: (string -> boolean) -> CtxResultable
-const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.output, ctx)))
+const ctxFilterOutput = strTestFn => createCtxFilter(ctx => strTestFn(L.view(lens.line, ctx)))
 
 // ctxFilterOutputMatch :: regex -> CtxResultable
 const ctxFilterOutputMatch = regex => ctxFilterOutput(s => regex.test(s))
 
 //::: ctxFilterOutputNotMatch
 // const ctxFilterOutputNotMatch = blockProc.CtxFilter.outputNotMatch(/--/)
-// ctxFilterOutputNotMatch({ output: "- abc"}).merge().output === "- abc"
-// ctxFilterOutputNotMatch({ output: "-- abc"}) instanceof Result.Error
+// ctxFilterOutputNotMatch({ line: "- abc"}).merge().line === "- abc"
+// ctxFilterOutputNotMatch({ line: "-- abc"}) instanceof Result.Error
 //
 // ctxFilterOutputNotMatch :: regex -> CtxResultable
 const ctxFilterOutputNotMatch = regex => ctxFilterOutput(s => !regex.test(s))
@@ -193,9 +193,9 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
     // log(fullEvents)
     return ctx => {
         const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
-        const output = L.view(lens.output, ctx)
+        const line = L.view(lens.line, ctx)
         //begin block
-        if (beginBlockRegex.test(output)) {
+        if (beginBlockRegex.test(line)) {
             return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
                 .chain(fullEvents.onBlockBegin)
         }
@@ -204,7 +204,7 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
             return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
         }
         //end block
-        if (endBlockRegex.test(output)) {
+        if (endBlockRegex.test(line)) {
             return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
                 .chain(fullEvents.onBlockEnd)
         }
@@ -224,7 +224,7 @@ const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComme
 
 //ctxMapOutputAction takes a string manipulation function and applies it to the output field if the ctx context object
 //ctxMapOutputAction :: (str -> str) -> CtxAction
-const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.output, fn, ctx))
+const ctxMapOutputAction = curry(2, (fn, ctx) => L.over(lens.line, fn, ctx))
 
 //trims the output line of the context
 //trimCtxOutputAction :: CtxAction
@@ -254,8 +254,8 @@ const ctxResultable2Action = curry(2,
 //setCtxLine :: ctx -> str -> ctx
 const setCtxLine = line => ctx => compose.all(
     trimCtxOutputAction,
-    L.set(lens.output, line),
-    L.set(lens.input, line),
+    L.set(lens.line, line),
+    L.set(lens.original, line),
     L.over(lens.lineNum, utils.inc),
     // log2("contextLine"),
 )(ctx)
@@ -272,7 +272,7 @@ const createCtxReducer = ctxAction => (ctx, line) => compose.all(
 module.exports = {
 
     /** signatures:     
-      ctx :: { input: string, output: string, lineNum: number }
+      ctx :: { original: string, line: string, lineNum: number }
       CtxAction :: ctx -> ctx
       
       Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
@@ -308,8 +308,8 @@ module.exports = {
 
     //...helps the IDE with auto-complete
     Lens: {
-        input: lens.input,      //original input line
-        output: lens.output,    //modified line
+        original: lens.original,      //original original line
+        line: lens.line,    //modified line
         lineNum: lens.lineNum,  //line number
     },
 
@@ -322,7 +322,7 @@ module.exports = {
 
     CtxFilter: {
         //ctxFilterOutput :: (string -> boolean) -> CtxResultable
-        output: ctxFilterOutput,
+        line: ctxFilterOutput,
 
         //ctxFilterOutputMatch :: regex -> CtxResultable
         outputMatch: ctxFilterOutputMatch,

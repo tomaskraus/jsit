@@ -54,7 +54,7 @@ const createDefaultEventSettings = () => ({
 // mappers
 // ctx -> ctx
 
-const _addVarMapper = ctx => L.over(lp.Lens.output, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
+const _addVarMapper = ctx => L.over(lp.Lens.line, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
 
 
 // handlers ----------------------------
@@ -124,7 +124,7 @@ const _createAfterTestRelatedFilter = events => compose.all(
 
 const printBeginTestOutputHandler = compose.all(
     Result.Error,
-    lp.tapCtxLens(lp.Lens.output, ln => (ln)
+    lp.tapCtxLens(lp.Lens.line, ln => (ln)
         ? console.log(ln)
         : null
     ),
@@ -152,7 +152,7 @@ const createTestLineObj = (events) => {
 
 
 const _detectVarHandler = ctx => {
-    const line = L.view(lp.Lens.output, ctx)
+    const line = L.view(lp.Lens.line, ctx)
     if (varRegex.test(line)) {
         const s_line = removeLineCommentAtTheEnd(line).trim()
         return Result.Error(L.over(lens.vars, s => `${s}${s_line}; `, ctx))
@@ -166,7 +166,7 @@ const _resetVarsHandler = ctx => Result.Ok(L.set(lens.vars, '', ctx))
 
 //----------------------------------------------------------------------------------
 
-const failMessage = (msg, ctx) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
+const failMessage = (msg, ctx) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.line}`
 
 
 
@@ -178,7 +178,7 @@ const createTestHandler = evaluatorObj => {
         // utils.log2("line", ctx)
         const ctx2 = L.over(lens.stats_totalTests, utils.inc, ctx)
         try {
-            const testPassed = evaluatorObj.eval(L.view(lp.Lens.output, ctx2))
+            const testPassed = evaluatorObj.eval(L.view(lp.Lens.line, ctx2))
             if (testPassed === false) {
                 console.log(failMessage("The result is false", ctx2))
                 return resultAddFail(ctx2)

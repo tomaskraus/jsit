@@ -51,7 +51,7 @@ impure.app = (filename, evalHandlerObj) => {
             onTest: ep.factory.createTestHandler(evalHandlerObj),
             onEnd: ctx => console.log(impure.summaryOfTest(ctx)),
         })
-        // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
+        // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.original, console.log, ctx)) })
         // const testHandler = ep.factory.createTestLineFilter({onTestRelated: ctx => Result.Ok(lp.tapCtx(lp.lens.output, console.log, ctx))})
 
         const process = lp.Factory.createCtxReducer(testHandlerObj.filter)
@@ -62,7 +62,7 @@ impure.app = (filename, evalHandlerObj) => {
         const readline = require('readline');
         const rl = readline.createInterface({
             input: rs,
-            output: process.stdout,
+            line: process.stdout,
             terminal: false,
         });
 
