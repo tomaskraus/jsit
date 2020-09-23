@@ -4,13 +4,13 @@
  * You can:
  * - create custom block "filters" by specifying block marks (beginning and end) via regex.
  * - chain these block filters
- * - react to block-related events
+ * - implement block-related callbacks
  *
  * 
  * TODO: resolve keyword clash: reducer vs. action
  * 
  * There are bunch of objects:
- *   context (a.k.a. ctx), reducers, resultables, blockEvents
+ *   context (a.k.a. ctx), reducers, resultables, blockCallbacks
  * 
  * ctx (context) is the object, that stores a line state.
  *   Has three main properties:
@@ -24,21 +24,44 @@
  * CtxAction is a function that "changes" the state of the ctx object (by creating a new ctx object...)
  *   CtxAction :: ctx -> ctx
  * 
- * CtxResultable :: every function, that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
+ * CtxResultable :: every function, that accepts a ctx and returns a Result monad (Folktale's Result object), 
+ * containing a new ctx:
  *   Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
  *   CtxResultable :: ctx -> Result ctx ctx
  * 
- *   CtxResultable can act as a filter (returning a "fail" Result type), but, unlike the filter, it can 
- *   also "change" the state (represented by ctx object)
+ *   CtxResultable can act as a filter, returning a "fail" Result type. It also can 
+ *   "change" the state (represented by ctx object)
  * 
  *   it has three implementations there:
- *      - CtxFilter
  *      - CtxResulter
  *      - CtxBlockResulter
+ *      - CtxFilter
  * 
- *  CtxFilter, CtxResulter, CtxBlockResulter :: CtxResultable
+ *  CtxResulter, CtxBlockResulter, CtxFilter :: CtxResultable
  * 
- * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing the same, unmodified ctx:
+ * 
+ * CtxResulter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), 
+ * containing a new ctx:
+ *   CtxResulter :: CtxResultable
+ *  
+ * CtxBlockResulter: same as CtxResulter, but with a block awareness. Stores its internal state to the context (ctx). 
+ * Calls block-related BlockCallbacks (see below).
+ *   CtxBlockResulter :: CtxResultable
+ * 
+ * BlockCallbacks are CtxResultable objects:
+ *      - onBlockBegin
+ *      - onBlock
+ *      - onBlockEnd
+ * 
+ * There are two steps, to create the CtxBlockResulter:
+ *      1. create a BlockProc object:
+ *          createBlockProc :: (regex -> regex -> string) -> BlockProc
+ *      2. call BlockProc.result method (provide BlockCallbacks) to create its CtxBlockResulter
+ *          result :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
+ * 
+ *   
+ * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), 
+ * containing the same, unmodified ctx:
  * It just returns Result.Ok or Result.Error, based on internal testing criteria. 
  *   CtxFilter :: CtxResultable
  * 
@@ -46,30 +69,9 @@
  *     createCtxFilter :: (ctx -> boolean) -> CtxResultable   
  * 
  * 
- * CtxResulter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), containing a new ctx:
- *   CtxResulter :: CtxResultable
- *  
- * CtxBlockResulter: same as CtxResulter, but with block awareness. 
- * Fires some SYNCHRONOUS block-related BlockEvents (see below).
- * Result of these events is known before the call of CtxBlockResulter returns.
- *   CtxBlockResulter :: CtxResultable
- * 
- *   create the CtxBlockResulter by using the factory function:
- *      createCtxBlockResulter :: regex -> regex -> lens -> BlockEvents -> CtxBlockResulter
- *
- * For convenience, there is a conversion function:
+ * For convenience, there is a ctxResultable2Action conversion function:
  *   ctxResultable2Action :: CtxResultable -> CtxAction
  * 
- * BlockEvents: a bunch of named CtxResultable objects.
- *   They are called SYNCHRONOUSLY within the CtxBlockResulter object when a certain block state is reached.  
- * 
- *   Those event names are:
- *      - onBlockBegin
- *      - onBlockEnd
- *      - onBlock
- * 
- *   BlockEvents :: { onBlockBegin: CtxResultable, onBlockEnd: CtxResultable, onBlock: CtxResultable }
- *   - How to create BlockEvents object: by hand...
  * 
  * CtxReducer: a function that takes a state (ctx) and a line (string), and returns the new state, using its internal CtxAction
  *   CtxReducer :: (ctx, string) -> ctx
@@ -106,7 +108,7 @@ const lens = L.makeLenses([
     Runs a custom function fn with "some property p of context ctx" as an argument.
     Leaves that context unchanged.
 
-    tapCtxLens :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
+    tapCtxLens :: ({propName: propValue, ...} ctx) => lens propName -> (propType -> _) -> ctx -> ctx
 
     //::: tapCtxLens   
     const newCtx = blockProc.tapCtxLens(blockProc.Lens.original, x => x + 1, {original: 1})
@@ -218,6 +220,53 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
     }
 }
 
+
+//creates a BlockProc object. You can call its "result" method to get a "stateful & block aware" CtxBlockResulter
+//The id parameter should differ among nested ctxBlockProcs.
+//createBlockProc :: (regex -> regex -> string) -> BlockProc
+//result :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
+const createBlockProc = (beginBlockRegex, endBlockRegex, id) => {
+    //TODO: place blockLineNumLens under the new "id lens"
+    const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
+    const BLOCK_LINE_OFF = -1
+    const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
+    const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
+    const defaultCallback = ctx => Result.Ok(ctx)
+
+    return {
+        result: (onBlockBegin, onBlock, onBlockEnd) => {
+            onBlockBegin = onBlockBegin || defaultCallback
+            onBlock= onBlock || defaultCallback
+            onBlockEnd = onBlockEnd || defaultCallback
+            return ctx => {
+                const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
+                const line = L.view(lens.line, ctx)
+                //begin block
+                if (beginBlockRegex.test(line)) {
+                    // console.log(ctx)
+                    return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
+                        .chain(onBlockBegin)
+                        .chain(onBlock)
+                }
+                // block must be continuous
+                if (L.view(lens.lineNum, ctx) > blockLineNum + 1) {
+                    return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
+                }
+                //end block
+                if (endBlockRegex.test(line)) {
+                    return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
+                        .chain(onBlockEnd)
+                        .chain(onBlock)
+                }
+                return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
+                    .chain(onBlock)
+            }
+        }
+    }
+}
+
+
+
 //jsCommentCtxBlockResulter :: BlockEvents -> CtxBlockResulter
 const jsCommentCtxBlockResulter = events => createCtxBlockResulter('JSBlockComment',
     beginJSBlockCommentRegex, endJSBlockCommentRegex,
@@ -250,9 +299,9 @@ const trimCtxLineAction = ctxMapLineAction(s => s.trim())
     evenResulter({num: 3}) instanceof Result.Error
     evenAction({num: 3}).num === 3  
  */
-const ctxResultable2Action = curry(2, 
+const ctxResultable2Action = curry(2,
     (resultable, ctx) => resultable(ctx).merge()
-) 
+)
 
 //------------------------------------------------------------------------
 
@@ -307,8 +356,13 @@ module.exports = {
         //createCtxBlockResulter :: (string -> regex -> regex -> BlockEvents) -> CtxResultable
         createCtxBlockResulter,
 
+        //createBlockProc :: (regex -> regex -> string) -> BlockProc
+        createBlockProc,
+
         //createCtxReducer :: CtxAction -> CtxReducer
         createCtxReducer,
+
+
     },
 
     //...helps the IDE with auto-complete
