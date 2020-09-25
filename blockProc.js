@@ -246,7 +246,6 @@ const createBlockProc = (beginBlockRegex, endBlockRegex, id) => {
                     // console.log(ctx)
                     return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
                         .chain(onBlockBegin)
-                        .chain(onBlock)
                 }
                 // block must be continuous
                 if (L.view(lens.lineNum, ctx) > blockLineNum + 1) {
@@ -256,7 +255,6 @@ const createBlockProc = (beginBlockRegex, endBlockRegex, id) => {
                 if (endBlockRegex.test(line)) {
                     return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
                         .chain(onBlockEnd)
-                        .chain(onBlock)
                 }
                 return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
                     .chain(onBlock)
