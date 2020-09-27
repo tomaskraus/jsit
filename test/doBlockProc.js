@@ -22,13 +22,26 @@ const printResulter = compose.all(
     //utils.log,
 )
 
+const resulter2 = compose.all(
+    map(bp.tapCtxLens(bp.Lens.original, s => console.log(`: '${s}'`))),
+    myBlockProc.resulter(
+        Result.Ok,
+        Result.Ok,
+        Result.Error
+    )
+)
+
+
 const printReducer = bp.Factory.createCtxReducer(
     bp.ctxResultable2Action(printResulter)
 )
 
+const reducer2 = bp.Factory.createCtxReducer(
+    bp.ctxResultable2Action(resulter2)
+)
 
-const main = strArr => {
-    return strArr.reduce(printReducer, bp.Factory.createContext())
+const main = (strArr, reducer) => {
+    return strArr.reduce(reducer, bp.Factory.createContext())
 }
 
 
@@ -51,4 +64,5 @@ ja
  */
 `
 
-console.log(main(strs.split('\n')))
+console.log(main(strs.split('\n'), printReducer))
+console.log(main(strs.split('\n'), reducer2))
