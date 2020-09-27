@@ -16,7 +16,6 @@ const printResulter = compose.all(
     map(bp.tapCtxLens(bp.Lens.original, s => console.log(`str='${s}'`))),
     myBlockProc.resulter(
         ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),     //onBlockBegin
-        null,              //onBlock
         ctx => Result.Ok(utils.tap(() => console.log(`----end`), ctx)),     //onBlockEnd
     )
     //utils.log,
@@ -25,7 +24,6 @@ const printResulter = compose.all(
 const resulter2 = compose.all(
     map(bp.tapCtxLens(bp.Lens.original, s => console.log(`: '${s}'`))),
     myBlockProc.resulter(
-        Result.Ok,
         Result.Ok,
         Result.Error
     )

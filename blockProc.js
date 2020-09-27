@@ -234,9 +234,8 @@ const createBlockObj = (beginBlockRegex, endBlockRegex, id) => {
     const defaultCallback = Result.Ok
 
     return {
-        resulter: (onBlockBegin, onBlock, onBlockEnd) => {
-            onBlockBegin = onBlockBegin || defaultCallback
-            onBlock= onBlock || defaultCallback
+        resulter: (onBlockBegin, onBlockEnd) => {
+            onBlockBegin = onBlockBegin || defaultCallback            
             onBlockEnd = onBlockEnd || defaultCallback
             return ctx => {
                 const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
@@ -257,7 +256,6 @@ const createBlockObj = (beginBlockRegex, endBlockRegex, id) => {
                         .chain(onBlockEnd)
                 }
                 return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
-                    .chain(onBlock)
             }
         }
     }
