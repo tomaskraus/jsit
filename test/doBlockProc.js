@@ -1,4 +1,4 @@
-const { compose, curry } = require('folktale/core/lambda')
+const { compose } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
 const bp = require('../blockProc')
@@ -16,7 +16,7 @@ const printResulter = compose.all(
     map(bp.tapCtxLens(bp.Lens.original, s => console.log(`str='${s}'`))),
     myBlockProc.result(
         ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),     //onBlockBegin
-        ctx => Result.Ok(utils.tap(() => console.log(`=`), ctx)),              //onBlock
+        null,              //onBlock
         ctx => Result.Ok(utils.tap(() => console.log(`----end`), ctx)),     //onBlockEnd
     )
     //utils.log,
