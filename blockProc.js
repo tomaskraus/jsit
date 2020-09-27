@@ -29,7 +29,7 @@
  *   Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
  *   CtxResultable :: ctx -> Result ctx ctx
  * 
- *   CtxResultable can act as a filter, returning a "fail" Result type. It also can 
+ *   CtxResultable can act as a filter. It also can 
  *   "change" the state (represented by ctx object)
  * 
  *   it has three implementations there:
@@ -50,14 +50,13 @@
  * 
  * BlockCallbacks are CtxResultable objects:
  *      - onBlockBegin
- *      - onBlock
  *      - onBlockEnd
  * 
  * There are two steps, to create the CtxBlockResulter:
  *      1. create a BlockObj object:
  *          createBlockObj :: (regex -> regex -> string) -> BlockObj
  *      2. call BlockObj.resulter method (provide BlockCallbacks) to create its CtxBlockResulter
- *          BlockObj.resulter :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
+ *          BlockObj.resulter :: (CtxResultable onBlockBegin, onBlockEnd) => (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx
  * 
  *   
  * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), 
@@ -224,7 +223,7 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
 //creates a BlockObj object. You can call its "result" method to get a "stateful & block aware" CtxBlockResulter
 //The id parameter should differ among nested ctxBlockObjs.
 //createBlockObj :: (regex -> regex -> string) -> BlockObj
-//result :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
+//BlockObj.resulter :: (CtxResultable onBlockBegin, onBlockEnd) => (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx
 const createBlockObj = (beginBlockRegex, endBlockRegex, id) => {
     //TODO: place blockLineNumLens under the new "id lens"
     const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
