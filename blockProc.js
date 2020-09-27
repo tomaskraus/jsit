@@ -54,10 +54,10 @@
  *      - onBlockEnd
  * 
  * There are two steps, to create the CtxBlockResulter:
- *      1. create a BlockProc object:
- *          createBlockProc :: (regex -> regex -> string) -> BlockProc
- *      2. call BlockProc.result method (provide BlockCallbacks) to create its CtxBlockResulter
- *          result :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
+ *      1. create a BlockObj object:
+ *          createBlockObj :: (regex -> regex -> string) -> BlockObj
+ *      2. call BlockObj.resulter method (provide BlockCallbacks) to create its CtxBlockResulter
+ *          BlockObj.resulter :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
  * 
  *   
  * CtxFilter is a CtxResultable function that accepts a ctx and returns a Result monad (Folktale's Result object), 
@@ -221,20 +221,20 @@ const createCtxBlockResulter = (id, beginBlockRegex, endBlockRegex, events) => {
 }
 
 
-//creates a BlockProc object. You can call its "result" method to get a "stateful & block aware" CtxBlockResulter
-//The id parameter should differ among nested ctxBlockProcs.
-//createBlockProc :: (regex -> regex -> string) -> BlockProc
+//creates a BlockObj object. You can call its "result" method to get a "stateful & block aware" CtxBlockResulter
+//The id parameter should differ among nested ctxBlockObjs.
+//createBlockObj :: (regex -> regex -> string) -> BlockObj
 //result :: (CtxResultable onBlockBegin, onBlock, onBlockEnd) => onBlockBegin -> onBlock -> onBlockEnd -> ctx -> Result ctx ctx
-const createBlockProc = (beginBlockRegex, endBlockRegex, id) => {
+const createBlockObj = (beginBlockRegex, endBlockRegex, id) => {
     //TODO: place blockLineNumLens under the new "id lens"
     const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
     const BLOCK_LINE_OFF = -1
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(lens.lineNum, ctx), ctx)
     const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
-    const defaultCallback = ctx => Result.Ok(ctx)
+    const defaultCallback = Result.Ok
 
     return {
-        result: (onBlockBegin, onBlock, onBlockEnd) => {
+        resulter: (onBlockBegin, onBlock, onBlockEnd) => {
             onBlockBegin = onBlockBegin || defaultCallback
             onBlock= onBlock || defaultCallback
             onBlockEnd = onBlockEnd || defaultCallback
@@ -354,8 +354,8 @@ module.exports = {
         //createCtxBlockResulter :: (string -> regex -> regex -> BlockEvents) -> CtxResultable
         createCtxBlockResulter,
 
-        //createBlockProc :: (regex -> regex -> string) -> BlockProc
-        createBlockProc,
+        //createBlockObj :: (regex -> regex -> string) -> BlockObj
+        createBlockObj,
 
         //createCtxReducer :: CtxAction -> CtxReducer
         createCtxReducer,

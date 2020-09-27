@@ -6,7 +6,7 @@ const utils = require('../utils')
 
 
 
-const myBlockProc = bp.Factory.createBlockProc(bp.Regex.beginJSBlockComment, bp.Regex.endJSBlockComment, 'myBlock')
+const myBlockProc = bp.Factory.createBlockObj(bp.Regex.beginJSBlockComment, bp.Regex.endJSBlockComment, 'myBlock')
 // console.log('', myBlockProc.result)
 
 //blockProc.result :: ctx -> Result ctx ctx    
@@ -14,7 +14,7 @@ const myBlockProc = bp.Factory.createBlockProc(bp.Regex.beginJSBlockComment, bp.
 
 const printResulter = compose.all(
     map(bp.tapCtxLens(bp.Lens.original, s => console.log(`str='${s}'`))),
-    myBlockProc.result(
+    myBlockProc.resulter(
         ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),     //onBlockBegin
         null,              //onBlock
         ctx => Result.Ok(utils.tap(() => console.log(`----end`), ctx)),     //onBlockEnd
