@@ -179,7 +179,7 @@ const createBlockObj = (beginBlockRegex, endBlockRegex, id) => {
     const defaultCallback = Result.Ok
 
     return {
-        filterBlockResult: (onBlockBegin, onBlockEnd) => {
+        resulterBlockFilter: (onBlockBegin, onBlockEnd) => {
             onBlockBegin = onBlockBegin || defaultCallback
             onBlockEnd = onBlockEnd || defaultCallback
             return ctx => {
@@ -286,21 +286,21 @@ module.exports = {
     },
 
     //createContext :: () -> ctx
-    createContext,
+    contextCreate: createContext,
 
     //createBlock :: (regex -> regex -> string) -> BlockObj
-    block: createBlockObj,
+    blockCreate: createBlockObj,
 
     //createReducer :: CtxResulter -> CtxReducer
-    reducer: createCtxReducer,
+    reducerCreate: createCtxReducer,
 
-    filterResult: createCtxFilter,
-    filterLineResult: ctxFilterLine,
+    resulterFilter: createCtxFilter,
+    resulterFilterLine: ctxFilterLine,
 
-    //tapContext :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
-    tapContext: tapCtxLens,
-    tapLineContext: tapCtxLineLens,
-    overLineContext: overCtxLineLens,
+    //contextTap :: (ctx {propName: propValue, ...}) => lens propName -> (propType -> _) -> ctx -> ctx
+    contextTap: tapCtxLens,
+    contextTapLine: tapCtxLineLens,
+    contextOverLine: overCtxLineLens,
 
 
 
