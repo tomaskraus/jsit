@@ -1,5 +1,5 @@
 /**
- * Basics of block-of-lines processing, in a functional way
+ * Basics of block-of-lines processing, for textual data - in a functional way.
  * 
  * You can:
  * - create custom block "filters" by specifying block marks (beginning and end) via regex.
@@ -12,7 +12,7 @@
  * There are bunch of objects:
  *   context (a.k.a. ctx), reducers, resultables, blockCallbacks
  * 
- * ctx (context) is the object, that stores a line state.
+ * ctx (context) is the object, that stores the state of a textual data processed.
  *   Has three main properties:
  *      - lineNum: (number) a line number (row counter)
  *      - line: (string) line modified by some CtxActions, ...
@@ -23,6 +23,15 @@
  * 
  * CtxAction is a function that "changes" the state of the ctx object (by creating a new ctx object...)
  *   CtxAction :: ctx -> ctx
+ * 
+ * 
+ * CtxReducer: a function that takes a state (ctx) and a line (string), and returns the new state, using its internal CtxAction
+ *   CtxReducer :: (ctx, string) -> ctx
+ * 
+ *   create the CtxReducer by using the factory function:
+ *      createCtxReducer :: CtxAction -> CtxReducer
+ * 
+ * 
  * 
  * CtxResultable :: every function, that accepts a ctx and returns a Result monad (Folktale's Result object), 
  * containing a new ctx:
@@ -72,11 +81,6 @@
  *   ctxResultable2Action :: CtxResultable -> CtxAction
  * 
  * 
- * CtxReducer: a function that takes a state (ctx) and a line (string), and returns the new state, using its internal CtxAction
- *   CtxReducer :: (ctx, string) -> ctx
- * 
- *   create the CtxReducer by using the factory function:
- *      createCtxReducer :: CtxAction -> CtxReducer
  * 
  * @module blockProc
  */
