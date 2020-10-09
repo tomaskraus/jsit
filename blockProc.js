@@ -13,7 +13,7 @@
  *   context (a.k.a. ctx), reducers, resultables, blockCallbacks
  * 
  * ctx (context) is the object, that stores the state of a textual data processed.
- *   Has three main properties:
+ *   It has three main properties:
  *      - lineNum: (number) a line number (row counter)
  *      - line: (string) line modified by some CtxActions, ...
  *      - original: (string) the original line read
