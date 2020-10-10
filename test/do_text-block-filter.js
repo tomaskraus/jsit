@@ -7,15 +7,15 @@ const utils = require('../utils')
 
 
 
-const myBlock = tbf.blockCreate(tbf.Regex.beginJSBlockComment, tbf.Regex.endJSBlockComment, 'myBlock')
+const myBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'myBlock')
 
 
 const printResulter = compose.all(
-    map(tbf.contextTap(tbf.Lens.original, s => console.log(`str='${s}'`))),
+    map(tbf.contextTap(tbf.CLens.original, s => console.log(`str='${s}'`))),
     chain(tbf.resulterFilterLine(s => !tbf.Regex.JSLineComment.test(s))),
-    myBlock.resulterBlockFilter(
-        ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),     //onBlockBegin
-        ctx => Result.Error(utils.tap(() => console.log(`----end`), ctx)),     //onBlockEnd
+    myBlock.resulterFilterBlock(
+        _ => Result.Error(utils.tap(_ => console.log(`begin-----`))),     //onBlockBegin
+        _ => Result.Error(utils.tap(_ => console.log(`----end`))),     //onBlockEnd
     ),
     tbf.contextOverLine(s => s.trim()),
     //utils.log,
@@ -23,7 +23,7 @@ const printResulter = compose.all(
 
 const resulter2 = compose.all(
     map(tbf.contextTapLine(s => console.log(`: '${s}'`))),
-    myBlock.resulterBlockFilter(
+    myBlock.resulterFilterBlock(
         Result.Ok,
         Result.Error,
     )
@@ -34,8 +34,8 @@ const printReducer = tbf.reducerCreate(printResulter)
 
 const reducer2 = tbf.reducerCreate(resulter2)
 
-const main = (strArr, reducer) => {
-    return strArr.reduce(reducer, tbf.contextCreate())
+const main = (strArr, contextReducer) => {
+    return strArr.reduce(contextReducer, tbf.contextCreate())
 }
 
 
