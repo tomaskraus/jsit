@@ -118,10 +118,25 @@ const contextTapLine = fn => ctx => {
 
     @example
     //::: contextOverLine   
-    const newCtx = text_block_filter.overCtxLens(text_block_filter.CLens.line, s => s + 's', {line: "work"})
+    const newCtx = text_block_filter.contextOverLine(s => s + 's', {line: "work"})
     assert.equal(newCtx.line, 'works')   //should be changed
 */
 const contextOverLine = fn => ctx => L.over(cLens.line, fn, ctx)
+
+/**
+    Runs a function fn with a "some property "p" of a context ctx" as an argument. 
+    Returns a new context, with its "p" property set to the result of that function fn.
+    That function fn should check if value "p" is present.
+
+    contextOverLine :: ({p: a, ...} ctx) => (a -> a) -> ctx -> ctx
+
+    @example
+    //::: contextOver   
+    const newCtx = text_block_filter.contextOver(text_block_filter.CLens.lineNum, i => i + 1, {lineNum: 2})
+    assert.equal(newCtx.lineNum, 2)   //should be changed
+*/
+const contextOver = curry(3, (lens, fn, ctx) => L.over(lens, fn, ctx))
+
 
 // regexes ----------------------------
 
@@ -254,6 +269,7 @@ module.exports = {
     contextCreate, 
     contextTapLine,
     contextOverLine,
+    contextOver,
 
     resulterFilterLine,
     resulterFilter,
