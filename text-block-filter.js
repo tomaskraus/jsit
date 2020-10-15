@@ -237,6 +237,8 @@ module.exports = {
         blankLine: blankLineRegex,
     },
 
+    // lens object
+    Lens: L,
 
     /**
      * Context properties accessor
