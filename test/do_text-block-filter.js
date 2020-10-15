@@ -14,8 +14,8 @@ const printResulter = compose.all(
     map(tbf.contextTap(tbf.CLens.original, s => console.log(`str='${s}'`))),
     chain(tbf.resulterFilterLine(s => !tbf.Regex.JSLineComment.test(s))),
     myBlock.resulterFilterBlock(
-        _ => Result.Error(utils.tap(_ => console.log(`begin-----`))),     //onBlockBegin
-        _ => Result.Error(utils.tap(_ => console.log(`----end`))),     //onBlockEnd
+        ctx => Result.Error(utils.tap(_ => console.log(`begin-----`), ctx)),     //onBlockBegin
+        ctx => Result.Error(utils.tap(_ => console.log(`----end`), ctx)),     //onBlockEnd
     ),
     tbf.contextOverLine(s => s.trim()),
     //utils.log,
