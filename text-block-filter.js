@@ -81,18 +81,18 @@ const cLens = L.makeLenses([
 
 
 /**
-    Runs a custom function with a context "ctx" as an argument.
-    Returns that context unchanged.
+    Runs a custom function with a one argument.
+    Returns that argument, unchanged.
 
-    contextTap :: (ctx -> _) -> ctx -> ctx
+    tap :: (a -> any) -> a -> a
 
-    //::: contextTap   
-    const newCtx = text_block_filter.contextTap(text_block_filter.CLens.original, x => x + 1, {original: 1})
+    //::: tap   
+    const newCtx = text_block_filter.tap(text_block_filter.CLens.original, x => x + 1, {original: 1})
     assert.equal(newCtx.original, 1)   //should stay unchanged
 */
-const contextTap = fn => ctx => {
-    fn(ctx)
-    return ctx
+const tap = fn => a => {
+    fn(a)
+    return a
 }
 
 /**
@@ -249,10 +249,10 @@ module.exports = {
         lineNum: cLens.lineNum,  //line number
     },
     
+    tap,
 
     contextCreate, 
     contextTapLine,
-    contextTap,
     contextOverLine,
 
     resulterFilterLine,
