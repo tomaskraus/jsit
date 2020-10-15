@@ -21,18 +21,30 @@ const printResulter = compose.all(
     //utils.log,
 )
 
-const resulter2 = compose.all(
-    map(tbf.contextTapLine(s => console.log(`: '${s}'`))),
-    myBlock.resulterFilterBlock(
-        Result.Ok,
-        Result.Error,
-    )
-)
+const createCallCounter = (id) => {
+    count = 0
+    const countLens = tbf.Lens.makeLenses([id])[id]
+    return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
+}
+
+const createBeginBlockResulter =
+    () => {
+        const startBlockCounter = createCallCounter('beginBlockCount')
+        return compose.all(
+            map(tbf.tap(ctx => console.log(`${41 + tbf.Lens.view(tbf.CLens.lineNum, ctx)} : '${ctx.line}'`))),
+            myBlock.resulterFilterBlock(
+                ctx => Result.Ok(startBlockCounter(ctx)),
+                Result.Ok,
+            ),
+            tbf.contextOver(tbf.CLens.line, s => s.trim()),
+            //utils.tap(ctx => console.log(ctx))
+        )
+    }
 
 
 const printReducer = tbf.reducerCreate(printResulter)
 
-const reducer2 = tbf.reducerCreate(resulter2)
+const reducer2 = tbf.reducerCreate(createBeginBlockResulter())
 
 const main = (strArr, contextReducer) => {
     return strArr.reduce(contextReducer, tbf.contextCreate())
