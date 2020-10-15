@@ -8,17 +8,18 @@ const { compose, curry } = require('folktale/core/lambda')
 const { map, chain } = require('pointfree-fantasy')
 const Result = require('folktale/result')
 const L = require('lenses')
-const lp = require("./lineProc")
+const lp = require("./blockProc")
+const utils = require('./utils')
 
 
 // lenses   for evaluation-param 
-const lens = L.makeLenses(['blockTestLineNum', 'vars', 'stats', 'numFailed', 'totalTests'])
+const lens = L.makeLenses(['vars', 'stats', 'numFailed', 'totalTests'])
 lens.stats_numFailed = compose(lens.stats, lens.numFailed)
 lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 
 // context
 const createContext = () => (
-    { ...lp.factory.createContext(), stats: { numFailed: 0, totalTests: 0 } }
+    { ...lp.Factory.createContext(), stats: { numFailed: 0, totalTests: 0 } }
 )
 
 // regexes ----------------------------
@@ -42,7 +43,7 @@ const removeLineCommentExceptTestBegin = line => line.replace(/^(\s*\/\/)\s*([^:
 // { str: (ctx -> Result), ... }
 
 const createDefaultEventSettings = () => ({
-    onTestBegin: printBeginTestOutputHandler,   //begin of test block
+    onTestBegin: printBeginTestLineHandler,   //begin of test block
     onTest: Result.Ok,                          //fired when inside the test
     onTestRelated: Result.Ok,                   //when inside the test-related line
     onEnd: Result.Ok,                           //fired at the very end, when flush method is called
@@ -53,7 +54,7 @@ const createDefaultEventSettings = () => ({
 // mappers
 // ctx -> ctx
 
-const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
+const _addVarMapper = ctx => L.over(lp.Lens.line, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
 
 
 // handlers ----------------------------
@@ -61,7 +62,7 @@ const _addVarMapper = ctx => L.over(lp.lens.output, s => `${L.view(lens.vars, ct
 
 
 const createTestRelatedFilter = events => {
-    const commentBlockFilter = lp.factory.createJSBlockCommentFilter({})
+    const commentBlockFilter = lp.ctxBlockResulter.jsCommentBlock({})
     const lineTestRelatedFilter = createTestRelatedLineFilter(events)
     const inBlockTestRelatedFilter = createTestRelatedInBlockFilter(events)
     return ctx =>
@@ -70,40 +71,40 @@ const createTestRelatedFilter = events => {
                 Ok: chain(inBlockTestRelatedFilter),
 
                 Error: reslt => Result.Ok(reslt.value) //here, value holds a ctx inside the Result obj
-                    // .map(lp.log)
-                    .chain(lp.filters.JSLineComment)
+                    // .map(utils.log)
+                    .chain(lp.CtxFilter.lineMatch(lp.Regex.JSLineComment))
                     .chain(lineTestRelatedFilter),
             })
-            .map(lp.mappers.trimOutput)
+            .map(lp.CtxAction.trimLine)
 }
 
 const createTestRelatedLineFilter = events => compose.all(
     chain(_createAfterTestRelatedFilter(events)),
-    map(lp.mappers.liftCtxOutput(removeLineCommentExceptTestBegin)),
+    map(lp.CtxAction.mapLine(removeLineCommentExceptTestBegin)),
     _createFilterTestLine(events, endTestLineCommentRegex),
 )
 
 const createTestRelatedInBlockFilter = events => {
     const atrf = _createAfterTestRelatedFilter(events)
     return compose.all(
-        // lp.log2("aatrf"),
+        // utils.log2("aatrf"),
         chain(atrf),
         _createFilterTestLine(events, endTestCommentRegex),
-        lp.mappers.liftCtxOutput(removeInnerStar),
+        lp.CtxAction.mapLine(removeInnerStar),
     )
 }
 
 
 // Result ctx ctx -> Result ctx ctx
 const _createFilterTestLine = (events, endTestCommentRegex) =>
-    lp.factory.createCustomBlockFilter(beginTestCommentRegex, endTestCommentRegex,
-        lens.blockTestLineNum, lp.addEventHandlerBefore(_resetVarsHandler, 'onBlockBegin', events)
+    lp.Factory.createCtxBlockResulter('testBlock', beginTestCommentRegex, endTestCommentRegex,
+        lp.addEventHandlerBefore(_resetVarsHandler, 'onBlockBegin', events)
     )
 
 const filterExcludeNonTestLines = compose.all(
-    chain(lp.filters.excludeOutputLine(lp.regex.blankLine)),
-    lp.filters.excludeOutputLine(lp.regex.JSLineComment),
-    lp.mappers.trimOutput,
+    chain(lp.CtxFilter.lineNotMatch(lp.Regex.blankLine)),
+    lp.CtxFilter.lineNotMatch(lp.Regex.JSLineComment),
+    lp.CtxAction.trimLine,
 )
 
 const _createAfterTestRelatedFilter = events => compose.all(
@@ -116,19 +117,19 @@ const _createAfterTestRelatedFilter = events => compose.all(
 
 // const printEndBlock = compose.all(
 //     Result.Error,
-//     lp.tap(
+//     utils.tap(
 //         () => console.log("---------------------")
 //     ),
 // )
 
-const printBeginTestOutputHandler = compose.all(
+const printBeginTestLineHandler = compose.all(
     Result.Error,
-    lp.tapCtx(lp.lens.output, ln => (ln)
+    lp.tapCtxLens(lp.Lens.line, ln => (ln)
         ? console.log(ln)
         : null
     ),
-    lp.mappers.trimOutput,
-    lp.mappers.liftCtxOutput(removeBeginTestBlockComment),
+    lp.CtxAction.trimLine,
+    lp.CtxAction.mapLine(removeBeginTestBlockComment),
 )
 
 
@@ -140,8 +141,10 @@ const createTestLineObj = (events) => {
     }
     const testFilter = createTestRelatedFilter(fullEvents)
     return {
-        filter: ctx => testFilter(ctx)
-            .chain(fullEvents.onTest),
+        filter: lp.ctxResultable2Action(
+                    ctx => testFilter(ctx)
+                        .chain(fullEvents.onTest)
+            ),
         flush: ctx => fullEvents.onEnd(ctx)
     }
 }
@@ -149,7 +152,7 @@ const createTestLineObj = (events) => {
 
 
 const _detectVarHandler = ctx => {
-    const line = L.view(lp.lens.output, ctx)
+    const line = L.view(lp.Lens.line, ctx)
     if (varRegex.test(line)) {
         const s_line = removeLineCommentAtTheEnd(line).trim()
         return Result.Error(L.over(lens.vars, s => `${s}${s_line}; `, ctx))
@@ -163,19 +166,19 @@ const _resetVarsHandler = ctx => Result.Ok(L.set(lens.vars, '', ctx))
 
 //----------------------------------------------------------------------------------
 
-const failMessage = (msg, ctx) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.output}`
+const failMessage = (msg, ctx) => `FAIL | ${ctx.lineNum} | ${ctx.fileName}:${ctx.lineNum} | ${msg} | ${ctx.line}`
 
 
 
 // ctx -> Result ctx
 const createTestHandler = evaluatorObj => {
-    // lp.log("createTestHandler -- --")   
-    const resultAddFail = ctx => Result.Error(L.over(lens.stats_numFailed, lp.inc, ctx))
+    // utils.log("createTestHandler -- --")   
+    const resultAddFail = ctx => Result.Error(L.over(lens.stats_numFailed, utils.inc, ctx))
     return ctx => {
-        // lp.log2("line", ctx)
-        const ctx2 = L.over(lens.stats_totalTests, lp.inc, ctx)
+        // utils.log2("line", ctx)
+        const ctx2 = L.over(lens.stats_totalTests, utils.inc, ctx)
         try {
-            const testPassed = evaluatorObj.eval(L.view(lp.lens.output, ctx2))
+            const testPassed = evaluatorObj.eval(L.view(lp.Lens.line, ctx2))
             if (testPassed === false) {
                 console.log(failMessage("The result is false", ctx2))
                 return resultAddFail(ctx2)
@@ -202,7 +205,7 @@ module.exports = {
     },
 
     lens: {
-        ...lp.lens,
+        ...lp.Lens,
         stats_numFailed: lens.stats_numFailed,
         stats_totalTests: lens.stats_totalTests,
     },

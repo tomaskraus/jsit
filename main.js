@@ -3,7 +3,7 @@
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map, chain } = require('pointfree-fantasy')
-const lp = require("./lineProc")
+const lp = require("./blockProc")
 const ep = require("./evalProc")
 const L = require('lenses')
 
@@ -45,16 +45,16 @@ const fs = require('fs');
 impure.app = (filename, evalHandlerObj) => {
     try {
         impure.context.fileName = fileName
-        // lp.log(impure.context)
+        // utils.log(impure.context)
 
         const testHandlerObj = ep.factory.createTestLineObj({
             onTest: ep.factory.createTestHandler(evalHandlerObj),
             onEnd: ctx => console.log(impure.summaryOfTest(ctx)),
         })
-        // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.input, console.log, ctx)) })
-        // const testHandler = ep.factory.createTestLineFilter({onTestRelated: ctx => Result.Ok(lp.tapCtx(lp.lens.output, console.log, ctx))})
+        // const testHandler = ep.factory.createTestLineFilter({ onTest: ctx => Result.Ok(lp.tapCtx(lp.lens.original, console.log, ctx)) })
+        // const testHandler = ep.factory.createTestLineFilter({onTestRelated: ctx => Result.Ok(lp.tapCtx(lp.lens.line, console.log, ctx))})
 
-        const process = lp.factory.createProcessLine(testHandlerObj.filter)
+        const process = lp.Factory.createCtxReducer(testHandlerObj.filter)
 
         const rs = fs.createReadStream(filename)
         rs.on('error', err => impure.errAndExit(err.message))
@@ -62,7 +62,7 @@ impure.app = (filename, evalHandlerObj) => {
         const readline = require('readline');
         const rl = readline.createInterface({
             input: rs,
-            output: process.stdout,
+            line: process.stdout,
             terminal: false,
         });
 

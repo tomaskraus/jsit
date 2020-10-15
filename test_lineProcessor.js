@@ -5,22 +5,22 @@
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
-const lp = require("./lineProc")
+const lp = require("./blockProc")
 const L = require('lenses')
+const utils = require('./utils')
 
 
 
-const app = (context, handler, s) => {
+const app = (context, action, s) => {
     const strs = s.split('\n')
-
-    const process = lp.createProcessLine(handler)
+    const reducer = lp.Factory.createCtxReducer(action)
     console.log("--START-----------")
-    for (let sn of strs) {
-        context = process(sn, context)
-        // log2("after processLine", context)
-    }
-    // log(context)
+
+    const resultCtx = strs.reduce(reducer, context)
+    // log2("after processLine", context)
+
     console.log("--END-----------")
+    return resultCtx
 }
 
 
@@ -200,18 +200,21 @@ hu!
 `
 
 // const handler = printAllHandler
-const handler = compose.all(   
-    map(lp.mappers.echoOutputLine),
+const testLineAction = lp.ctxResultable2Action(
+    compose.all(
+        map(ctx => utils.tap(compose(console.log, L.view(lp.Lens.line)), ctx)),
 
-    map(lp.mappers.addLineNum),
-    // lp.log,
-    lp.filters.createCustomBlockFilter(lp.regex.beginJSBlockComment, lp.regex.endJSBlockComment, lp.lens.JSBlockCommentLineNum, 
-        {}),
-        // { onBlockEnd: ctx => { lp.log("----------block end"); return Result.Error(ctx) } } )
-    // lp.filters.JSBlockComment,
-    //lp.filters.lineComment
+        map(ctx => L.over(lp.Lens.line,
+            s => `${L.view(lp.Lens.lineNum, ctx)}:\t${s}`,
+            ctx)),
+        // utils.log,
+        lp.ctxBlockResulter.jsCommentBlock({}),
+        // { onBlockEnd: ctx => { utils.log("----------block end"); return Result.Error(ctx) } } )
+        // lp.filter.JSBlockComment,
+        //lp.filter.lineComment
+    )
 
 )
 
-app(lp.createContext(), handler, str)
+console.log(app(lp.Factory.createContext(), testLineAction, str))
 

@@ -1,23 +1,26 @@
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map } = require('pointfree-fantasy')
-const lp = require('../lineProc')
+const bp = require('../blockProc')
+const utils = require('../utils')
 
 
+const printResulter = compose.all(
+        map(bp.tapCtxLens(bp.Lens.original, s => console.log(`str='${s}'`))),
+        bp.ctxBlockResulter.jsCommentBlock({
+            onBlockBegin: ctx => Result.Error(utils.tap(() => console.log(`begin-----`), ctx)),
+            onBlockEnd: ctx => Result.Error(utils.tap(() => console.log(`----end`), ctx)),
+        }),
+        //utils.log,
+    )
 
-const printHandler = compose.all(
-    map(lp.tapCtx(lp.lens.input, s => console.log(`str='${s}'`))),
-    // lp.log,
-    lp.factory.createJSBlockCommentFilter({
-        onBlockBegin: ctx => Result.Error(lp.tap(() => console.log(`begin-----`), ctx)),
-        onBlockEnd: ctx => Result.Error(lp.tap(() => console.log(`----end`), ctx)),
-    }),
+const printReducer = bp.Factory.createCtxReducer(
+    bp.ctxResultable2Action(printResulter)
 )
-const processLine = lp.factory.createProcessLine(printHandler)
 
 
 const main = strArr => {
-    return strArr.reduce(processLine, lp.factory.createContext())
+    return strArr.reduce(printReducer, bp.Factory.createContext())
 }
 
 
@@ -28,6 +31,7 @@ ahoj
  jak se
  */
 mas
+/* huhu */
 /*
 ja
   ok
