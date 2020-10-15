@@ -11,7 +11,7 @@ const myBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlock
 
 
 const printResulter = compose.all(
-    map(tbf.contextTap(tbf.CLens.original, s => console.log(`str='${s}'`))),
+    map(tbf.contextTap(ctx => console.log(`str='${ctx.lineNum}'`))),
     chain(tbf.resulterFilterLine(s => !tbf.Regex.JSLineComment.test(s))),
     myBlock.resulterFilterBlock(
         ctx => Result.Error(utils.tap(_ => console.log(`begin-----`), ctx)),     //onBlockBegin
