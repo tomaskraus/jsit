@@ -128,7 +128,7 @@ const contextOverLine = fn => ctx => L.over(cLens.line, fn, ctx)
 const blankLineRegex = /^\s*$/s
 const JSLineCommentRegex = /^\/\//
 // TODO: add detection of one-line  block comment /*    */
-const beginJSBlockCommentRegex = /^\/\*+\s*$/
+const beginJSBlockCommentRegex = /^\/\*/
 const endJSBlockCommentRegex = /^.*\*\//
 
 
