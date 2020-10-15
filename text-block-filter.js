@@ -81,19 +81,19 @@ const cLens = L.makeLenses([
 
 
 /**
-    Runs a custom function fn with "some property p of context ctx" as an argument.
+    Runs a custom function with a context "ctx" as an argument.
     Returns that context unchanged.
 
-    contextTap :: ({propName: propValue, ...} ctx) => lens propName -> (propType -> _) -> ctx -> ctx
+    contextTap :: (ctx -> _) -> ctx -> ctx
 
     //::: contextTap   
     const newCtx = text_block_filter.contextTap(text_block_filter.CLens.original, x => x + 1, {original: 1})
     assert.equal(newCtx.original, 1)   //should stay unchanged
 */
-const contextTap = curry(3, (lens, fn, ctx) => {
-    fn(L.view(lens, ctx))
+const contextTap = fn => ctx => {
+    fn(ctx)
     return ctx
-})
+}
 
 /**
     Runs a custom string manipulation function fn with a "line property of a context ctx" as an argument.
