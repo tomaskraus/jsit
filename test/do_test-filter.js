@@ -1,0 +1,165 @@
+const { compose } = require('folktale/core/lambda')
+const Result = require('folktale/result')
+const { map, chain } = require('pointfree-fantasy')
+
+const tbf = require('../text-block-filter')
+const L = require('lenses')
+//const utils = require('../utils')
+
+
+const strs = `
+abc
+/** 
+ * Provides basic arithmetical ops
+ * @module Mth
+ */
+
+aaaa
+// const assert = require('assert')
+ 
+
+//
+//:::jsit 1
+
+
+/*
+ :::    
+//1 === 3
+ */
+// hello
+
+    /** 
+     * subtracts number a from number b
+     * 
+     * @param {number} a first number
+     * @param {number} b second number
+     * @return {number} subtraction of two numbers a, b
+     * 
+     * 
+     * @example
+     *   //:::
+     *   Mth.minus(1, 1) == 0
+     *   Mth.minus(1, -1) == 3
+     *   Mth.minus(1, 2) == -1
+        assert.strictEqual( Mth.minus(1, 2), -2 )
+        Mth.b = 0
+        Mth.minus(1, Mth.b) == 1
+    *
+    * 
+    */
+const minus = (a, b) => {
+    return a - b
+}
+
+/** add number a to number b
+ * @example
+  //:::
+  //Mth.plus(1, 1) =w= 2 
+  Mth.plus(1, -1) == 2 
+  Mth.plus(1, 2) == 3 
+
+    // //::: Minus in block comment  
+// Mth.minus(10, 2) == 7
+    // assert.strictEqual( Mth.minus(10, 20), -1 )
+
+ */
+const plus = (a, b) => {
+    return a + b
+}
+
+/*
+k1*/ x
+
+ /*
+ k2 
+  */
+
+//::: Mth.minus
+// //Mth.minus(10, 2) == 7
+// assert.strictEqual( Mth.minus(10, 20), -1 )
+
+
+module.exports = {
+    plus,
+    minus,
+}
+`
+
+const trimStr = s => s.trim()
+
+
+const bCommentBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
+
+// const printResulter = compose.all(
+//     map(tbf.contextTap(tbf.CLens.original, s => console.log(`str='${s}'`))),
+//     chain(tbf.resulterFilterLine(s => !tbf.Regex.JSLineComment.test(s))),
+//     myBlock.resulterFilterBlock(
+//         _ => Result.Error(utils.tap(_ => console.log(`begin-----`))),     //onBlockBegin
+//         _ => Result.Error(utils.tap(_ => console.log(`----end`))),     //onBlockEnd
+//     ),
+//     tbf.contextOverLine(s => s.trim()),
+//     //utils.log,
+// )
+
+
+const createCallCounter = (id) => {
+    count = 0
+    const countLens = L.makeLenses([id])[id]
+    return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
+}
+
+const blockCommentResulter = bCommentBlock.resulterFilterBlock(
+        ctx => Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
+        ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
+    )
+
+
+const countingBlockCommentResulter =
+    () => {
+        const startBlockCounter = createCallCounter('beginBlockCount')
+        return bCommentBlock.resulterFilterBlock(
+            ctx => Result.Error(
+                compose.all(
+                    tbf.tap(_ => console.log('{')),
+                    startBlockCounter,
+                )(ctx)
+            ),
+            ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
+        )
+    }
+
+
+// const lineCommentResulter = lineCommentBlock.resulterFilterBlock(
+//     Result.Error,
+//     Result.Error
+// )
+
+const lineCommentResulter = compose.all(
+    map(tbf.contextOverLine(s => `-ln- ${s}`)),
+    tbf.resulterFilterLine(s => tbf.Regex.JSLineComment.test(s)),
+)
+
+
+
+const commentLineResulter = compose.all(
+    map(tbf.tap(ctx => console.log(`${9 + L.view(tbf.CLens.lineNum, ctx)} : '${ctx.line}'`))),
+
+    result => result.orElse(
+        lineCommentResulter
+    ),
+    blockCommentResulter,
+    tbf.contextOverLine(trimStr),
+)
+
+
+
+const reducer2 = tbf.reducerCreate(commentLineResulter)
+
+const main = (strArr, contextReducer) => {
+    return strArr.reduce(contextReducer, tbf.contextCreate())
+}
+
+
+
+// console.log(strs)
+console.log(main(strs.split('\n'), reducer2))
