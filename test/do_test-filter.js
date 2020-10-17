@@ -22,10 +22,10 @@ aaaa
 //:::jsit 1
 
 
-/*
+  /*
  :::    
 //1 === 3
- */
+  */
 // hello
 
     /** 
@@ -76,7 +76,8 @@ k1*/ x
 
 //::: Mth.minus
 // //Mth.minus(10, 2) == 7
-// assert.strictEqual( Mth.minus(10, 20), -1 )
+////Mth.minus(0, 0) == 0
+//  assert.strictEqual( Mth.minus(10, 20), -1 )
 
 
 module.exports = {
@@ -101,48 +102,57 @@ const bCommentBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.J
 //     //utils.log,
 // )
 
+// const countingBlockCommentResulter =
+//     () => {
+//         const startBlockCounter = createCallCounter('beginBlockCount')
+//         return bCommentBlock.resulterFilterBlock(
+//             ctx => Result.Error(
+//                 compose.all(
+//                     tbf.tap(_ => console.log('{')),
+//                     startBlockCounter,
+//                 )(ctx)
+//             ),
+//             ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
+//         )
+//     }
 
-const createCallCounter = (id) => {
-    count = 0
-    const countLens = L.makeLenses([id])[id]
-    return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
-}
+// const createCallCounter = (id) => {
+//     count = 0
+//     const countLens = L.makeLenses([id])[id]
+//     return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
+// }
 
-const blockCommentResulter = bCommentBlock.resulterFilterBlock(
+
+
+const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
+const blockCommentResulter = compose.all(
+    //map(tbf.contextOverLine(s => `_b ${s}`)),
+
+    map(tbf.contextOverLine(
+        compose(trimStr, removeBlockCommentStar)
+    )),
+    bCommentBlock.resulterFilterBlock(
         ctx => Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
         ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
-    )
+    ),
+)
 
 
-const countingBlockCommentResulter =
-    () => {
-        const startBlockCounter = createCallCounter('beginBlockCount')
-        return bCommentBlock.resulterFilterBlock(
-            ctx => Result.Error(
-                compose.all(
-                    tbf.tap(_ => console.log('{')),
-                    startBlockCounter,
-                )(ctx)
-            ),
-            ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
-        )
-    }
-
-
-// const lineCommentResulter = lineCommentBlock.resulterFilterBlock(
-//     Result.Error,
-//     Result.Error
-// )
-
+const removeLineComment = line => line.replace(/^(\/\/)(.*)$/, "$2")
+const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
 const lineCommentResulter = compose.all(
-    map(tbf.contextOverLine(s => `-ln- ${s}`)),
+    //map(tbf.contextOverLine(s => `l_ ${s}`)),
+
+    map(tbf.contextOverLine(repairTestHeader)),
+    map(tbf.contextOverLine(
+        compose(trimStr, removeLineComment)
+    )),
     tbf.resulterFilterLine(s => tbf.Regex.JSLineComment.test(s)),
 )
 
 
-
-const commentLineResulter = compose.all(
-    map(tbf.tap(ctx => console.log(`${9 + L.view(tbf.CLens.lineNum, ctx)} : '${ctx.line}'`))),
+const commentResulter = compose.all(
+    map(tbf.tap(ctx => console.log(`${9 + L.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
 
     result => result.orElse(
         lineCommentResulter
@@ -152,14 +162,13 @@ const commentLineResulter = compose.all(
 )
 
 
+//-------------------------------------------------------------------------------------
 
-const reducer2 = tbf.reducerCreate(commentLineResulter)
 
 const main = (strArr, contextReducer) => {
     return strArr.reduce(contextReducer, tbf.contextCreate())
 }
 
 
-
-// console.log(strs)
-console.log(main(strs.split('\n'), reducer2))
+const reducer = tbf.reducerCreate(commentResulter)
+console.log(main(strs.split('\n'), reducer))
