@@ -65,6 +65,16 @@ const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const L = require('lenses')
 
+
+// regexes ----------------------------
+
+const blankLineRegex = /^\s*$/s
+const JSLineCommentRegex = /^\/\//
+// TODO: add detection of one-line  block comment /*    */
+const beginJSBlockCommentRegex = /^\/\*/
+const endJSBlockCommentRegex = /^.*\*\//
+
+
 //contextCreate :: () -> ctx
 const contextCreate = () => ({
     lineNum: 0,     //line number (row counter)
@@ -137,18 +147,6 @@ const contextOverLine = fn => ctx => L.over(cLens.line, fn, ctx)
 */
 const contextOver = curry(3, (lens, fn, ctx) => L.over(lens, fn, ctx))
 
-
-// regexes ----------------------------
-
-const blankLineRegex = /^\s*$/s
-const JSLineCommentRegex = /^\/\//
-// TODO: add detection of one-line  block comment /*    */
-const beginJSBlockCommentRegex = /^\/\*/
-const endJSBlockCommentRegex = /^.*\*\//
-
-
-// ctxFilter creators -----------------------------------
-// (any -> boolean) -> Resulter
 
 //resulterFilter :: (ctx -> boolean) -> Resulter
 const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
