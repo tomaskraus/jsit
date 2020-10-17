@@ -4,7 +4,6 @@ const { map, chain } = require('pointfree-fantasy')
 
 const tbf = require('../text-block-filter')
 const L = require('lenses')
-const textBlockFilter = require('../text-block-filter')
 //const utils = require('../utils')
 
 
@@ -156,7 +155,8 @@ const lineCommentResulter = compose.all(
     tbf.resulterFilterLine(isLineComment),
 )
 
-const testResulter = compose.all(
+
+const testLineResulter = compose.all(
     chain(tbf.resulterFilterLine(s => !isLineComment(s))),
     testBlock.resulterFilterBlock(
         Result.Error,
@@ -165,10 +165,10 @@ const testResulter = compose.all(
 )
 
 
-const commentResulter = compose.all(
-    map(tbf.tap(ctx => console.log(`${10 + L.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
+const allResulter = compose.all(
+    map(tbf.tap(ctx => console.log(`${9 + L.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
 
-    chain(testResulter),
+    chain(testLineResulter),
     result => result.orElse(
         lineCommentResulter
     ),
@@ -185,5 +185,5 @@ const main = (strArr, contextReducer) => {
 }
 
 
-const reducer = tbf.reducerCreate(commentResulter)
+const reducer = tbf.reducerCreate(allResulter)
 console.log(main(strs.split('\n'), reducer))
