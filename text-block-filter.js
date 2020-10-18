@@ -164,7 +164,7 @@ const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(L.view(c
 //  => (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx
 const blockCreate = (beginBlockRegex, endBlockRegex, id) => {
     //TODO: place blockLineNumLens under the new "id lens"
-    const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
+    const LensBlockLineNum = L.makeLenses([id])[id] //just create one lens and use it
     const BLOCK_LINE_OFF = -1
     const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
     const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
@@ -175,24 +175,30 @@ const blockCreate = (beginBlockRegex, endBlockRegex, id) => {
             onBlockBegin = onBlockBegin || defaultCallback
             onBlockEnd = onBlockEnd || defaultCallback
             return ctx => {
-                const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
+                const blockLineNum = L.view(LensBlockLineNum, ctx) || BLOCK_LINE_OFF
                 const line = L.view(cLens.line, ctx)
                 //begin block
                 if (beginBlockRegex.test(line)) {
                     // console.log(ctx)
-                    return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
+                    return Result.Ok(_setBlockLineNum(LensBlockLineNum, ctx))
                         .chain(onBlockBegin)
+                }
+                // block is not detected
+                if (blockLineNum == BLOCK_LINE_OFF) {
+                    return Result.Error(ctx)
                 }
                 // block must be continuous
                 if (L.view(cLens.lineNum, ctx) > blockLineNum + 1) {
-                    return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
+                    // return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
+                    return Result.Ok(_resetBlockLineNum(LensBlockLineNum, ctx))
+                        .chain(onBlockEnd)
                 }
                 //end block
                 if (endBlockRegex.test(line)) {
-                    return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
+                    return Result.Ok(_resetBlockLineNum(LensBlockLineNum, ctx))
                         .chain(onBlockEnd)
                 }
-                return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
+                return Result.Ok(_setBlockLineNum(LensBlockLineNum, ctx))
             }
         }
     }
