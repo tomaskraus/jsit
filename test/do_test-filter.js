@@ -100,10 +100,12 @@ module.exports = {
 const trimStr = s => s.trim()
 
 
-const bCommentBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
-const testBlock = tbf.blockCreate(/^\/\/:::/, tbf.Regex.blankLine, 'testBlock')
-
-
+const bCommentBlock = tbf.Block.create(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
+const commentBlockParser = tbf.BlockParser.create(
+    ctx => Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
+    ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
+    bCommentBlock
+)
 
 const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
 const blockCommentResulter = compose.all(
@@ -112,14 +114,12 @@ const blockCommentResulter = compose.all(
     map(tbf.contextOverLine(
         compose(trimStr, removeBlockCommentStar)
     )),
-    bCommentBlock.resulterFilterBlock(
-        ctx => Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
-        ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
-    ),
+    commentBlockParser.resulterFilter,
 )
 
 
 const isLineComment = s => tbf.Regex.JSLineComment.test(s)
+
 
 const removeLineComment = line => line.replace(/^(\/\/)(.*)$/, "$2")
 const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
@@ -134,14 +134,16 @@ const lineCommentResulter = compose.all(
 )
 
 
-const resulterTestBlock = testBlock.resulterFilterBlock(
+const testBlock = tbf.Block.create(/^\/\/:::/, tbf.Regex.blankLine, 'testBlock')
+const testBlockParser = tbf.BlockParser.create(
     Result.Error,
-    ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx))
+    ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx)),
+    testBlock
 )
 
 const testLineResulter = compose.all(
     chain(tbf.resulterFilterLine(s => !isLineComment(s))),
-    resulterTestBlock,
+    testBlockParser.resulterFilter,
 )
 
 
@@ -161,10 +163,8 @@ const allResulter = compose.all(
 
 
 const main = (strArr, contextReducer) => {
-    ctx = strArr.reduce(contextReducer, tbf.contextCreate())
-    return testBlock.contextFlush(
-        ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx))
-    )(ctx)
+    const ctx = strArr.reduce(contextReducer, tbf.contextCreate())
+    return testBlockParser.contextFlush(ctx)
 }
 
 
