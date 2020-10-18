@@ -200,6 +200,15 @@ const blockCreate = (beginBlockRegex, endBlockRegex, id) => {
                 }
                 return Result.Ok(_setBlockLineNum(LensBlockLineNum, ctx))
             }
+        },
+
+        contextFlush: onBlockEnd => ctx => {
+            if (L.view(LensBlockLineNum, ctx) == BLOCK_LINE_OFF) {
+                return ctx
+            }
+            return Result.Ok(_resetBlockLineNum(LensBlockLineNum, ctx))
+            .chain(onBlockEnd)
+            .merge()
         }
     }
 }

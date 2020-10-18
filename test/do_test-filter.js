@@ -86,6 +86,15 @@ module.exports = {
     plus,
     minus,
 }
+
+/**
+ * 
+ * //:::last test
+ * 1 == 1
+ */
+
+//::: last 2
+// 2 == 1 + 1
 `
 
 const trimStr = s => s.trim()
@@ -125,12 +134,14 @@ const lineCommentResulter = compose.all(
 )
 
 
+const resulterTestBlock = testBlock.resulterFilterBlock(
+    Result.Error,
+    ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx))
+)
+
 const testLineResulter = compose.all(
     chain(tbf.resulterFilterLine(s => !isLineComment(s))),
-    testBlock.resulterFilterBlock(
-        Result.Error,
-        ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx))
-    ),
+    resulterTestBlock,
 )
 
 
@@ -150,7 +161,10 @@ const allResulter = compose.all(
 
 
 const main = (strArr, contextReducer) => {
-    return strArr.reduce(contextReducer, tbf.contextCreate())
+    ctx = strArr.reduce(contextReducer, tbf.contextCreate())
+    return testBlock.contextFlush(
+        ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx))
+    )(ctx)
 }
 
 
