@@ -94,37 +94,6 @@ const trimStr = s => s.trim()
 const bCommentBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
 const testBlock = tbf.blockCreate(/^\/\/:::/, tbf.Regex.blankLine, 'testBlock')
 
-// const printResulter = compose.all(
-//     map(tbf.contextTap(tbf.CLens.original, s => console.log(`str='${s}'`))),
-//     chain(tbf.resulterFilterLine(s => !tbf.Regex.JSLineComment.test(s))),
-//     myBlock.resulterFilterBlock(
-//         _ => Result.Error(utils.tap(_ => console.log(`begin-----`))),     //onBlockBegin
-//         _ => Result.Error(utils.tap(_ => console.log(`----end`))),     //onBlockEnd
-//     ),
-//     tbf.contextOverLine(s => s.trim()),
-//     //utils.log,
-// )
-
-// const countingBlockCommentResulter =
-//     () => {
-//         const startBlockCounter = createCallCounter('beginBlockCount')
-//         return bCommentBlock.resulterFilterBlock(
-//             ctx => Result.Error(
-//                 compose.all(
-//                     tbf.tap(_ => console.log('{')),
-//                     startBlockCounter,
-//                 )(ctx)
-//             ),
-//             ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
-//         )
-//     }
-
-// const createCallCounter = (id) => {
-//     count = 0
-//     const countLens = L.makeLenses([id])[id]
-//     return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
-// }
-
 
 
 const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
