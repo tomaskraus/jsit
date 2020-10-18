@@ -6,7 +6,7 @@ const tbf = require('../text-block-filter')
 const L = require('lenses')
 //const utils = require('../utils')
 
-
+const DATA_LINE_START = 9
 const strs = `
 abc
 /** 
@@ -129,13 +129,13 @@ const testLineResulter = compose.all(
     chain(tbf.resulterFilterLine(s => !isLineComment(s))),
     testBlock.resulterFilterBlock(
         Result.Error,
-        ctx => Result.Error(tbf.tap(_ => console.log("TEST END"))(ctx))
+        ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx))
     ),
 )
 
 
 const allResulter = compose.all(
-    map(tbf.tap(ctx => console.log(`${9 + L.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
+    map(tbf.tap(ctx => console.log(`${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
 
     chain(testLineResulter),
     result => result.orElse(
