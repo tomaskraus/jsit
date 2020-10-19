@@ -6,17 +6,18 @@ const tbf = require('../text-block-filter')
 const utils = require('../utils')
 
 
+const myBlockParser = tbf.BlockParser.create(
+    ctx => Result.Error(utils.tap(_ => console.log(`begin-----`), ctx)),     //onBlockBegin
+    ctx => Result.Error(utils.tap(_ => console.log(`----end`), ctx)),     //onBlockEnd
 
-const myBlock = tbf.blockCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'myBlock')
+    tbf.blockParamsCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'myBlock')
+)
 
 
 const printResulter = compose.all(
     map(tbf.tap(ctx => console.log(`str='${ctx.lineNum}'`))),
     chain(tbf.resulterFilterLine(s => !tbf.Regex.JSLineComment.test(s))),
-    myBlock.resulterFilterBlock(
-        ctx => Result.Error(utils.tap(_ => console.log(`begin-----`), ctx)),     //onBlockBegin
-        ctx => Result.Error(utils.tap(_ => console.log(`----end`), ctx)),     //onBlockEnd
-    ),
+    myBlockParser.resulterFilter,
     tbf.contextOverLine(s => s.trim()),
     //utils.log,
 )
@@ -27,24 +28,28 @@ const createCallCounter = (id) => {
     return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
 }
 
+const startBlockCounter = createCallCounter('beginBlockCount')
+const myBlockParser2 = tbf.BlockParser.create(
+    ctx => Result.Ok(startBlockCounter(ctx)),
+    Result.Ok,
+
+    tbf.blockParamsCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'myBlock')
+)
+
 const createBeginBlockResulter =
     () => {
-        const startBlockCounter = createCallCounter('beginBlockCount')
         return compose.all(
             map(tbf.tap(ctx => console.log(`${41 + tbf.Lens.view(tbf.CLens.lineNum, ctx)} : '${ctx.line}'`))),
-            myBlock.resulterFilterBlock(
-                ctx => Result.Ok(startBlockCounter(ctx)),
-                Result.Ok,
-            ),
+            myBlockParser2.resulterFilter,
             tbf.contextOver(tbf.CLens.line, s => s.trim()),
             //utils.tap(ctx => console.log(ctx))
         )
     }
 
 
-const printReducer = tbf.reducerCreate(printResulter)
+const printReducer = tbf.reducer(printResulter)
 
-const reducer2 = tbf.reducerCreate(createBeginBlockResulter())
+const reducer2 = tbf.reducer(createBeginBlockResulter())
 
 const main = (strArr, contextReducer) => {
     return strArr.reduce(contextReducer, tbf.contextCreate())
