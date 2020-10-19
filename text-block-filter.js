@@ -254,13 +254,14 @@ module.exports = {
 
     /** signatures:
          
-      Context (a.k.a. ctx) :: { lineNum: number, line: string, original: string }
-      Lens : https://github.com/DrBoolean/lenses
-      CLens : Context fields accessor
       Regex : bunch of predefined JavaScript RegExp objects
+      Lens : https://github.com/DrBoolean/lenses
+      Context (a.k.a. ctx) :: { lineNum: number, line: string, original: string }
+      CLens : Context fields accessor { lineNum, line, original }
       Result : https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
       Resulter :: ctx -> Result ctx ctx  
-      BlockParams :: { beginBlockRegex: RegExp, endBlockRegex: RegExp }
+      BlockBoundary :: { beginBlockRegex: RegExp, endBlockRegex: RegExp }
+      BlockCallbacks :: { onBlockBegin: Resulter, onBlockEnd: Resulter }
       BlockParser : blockParser object
       Reducer :: (ctx, string) -> ctx
 
