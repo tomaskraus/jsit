@@ -170,58 +170,58 @@ class Block {
 }
 
 class BlockParser {
-    static defaultCallback = Result.Ok
+    static _defaultCallback = Result.Ok
 
     constructor(onBlockBegin, onBlockEnd, block) {
-        this.onBlockBegin = onBlockBegin || BlockParser.defaultCallback
-        this.onBlockEnd = onBlockEnd || BlockParser.defaultCallback
-        this.block = block
+        this._onBlockBegin = onBlockBegin || BlockParser._defaultCallback
+        this._onBlockEnd = onBlockEnd || BlockParser._defaultCallback
+        this._block = block
 
-        this.LensBlockLineNum = L.makeLenses([block.id])[block.id]
+        this._lensBlockLineNum = L.makeLenses([block.id])[block.id]
 
     }
 
-    static BLOCK_LINE_OFF = -1
+    static _BLOCK_LINE_OFF = -1
     static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
-    static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser.BLOCK_LINE_OFF, ctx)
+    static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
 
     static create(onBlockBegin, onBlockEnd, block) {
         return new BlockParser(onBlockBegin, onBlockEnd, block)
     }
 
     resulterFilter = ctx => {
-        const blockLineNum = L.view(this.LensBlockLineNum, ctx) || BlockParser.BLOCK_LINE_OFF
+        const blockLineNum = L.view(this._lensBlockLineNum, ctx) || BlockParser._BLOCK_LINE_OFF
         const line = L.view(cLens.line, ctx)
         //begin block
-        if (this.block.beginBlockRegex.test(line)) {
+        if (this._block.beginBlockRegex.test(line)) {
             // console.log(ctx)
-            return Result.Ok(BlockParser._setBlockLineNum(this.LensBlockLineNum, ctx))
-                .chain(this.onBlockBegin)
+            return Result.Ok(BlockParser._setBlockLineNum(this._lensBlockLineNum, ctx))
+                .chain(this._onBlockBegin)
         }
         // block is not detected
-        if (blockLineNum == BlockParser.BLOCK_LINE_OFF) {
+        if (blockLineNum == BlockParser._BLOCK_LINE_OFF) {
             return Result.Error(ctx)
         }
         // block must be continuous
         if (L.view(cLens.lineNum, ctx) > blockLineNum + 1) {
             // return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
-            return Result.Ok(BlockParser._resetBlockLineNum(this.LensBlockLineNum, ctx))
-                .chain(this.onBlockEnd)
+            return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
+                .chain(this._onBlockEnd)
         }
         //end block
-        if (this.block.endBlockRegex.test(line)) {
-            return Result.Ok(BlockParser._resetBlockLineNum(this.LensBlockLineNum, ctx))
-                .chain(this.onBlockEnd)
+        if (this._block.endBlockRegex.test(line)) {
+            return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
+                .chain(this._onBlockEnd)
         }
-        return Result.Ok(BlockParser._setBlockLineNum(this.LensBlockLineNum, ctx))
+        return Result.Ok(BlockParser._setBlockLineNum(this._lensBlockLineNum, ctx))
     }
 
     contextFlush = ctx => {
-        if (L.view(this.LensBlockLineNum, ctx) == BlockParser.BLOCK_LINE_OFF) {
+        if (L.view(this._lensBlockLineNum, ctx) == BlockParser._BLOCK_LINE_OFF) {
             return ctx
         }
-        return Result.Ok(BlockParser._resetBlockLineNum(this.LensBlockLineNum, ctx))
-            .chain(this.onBlockEnd)
+        return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
+            .chain(this._onBlockEnd)
             .merge()
     }
 }
