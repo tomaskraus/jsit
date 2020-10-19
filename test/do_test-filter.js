@@ -126,9 +126,12 @@ const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
 const lineCommentResulter = compose.all(
     //map(tbf.contextOverLine(s => `l_ ${s}`)),
 
-    map(tbf.contextOverLine(repairTestHeader)),
     map(tbf.contextOverLine(
-        compose(trimStr, removeLineComment)
+        compose.all(
+            repairTestHeader,
+            trimStr,
+            removeLineComment
+        )
     )),
     tbf.resulterFilterLine(isLineComment),
 )
