@@ -168,5 +168,5 @@ const main = (strArr, contextReducer) => {
 }
 
 
-const reducer = tbf.reducerCreate(allResulter)
+const reducer = tbf.reducer(allResulter)
 console.log(main(strs.split('\n'), reducer))

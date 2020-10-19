@@ -234,7 +234,7 @@ const contextNextLine = curry(2, (line, ctx) => compose.all(
 )
 
 //reducerCreate :: Resulter -> Reducer
-const reducerCreate = resulter => (ctx, line) => compose.all(
+const reducer = resulter => (ctx, line) => compose.all(
     resulter,
     contextNextLine(line),
 )(ctx).merge()
@@ -293,10 +293,10 @@ module.exports = {
     
     blockParamsCreate,
     BlockParser,
-    
+
     resulterFilterLine,
     resulterFilter,
 
-    reducerCreate,
+    reducer,
 
 }
