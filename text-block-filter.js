@@ -155,23 +155,23 @@ const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
 const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(L.view(cLens.line, ctx)))
 
 
-const blockParamsCreate = (beginBlockRegex, endBlockRegex, id) => {
+const blockParamsCreate = (beginBlockRegex, endBlockRegex) => {
     return {
         beginBlockRegex,
         endBlockRegex,
-        id,
     }
 }
 
 
 class BlockParser {
     
-    constructor(onBlockBegin, onBlockEnd, blockParams) {
+    constructor(onBlockBegin, onBlockEnd, blockParams, id) {
         this._onBlockBegin = onBlockBegin || BlockParser._defaultCallback
         this._onBlockEnd = onBlockEnd || BlockParser._defaultCallback
         this._block = blockParams
+        this._id = id
         
-        this._lensBlockLineNum = L.makeLenses([this._block.id])[this._block.id]
+        this._lensBlockLineNum = L.makeLenses([this._id])[this._id]
     }
     
     static _defaultCallback = Result.Ok
@@ -179,8 +179,8 @@ class BlockParser {
     static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
     static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
 
-    static create(onBlockBegin, onBlockEnd, block) {
-        return new BlockParser(onBlockBegin, onBlockEnd, block)
+    static create(onBlockBegin, onBlockEnd, block, id) {
+        return new BlockParser(onBlockBegin, onBlockEnd, block, id)
     }
 
     resulterFilter = ctx => {
