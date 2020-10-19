@@ -269,18 +269,19 @@ module.exports = {
         blankLine: blankLineRegex,
     },
 
-    // lens object
-    Lens: L,
-
+    
     /**
-     * Context properties accessor
+     * Context properties accessor - context lenses
      */
     CLens: {
         original: cLens.original,   //original original line
         line: cLens.line,           //modified line
         lineNum: cLens.lineNum,     //line number
     },
-  
+    
+    // lens object
+    Lens: L,
+    
     
     contextCreate,
     contextTapLine,
