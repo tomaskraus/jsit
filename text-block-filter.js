@@ -162,12 +162,19 @@ const blockParamsCreate = (beginBlockRegex, endBlockRegex) => {
     }
 }
 
+const blockCallbacksCreate = (onBlockBegin, onBlockEnd) => {
+    return {
+        onBlockBegin,
+        onBlockEnd,
+    }
+}
+
 
 class BlockParser {
     
-    constructor(onBlockBegin, onBlockEnd, blockParams, id) {
-        this._onBlockBegin = onBlockBegin || BlockParser._defaultCallback
-        this._onBlockEnd = onBlockEnd || BlockParser._defaultCallback
+    constructor(blockParams, blockCallbacks, id) {
+        this._onBlockBegin = blockCallbacks.onBlockBegin || BlockParser._defaultCallback
+        this._onBlockEnd = blockCallbacks.onBlockEnd || BlockParser._defaultCallback
         this._block = blockParams
         this._id = id
         
@@ -179,8 +186,8 @@ class BlockParser {
     static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
     static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
 
-    static create(onBlockBegin, onBlockEnd, block, id) {
-        return new BlockParser(onBlockBegin, onBlockEnd, block, id)
+    static create(blockParams, blockCallbacks, block, id) {
+        return new BlockParser(blockParams, blockCallbacks, block, id)
     }
 
     resulterFilter = ctx => {
@@ -247,12 +254,13 @@ module.exports = {
 
     /** signatures:
          
-      Context (abbr. ctx) :: { lineNum: number, line: string, original: string }
+      Context (a.k.a. ctx) :: { lineNum: number, line: string, original: string }
+      Lens : https://github.com/DrBoolean/lenses
       CLens : Context fields accessor
       Regex : bunch of predefined JavaScript RegExp objects
-      Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
+      Result : https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
       Resulter :: ctx -> Result ctx ctx  
-      BlockParams :: { beginBlockRegex: RegExp, endBlockRegex: RegExp, id: string }
+      BlockParams :: { beginBlockRegex: RegExp, endBlockRegex: RegExp }
       BlockParser : blockParser object
       Reducer :: (ctx, string) -> ctx
 
@@ -269,6 +277,8 @@ module.exports = {
         blankLine: blankLineRegex,
     },
 
+    // lens object
+    Lens: L,
     
     /**
      * Context properties accessor - context lenses
@@ -278,24 +288,23 @@ module.exports = {
         line: cLens.line,           //modified line
         lineNum: cLens.lineNum,     //line number
     },
-    
-    // lens object
-    Lens: L,
-    
-    //Result object
-    Result,
+     
     
     contextCreate,
     contextTapLine,
     contextOverLine,
     contextOver,
     
-    blockParamsCreate,
-    BlockParser,
+    //Result object
+    Result,
     
     resulterFilterLine,
     resulterFilter,
     
+    blockParamsCreate,
+    blockCallbacksCreate,
+    BlockParser,
+
     reducer,
     
 
