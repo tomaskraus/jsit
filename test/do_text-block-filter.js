@@ -7,10 +7,12 @@ const utils = require('../utils')
 
 
 const myBlockParser = tbf.BlockParser.create(
+    tbf.blockBoundaryCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd), 
+    tbf.blockCallbacksCreate(
     ctx => Result.Error(utils.tap(_ => console.log(`begin-----`), ctx)),     //onBlockBegin
     ctx => Result.Error(utils.tap(_ => console.log(`----end`), ctx)),     //onBlockEnd
-
-    tbf.blockParamsCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'myBlock')
+    ),
+    'myBlock'
 )
 
 
@@ -30,10 +32,12 @@ const createCallCounter = (id) => {
 
 const startBlockCounter = createCallCounter('beginBlockCount')
 const myBlockParser2 = tbf.BlockParser.create(
-    ctx => Result.Ok(startBlockCounter(ctx)),
-    Result.Ok,
-
-    tbf.blockParamsCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'myBlock')
+    tbf.blockBoundaryCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd), 
+    tbf.blockCallbacksCreate(
+        ctx => Result.Ok(startBlockCounter(ctx)),
+        Result.Ok,
+    ),
+    'myBlock'
 )
 
 const createBeginBlockResulter =
