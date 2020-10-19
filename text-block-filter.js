@@ -100,10 +100,10 @@ const cLens = L.makeLenses([
     const newCtx = text_block_filter.tap(text_block_filter.CLens.original, x => x + 1, {original: 1})
     assert.equal(newCtx.original, 1)   //should stay unchanged
 */
-const tap = fn => a => {
+const tap = curry(2, (fn, a) => {
     fn(a)
     return a
-}
+})
 
 /**
     Runs a custom string manipulation function fn with a "line property of a context ctx" as an argument.
@@ -115,10 +115,8 @@ const tap = fn => a => {
     const newCtx = text_block_filter.contextTap(text_block_filter.CLens.line, s => s + 's', {line: "work"})
     assert.equal(newCtx.line, 'work')   //should stay unchanged
 */
-const contextTapLine = fn => ctx => {
-    fn(L.view(cLens.line, ctx))
-    return ctx
-}
+const contextTapLine = fn => ctx => tap(L.view(cLens.line, ctx), ctx)
+
 
 /**
     Runs a custom string manipulation function fn with a "line property of a context ctx" as an argument. 
@@ -282,9 +280,7 @@ module.exports = {
         line: cLens.line,           //modified line
         lineNum: cLens.lineNum,     //line number
     },
-
-    
-    tap,
+  
     
     contextCreate,
     contextTapLine,
@@ -293,10 +289,12 @@ module.exports = {
     
     blockParamsCreate,
     BlockParser,
-
+    
     resulterFilterLine,
     resulterFilter,
-
+    
     reducer,
+    
 
+    tap,
 }
