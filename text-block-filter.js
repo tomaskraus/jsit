@@ -282,6 +282,8 @@ module.exports = {
     // lens object
     Lens: L,
     
+    //Result object
+    Result,
     
     contextCreate,
     contextTapLine,

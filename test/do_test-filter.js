@@ -1,12 +1,10 @@
 const { compose } = require('folktale/core/lambda')
-const Result = require('folktale/result')
 const { map, chain } = require('pointfree-fantasy')
 
 const tbf = require('../text-block-filter')
-const L = require('lenses')
-//const utils = require('../utils')
 
-const DATA_LINE_START = 9
+
+const DATA_LINE_START = 7
 const strs = `
 abc
 /** 
@@ -102,8 +100,8 @@ const trimStr = s => s.trim()
 
 const bCommentBlockParams = tbf.blockParamsCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
 const commentBlockParser = tbf.BlockParser.create(
-    ctx => Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
-    ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
+    ctx => tbf.Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
+    ctx => tbf.Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
     bCommentBlockParams
 )
 
@@ -139,8 +137,8 @@ const lineCommentResulter = compose.all(
 
 const testBlockParams = tbf.blockParamsCreate(/^\/\/:::/, tbf.Regex.blankLine, 'testBlock')
 const testBlockParser = tbf.BlockParser.create(
-    Result.Error,
-    ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx)),
+    tbf.Result.Error,
+    ctx => tbf.Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + tbf.Lens.view(tbf.CLens.lineNum, ctx)}`))(ctx)),
     testBlockParams
 )
 
@@ -151,7 +149,7 @@ const testLineResulter = compose.all(
 
 
 const allResulter = compose.all(
-    map(tbf.tap(ctx => console.log(`${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
+    map(tbf.tap(ctx => console.log(`${DATA_LINE_START + tbf.Lens.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
 
     chain(testLineResulter),
     result => result.orElse(
