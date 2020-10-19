@@ -100,11 +100,11 @@ module.exports = {
 const trimStr = s => s.trim()
 
 
-const bCommentBlock = tbf.Block.create(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
+const bCommentBlockParams = tbf.blockParamsCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd, 'bBlock')
 const commentBlockParser = tbf.BlockParser.create(
     ctx => Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
     ctx => Result.Error(tbf.tap(_ => console.log('  }'))(ctx)),
-    bCommentBlock
+    bCommentBlockParams
 )
 
 const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
@@ -134,11 +134,11 @@ const lineCommentResulter = compose.all(
 )
 
 
-const testBlock = tbf.Block.create(/^\/\/:::/, tbf.Regex.blankLine, 'testBlock')
+const testBlockParams = tbf.blockParamsCreate(/^\/\/:::/, tbf.Regex.blankLine, 'testBlock')
 const testBlockParser = tbf.BlockParser.create(
     Result.Error,
     ctx => Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + L.view(tbf.CLens.lineNum, ctx)}`))(ctx)),
-    testBlock
+    testBlockParams
 )
 
 const testLineResulter = compose.all(

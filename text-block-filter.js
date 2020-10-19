@@ -157,30 +157,26 @@ const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
 const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(L.view(cLens.line, ctx)))
 
 
-class Block {
-    constructor(beginBlockRegex, endBlockRegex, id) {
-        this.beginBlockRegex = beginBlockRegex
-        this.endBlockRegex = endBlockRegex
-        this.id = id
-    }
-
-    static create(beginBlockRegex, endBlockRegex, id) {
-        return new Block(beginBlockRegex, endBlockRegex, id)
+const blockParamsCreate = (beginBlockRegex, endBlockRegex, id) => {
+    return {
+        beginBlockRegex,
+        endBlockRegex,
+        id,
     }
 }
 
-class BlockParser {
-    static _defaultCallback = Result.Ok
 
-    constructor(onBlockBegin, onBlockEnd, block) {
+class BlockParser {
+    
+    constructor(onBlockBegin, onBlockEnd, blockParams) {
         this._onBlockBegin = onBlockBegin || BlockParser._defaultCallback
         this._onBlockEnd = onBlockEnd || BlockParser._defaultCallback
-        this._block = block
-
-        this._lensBlockLineNum = L.makeLenses([block.id])[block.id]
-
+        this._block = blockParams
+        
+        this._lensBlockLineNum = L.makeLenses([this._block.id])[this._block.id]
     }
-
+    
+    static _defaultCallback = Result.Ok
     static _BLOCK_LINE_OFF = -1
     static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
     static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
@@ -258,10 +254,8 @@ module.exports = {
       Regex : bunch of predefined JavaScript RegExp objects
       Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
       Resulter :: ctx -> Result ctx ctx  
-      Block :: { 
-          resulterFilterBlock :: (Resulter onBlockBegin, onBlockEnd) => 
-            (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx 
-      } 
+      BlockParams :: { beginBlockRegex: RegExp, endBlockRegex: RegExp, id: string }
+      BlockParser : blockParser object
       Reducer :: (ctx, string) -> ctx
 
     */
@@ -284,21 +278,22 @@ module.exports = {
      * Context properties accessor
      */
     CLens: {
-        original: cLens.original,      //original original line
-        line: cLens.line,    //modified line
-        lineNum: cLens.lineNum,  //line number
+        original: cLens.original,   //original original line
+        line: cLens.line,           //modified line
+        lineNum: cLens.lineNum,     //line number
     },
 
-    Block,
-    BlockParser,
-
+    
     tap,
-
+    
     contextCreate,
     contextTapLine,
     contextOverLine,
     contextOver,
-
+    
+    blockParamsCreate,
+    BlockParser,
+    
     resulterFilterLine,
     resulterFilter,
 
