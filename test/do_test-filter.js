@@ -1,6 +1,9 @@
 const { compose } = require('folktale/core/lambda')
 const { map, chain } = require('pointfree-fantasy')
 
+const Rx = require('rxjs')
+const RxOp = require('rxjs/operators')
+
 const tbf = require('../text-block-filter')
 
 
@@ -167,11 +170,23 @@ const allResulter = compose.all(
 //-------------------------------------------------------------------------------------
 
 
-const main = (strArr, contextReducer) => {
-    const ctx = strArr.reduce(contextReducer, tbf.contextCreate())
-    return testBlockParser.contextFlush(ctx)
-}
+const testReducer = tbf.reducer(allResulter)
 
 
-const reducer = tbf.reducer(allResulter)
-console.log(main(strs.split('\n'), reducer))
+const dataSource = Rx.from(strs.split('\n'))
+
+const subs = dataSource
+    .pipe(
+        RxOp.scan(testReducer, tbf.contextCreate()),
+        RxOp.last()
+    )
+    .subscribe({
+        next: res => { 
+            console.log(
+                testBlockParser.contextFlush(res)
+            )           
+        },
+        complete: res => console.log(`END`)
+    })
+
+
