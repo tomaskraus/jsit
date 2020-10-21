@@ -60,6 +60,8 @@
  * @module text_block_filter
  */
 
+// TODO: consider using Sanctuary instead of folktale
+// https://sanctuary.js.org
 
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
