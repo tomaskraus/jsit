@@ -99,6 +99,21 @@ module.exports = {
 `
 
 const trimStr = s => s.trim()
+const isLineComment = s => tbf.Regex.JSLineComment.test(s)
+
+
+const removeLineComment = line => line.replace(/^(\/\/)(.*)$/, "$2")
+const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
+const lineCommentResulter = compose.all(
+    map(tbf.contextOverLine(
+        compose.all(
+            repairTestHeader,
+            trimStr,
+            removeLineComment
+        )
+    )),
+    tbf.resulterFilterLine(isLineComment),
+)
 
 
 const commentBlockParser = tbf.BlockParser.create(
@@ -112,31 +127,10 @@ const commentBlockParser = tbf.BlockParser.create(
 
 const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
 const blockCommentResulter = compose.all(
-    //map(tbf.contextOverLine(s => `_b ${s}`)),
-
     map(tbf.contextOverLine(
         compose(trimStr, removeBlockCommentStar)
     )),
     commentBlockParser.resulterFilter,
-)
-
-
-const isLineComment = s => tbf.Regex.JSLineComment.test(s)
-
-
-const removeLineComment = line => line.replace(/^(\/\/)(.*)$/, "$2")
-const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
-const lineCommentResulter = compose.all(
-    //map(tbf.contextOverLine(s => `l_ ${s}`)),
-
-    map(tbf.contextOverLine(
-        compose.all(
-            repairTestHeader,
-            trimStr,
-            removeLineComment
-        )
-    )),
-    tbf.resulterFilterLine(isLineComment),
 )
 
 
