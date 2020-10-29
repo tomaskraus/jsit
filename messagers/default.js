@@ -4,10 +4,7 @@
  */
 
 const Msg = {
-    describe: ctx => console.log({
-        type: 'Describe',
-        context: ctx
-    }),
+    describe: ctx => console.log(`${ctx.line}`),
     testOk: ctx =>
         console.log(
             `${/*DATA_LINE_START + */ ctx.lineNum} :\t'${ctx.line}'`
