@@ -5,6 +5,7 @@ const Rx = require('rxjs')
 const RxOp = require('rxjs/operators')
 
 const tbf = require('../text-block-filter')
+Msg = require('../messagers/default')
 
 
 const DATA_LINE_START = 7
@@ -98,6 +99,9 @@ module.exports = {
 // 2 == 1 + 1
 `
 
+
+
+
 const trimStr = s => s.trim()
 const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 
@@ -119,16 +123,19 @@ const lineCommentResulter = compose.all(
 const commentBlockParser = tbf.BlockParser.create(
     tbf.blockBoundaryCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd),
     tbf.blockCallbacksCreate(
-        ctx => tbf.Result.Error(tbf.tap(_ => console.log('{'))(ctx)),
-        ctx => tbf.Result.Error(tbf.tap(_ => console.log('  }'))(ctx))
+        ctx => tbf.Result.Error(ctx),
+        ctx => tbf.Result.Error(ctx)
     ),
-    'bBlock'
+    'cBlock'
 )
 
 const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
 const blockCommentResulter = compose.all(
     map(tbf.contextOverLine(
-        compose(trimStr, removeBlockCommentStar)
+        compose(
+            trimStr,
+            removeBlockCommentStar
+        )
     )),
     commentBlockParser.resulterFilter,
 )
@@ -138,9 +145,9 @@ const testBlockParser = tbf.BlockParser.create(
     tbf.blockBoundaryCreate(/^\/\/:::/, tbf.Regex.blankLine),
     tbf.blockCallbacksCreate(
         tbf.Result.Error,
-        ctx => tbf.Result.Error(tbf.tap(_ => console.log(`TEST END : ${DATA_LINE_START + tbf.Lens.view(tbf.CLens.lineNum, ctx)}`))(ctx)),
+        tbf.Result.Error,
     ),
-    'testBlock'
+    'tBlock'
 )
 
 const testLineResulter = compose.all(
@@ -150,7 +157,7 @@ const testLineResulter = compose.all(
 
 
 const allResulter = compose.all(
-    map(tbf.tap(ctx => console.log(`${DATA_LINE_START + tbf.Lens.view(tbf.CLens.lineNum, ctx)} :\t'${ctx.line}'`))),
+    map(tbf.tap(Msg.testOk)),
 
     chain(testLineResulter),
     result => result.orElse(
@@ -175,10 +182,10 @@ const subs = dataSource
         RxOp.last()
     )
     .subscribe({
-        next: res => { 
-            console.log(
+        next: res => {
+            Msg.summary(
                 testBlockParser.contextFlush(res)
-            )           
+            )
         },
         complete: res => console.log(`END`)
     })
