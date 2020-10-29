@@ -5,7 +5,7 @@ const Rx = require('rxjs')
 const RxOp = require('rxjs/operators')
 
 const tbf = require('../text-block-filter')
-Msg = require('../messagers/default')
+_Msg = require('../messagers/default')
 
 
 const DATA_LINE_START = 7
@@ -141,50 +141,78 @@ const blockCommentResulter = compose.all(
 )
 
 
-const testBlockParser = tbf.BlockParser.create(
-    tbf.blockBoundaryCreate(/^\/\/:::/, tbf.Regex.blankLine),
-    tbf.blockCallbacksCreate(
-        tbf.Result.Error,
-        tbf.Result.Error,
-    ),
-    'tBlock'
-)
+const TestRunner = (messager, evaluator) => {
 
-const testLineResulter = compose.all(
-    chain(tbf.resulterFilterLine(s => !isLineComment(s))),
-    testBlockParser.resulterFilter,
-)
+    const testBlockParser = tbf.BlockParser.create(
+        tbf.blockBoundaryCreate(/^\/\/:::/, tbf.Regex.blankLine),
+        tbf.blockCallbacksCreate(
+            ctx => tbf.Result.Error(tbf.tap(messager.describe, ctx)),
+            tbf.Result.Error,
+        ),
+        'tBlock'
+    )
 
+    const testLineResulter = compose.all(
+        chain(tbf.resulterFilterLine(s => !isLineComment(s))),
+        testBlockParser.resulterFilter,
+    )
 
-const allResulter = compose.all(
-    map(tbf.tap(Msg.testOk)),
+    const allTestLinesResulter = compose.all(
+        chain(testLineResulter),
+        result => result.orElse(
+            lineCommentResulter
+        ),
+        blockCommentResulter,
+        tbf.contextOverLine(trimStr),
+    )
 
-    chain(testLineResulter),
-    result => result.orElse(
-        lineCommentResulter
-    ),
-    blockCommentResulter,
-    tbf.contextOverLine(trimStr),
-)
+    const evaluate = ctx => {
+        try {
+            if (evaluator(ctx.line)) {
+                messager.testOk(ctx)
+                return ctx
+            } else {
+                messager.testFailure(ctx)
+                return ctx
+            }
+        } catch (e) {
+            messager.error(ctx)
+            return ctx
+        }
+    }
 
+    const testingResulter = compose.all(
+        map(evaluate),
+        allTestLinesResulter,
+    )
+
+    const testingReducer = tbf.reducer(testingResulter)
+
+    return {
+        reducer: testingReducer,
+        flush: testBlockParser.contextFlush,
+    }
+
+}
 
 //-------------------------------------------------------------------------------------
 
 
-const testReducer = tbf.reducer(allResulter)
+const testEvaluator = s => true
+const runner = TestRunner(_Msg, testEvaluator)
 
 
 const dataSource = Rx.from(strs.split('\n'))
 
 const subs = dataSource
     .pipe(
-        RxOp.scan(testReducer, tbf.contextCreate()),
+        RxOp.scan(runner.reducer, tbf.contextCreate()),
         RxOp.last()
     )
     .subscribe({
         next: res => {
-            Msg.summary(
-                testBlockParser.contextFlush(res)
+            _Msg.summary(
+                runner.flush(res)
             )
         },
         complete: res => console.log(`END`)
