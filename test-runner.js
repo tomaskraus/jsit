@@ -14,7 +14,7 @@ const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
 const lineCommentResulter = compose.all(
     map(tbf.contextOverLine(
         compose.all(
-            repairTestHeader,
+            repairTestHeader, //restore the test header we've stripped earlier
             trimStr,
             removeLineComment
         )
