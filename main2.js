@@ -50,8 +50,27 @@ const getStreamFromFileName = path => {
 
 //prepareEval :: (Evaluator string -> boolean) => string -> Task Error Evaluator
 const prepareEval = path => {
+    // const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
+    // const sanitizeName = moduleName => moduleName.replace('-', '_')
+
     return new Task((reject, resolve) => {
-        const testEvaluator = s => true
+
+        // const moduleName = nameWithoutExt(pathForModuleRequire)
+        // const requireFileStr = `var ${sanitizeName(moduleName)} = require("${fileName}")`
+        // console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
+
+        // const outerImpure = impure
+        // try {
+        //     eval(requireFileStr)
+        //     eval("var assert = require('assert')")
+        //     return { eval: str => eval(str) }
+        // } catch (e) {
+        //     outerImpure.errAndExit(e)
+        //     return { eval: null }
+        // }
+
+
+        const testEvaluator = { eval: s => true }
         resolve(testEvaluator)
         // reject(new Error("prepare evaluation not implemented"))
     })
