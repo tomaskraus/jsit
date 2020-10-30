@@ -18,8 +18,7 @@ const tr = require('./test-runner')
 
 
 
-const doWork = (stream) => {
-    const testEvaluator = s => true
+const doWork = (stream, testEvaluator) => {
     const runner = tr.createRunner(_Msg, testEvaluator)
 
     const readStreamLines = stream.pipe(split())
@@ -41,22 +40,38 @@ const doWork = (stream) => {
         })
 }
 
-
+//getStreamFromFileName :: string -> Task Error Stream
 const getStreamFromFileName = path => {
     return new Task((reject, resolve) => {
+        //reject(new Error('Stream is not ready!'))
         const readStream = fs.createReadStream(path, { encoding: 'utf8' })
         readStream.on('open', _ => resolve(readStream)) //we want a stream object, not its data
         readStream.on('error', error => reject(error))
     })
 }
 
+//prepareEval :: (Evaluator string -> boolean) => string -> Task Error Evaluator
+const prepareEval = path => {
+    return new Task((reject, resolve) => {
+        const testEvaluator = s => true
+        resolve(testEvaluator)
+        // reject(new Error("prepare evaluation not implemented"))
+    })
+}
 
-const fileName = process.argv[2] || null
+
+const identity = a => a
+
+
+const fileName = process.argv[2]
 fileName == null ?
     console.log('usage: main.js <filename>')
     :
-    getStreamFromFileName(fileName)
+    prepareEval(fileName)
+        .chain(evaluator => getStreamFromFileName(fileName)
+            .map(stream => doWork(stream, evaluator))
+        )
         .fork(
             error => console.log(error.message),
-            data => doWork(data)
+            identity
         )
