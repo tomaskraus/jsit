@@ -12,7 +12,7 @@ const fs = require('fs')
 const split = require('split')
 const Task = require('data.task')
 
-const _Msg = require('./messagers/default')
+const _Msg = require('./messagers/defaultMessager')
 const tr = require('./test-runner')
 
 

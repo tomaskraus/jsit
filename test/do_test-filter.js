@@ -5,7 +5,7 @@ const Rx = require('rxjs')
 const RxOp = require('rxjs/operators')
 
 const tbf = require('../text-block-filter')
-_Msg = require('../messagers/default')
+_Msg = require('../messagers/defaultMessager')
 
 
 const DATA_LINE_START = 7
