@@ -18,8 +18,8 @@ const tr = require('./test-runner')
 
 
 
-const doWork = (stream, testEvaluator) => {
-    const runner = tr.createRunner(_Msg, testEvaluator)
+const doWork = (stream, testEvaluator, messager) => {
+    const runner = tr.createRunner(messager, testEvaluator)
 
     const readStreamLines = stream.pipe(split())
     const ob = streamToStringRx(readStreamLines)
@@ -29,7 +29,7 @@ const doWork = (stream, testEvaluator) => {
         )
         .subscribe({
             next: res => {
-                _Msg.summary(
+                messager.summary(
                     runner.flush(res)
                 )
             },
@@ -69,7 +69,7 @@ fileName == null ?
     :
     prepareEval(fileName)
         .chain(evaluator => getStreamFromFileName(fileName)
-            .map(stream => doWork(stream, evaluator))
+            .map(stream => doWork(stream, evaluator, _Msg))
         )
         .fork(
             error => console.log(error.message),
