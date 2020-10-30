@@ -89,6 +89,6 @@ fileName == null ?
             .map(stream => doWork(stream, evaluator, _Msg))
         )
         .fork(
-            error => console.log(error.message),
+            error => console.log(`ERROR: ${error.message}`),
             identity
         )
