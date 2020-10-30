@@ -20,9 +20,8 @@ const tr = require('./test-runner')
 
 const doWork = (stream, testEvaluator, messager) => {
     const runner = tr.createRunner(messager, testEvaluator)
-
     const readStreamLines = stream.pipe(split())
-    const ob = streamToStringRx(readStreamLines)
+    streamToStringRx(readStreamLines)
         .pipe(
             RxOp.scan(runner.reducer, runner.createContext()),
             RxOp.last()
@@ -35,7 +34,6 @@ const doWork = (stream, testEvaluator, messager) => {
             },
             complete: _ => {
                 stream.destroy()
-                console.log('---end---')
             }
         })
 }
