@@ -4,6 +4,7 @@
  */
 
 
+const path = require('path');
 //const Rx = require('rxjs')
 const RxOp = require('rxjs/operators')
 
@@ -48,31 +49,27 @@ const getStreamFromFileName = path => {
     })
 }
 
+
 //prepareEval :: (Evaluator string -> boolean) => string -> Task Error Evaluator
-const prepareEval = path => {
-    // const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
-    // const sanitizeName = moduleName => moduleName.replace('-', '_')
+const prepareEval = pathForModuleRequire => {
+    //const testEvaluator = { evaluate: s => true }
+    //resolve(testEvaluator)
+
+    const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
+    const sanitizeName = moduleName => moduleName.replace('-', '_')
 
     return new Task((reject, resolve) => {
+        try {
+            const moduleName = nameWithoutExt(pathForModuleRequire)
+            console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
 
-        // const moduleName = nameWithoutExt(pathForModuleRequire)
-        // const requireFileStr = `var ${sanitizeName(moduleName)} = require("${fileName}")`
-        // console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
-
-        // const outerImpure = impure
-        // try {
-        //     eval(requireFileStr)
-        //     eval("var assert = require('assert')")
-        //     return { eval: str => eval(str) }
-        // } catch (e) {
-        //     outerImpure.errAndExit(e)
-        //     return { eval: null }
-        // }
-
-
-        const testEvaluator = { eval: s => true }
-        resolve(testEvaluator)
-        // reject(new Error("prepare evaluation not implemented"))
+            const requireFileStr = `var ${sanitizeName(moduleName)} = require("${fileName}")`
+            eval(requireFileStr)
+            eval("var assert = require('assert')")
+            resolve( { evaluate: str => eval(str) })
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 

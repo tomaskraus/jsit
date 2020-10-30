@@ -71,7 +71,7 @@ const TestRunner = (messager, evaluator) => {
 
     const evaluate = ctx => {
         try {
-            if (evaluator.eval(ctx.line)) {
+            if (evaluator.evaluate(ctx.line)) {
                 messager.testOk(ctx)
                 return ctx
             } else {
