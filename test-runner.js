@@ -1,4 +1,5 @@
 const { compose } = require('folktale/core/lambda')
+const Result = require('folktale/result')
 const { map, chain } = require('pointfree-fantasy')
 
 const tbf = require('./text-block-filter')
@@ -79,13 +80,19 @@ const TestRunner = (messager, evaluator) => {
                 return ctx
             }
         } catch (e) {
-            messager.error(ctx)
+            messager.testFailure(ctx)
             return ctx
         }
     }
 
+    const testingContextResulter = ctx => {
+        // TODO: implement test context logic here 
+        return Result.Ok(ctx)
+    }
+
     const testingResulter = compose.all(
         map(evaluate),
+        chain(testingContextResulter),
         allTestLinesResulter,
     )
 
