@@ -60,6 +60,8 @@
  * @module text_block_filter
  */
 
+// TODO: consider using Sanctuary instead of folktale
+// https://sanctuary.js.org
 
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
@@ -96,14 +98,23 @@ const cLens = L.makeLenses([
 
     tap :: (a -> any) -> a -> a
 
-    //::: tap   
-    const newCtx = text_block_filter.tap(text_block_filter.CLens.original, x => x + 1, {original: 1})
-    assert.equal(newCtx.original, 1)   //should stay unchanged
+    @example
+    //::: tap
+    const lib = text_block_filter  //this module
+    //
+    let g = 1                               //define some "global" variable
+    const ctx = {line: "work"}              //our original context  
+    const pluralize = c => {g = 2; return {line: c.line + 's'}}  //some function with side effects
+    //
+    const newCtx = lib.tap(pluralize, ctx)
+    //
+    assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
+    assert.equal(g, 2)   //side effects are visible
 */
-const tap = fn => a => {
+const tap = curry(2, (fn, a) => {
     fn(a)
     return a
-}
+})
 
 /**
     Runs a custom string manipulation function fn with a "line property of a context ctx" as an argument.
@@ -111,34 +122,44 @@ const tap = fn => a => {
 
     contextTap :: ({line: string, ...} ctx) => (string -> _) -> ctx -> ctx
 
-    //::: contextTap   
-    const newCtx = text_block_filter.contextTap(text_block_filter.CLens.line, s => s + 's', {line: "work"})
-    assert.equal(newCtx.line, 'work')   //should stay unchanged
+    @example
+    //::: contextTapLine 
+    let g = 1                               //define some "global" variable
+    const ctx = {line: "work"}              //our original context  
+    const pluralize = s => {g = 2; return s + 's'}  //some function with side effects
+    const newCtx = text_block_filter.contextTapLine(pluralize, ctx)
+    assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
+    assert.equal(g, 2)   //side effects are visible
 */
-const contextTapLine = fn => ctx => {
-    fn(L.view(cLens.line, ctx))
-    return ctx
-}
+const contextTapLine = curry(2,
+    (fn, ctx) => {
+        fn(L.view(cLens.line, ctx))
+        return ctx
+    }
+)
+
 
 /**
-    Runs a custom string manipulation function fn with a "line property of a context ctx" as an argument. 
+    Runs a custom string manipulation function fn that takes a "line property of a context ctx" as an argument. 
     Returns a new context, with its "line" property set to the result of that function fn.
 
-    contextOverLine :: ({line: string, ...} ctx) => (string -> _) -> ctx -> ctx
+    contextOverLine :: ({line: string, ...} ctx) => (string -> any) -> ctx -> ctx
 
     @example
-    //::: contextOverLine   
-    const newCtx = text_block_filter.contextOverLine(s => s + 's', {line: "work"})
-    assert.equal(newCtx.line, 'works')   //should be changed
+    //::: contextOverLine
+    const ctx = {line: "work"}              //our original context   
+    const newCtx = text_block_filter.contextOverLine(s => s + 's', ctx)
+    assert.equal(newCtx.line, 'works')   //context line should be changed
 */
-const contextOverLine = fn => ctx => L.over(cLens.line, fn, ctx)
+const contextOverLine = curry(2, (fn, ctx) => L.over(cLens.line, fn, ctx))
+
 
 /**
     Runs a function fn with a "some property "p" of a context ctx" as an argument. 
     Returns a new context, with its "p" property set to the result of that function fn.
     That function fn should check if value "p" is present.
 
-    contextOverLine :: ({p: a, ...} ctx) => (a -> a) -> ctx -> ctx
+    contextOverLine :: ({p: a, ...} ctx) => lens -> (a -> a) -> ctx -> ctx
 
     @example
     //::: contextOver   
@@ -157,47 +178,77 @@ const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
 const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(L.view(cLens.line, ctx)))
 
 
-//creates a Block object. You can call its "result" method to get a "stateful & block aware" CtxBlockResulter
-//The id parameter should differ among nested ctxBlockObjs.
-//blockCreate :: (RegExp -> RegExp -> string) -> Block
-//Block.resulterFilterBlock :: (Resulter onBlockBegin, onBlockEnd) 
-//  => (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx
-const blockCreate = (beginBlockRegex, endBlockRegex, id) => {
-    //TODO: place blockLineNumLens under the new "id lens"
-    const blockLineNumLens = L.makeLenses([id])[id] //just create one lens and use it
-    const BLOCK_LINE_OFF = -1
-    const _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
-    const _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BLOCK_LINE_OFF, ctx)
-    const defaultCallback = Result.Ok
-
+const blockBoundaryCreate = (beginBlockRegex, endBlockRegex) => {
     return {
-        resulterFilterBlock: (onBlockBegin, onBlockEnd) => {
-            onBlockBegin = onBlockBegin || defaultCallback
-            onBlockEnd = onBlockEnd || defaultCallback
-            return ctx => {
-                const blockLineNum = L.view(blockLineNumLens, ctx) || BLOCK_LINE_OFF
-                const line = L.view(cLens.line, ctx)
-                //begin block
-                if (beginBlockRegex.test(line)) {
-                    // console.log(ctx)
-                    return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
-                        .chain(onBlockBegin)
-                }
-                // block must be continuous
-                if (L.view(cLens.lineNum, ctx) > blockLineNum + 1) {
-                    return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
-                }
-                //end block
-                if (endBlockRegex.test(line)) {
-                    return Result.Ok(_resetBlockLineNum(blockLineNumLens, ctx))
-                        .chain(onBlockEnd)
-                }
-                return Result.Ok(_setBlockLineNum(blockLineNumLens, ctx))
-            }
-        }
+        beginBlockRegex,
+        endBlockRegex,
     }
 }
 
+const blockCallbacksCreate = (onBlockBegin, onBlockEnd) => {
+    return {
+        onBlockBegin,
+        onBlockEnd,
+    }
+}
+
+
+class BlockParser {
+
+    constructor(blockBoundary, blockCallbacks, id) {
+        this._block = blockBoundary
+        this._onBlockBegin = blockCallbacks.onBlockBegin || BlockParser._defaultCallback
+        this._onBlockEnd = blockCallbacks.onBlockEnd || BlockParser._defaultCallback
+        this._id = id
+
+        this._lensBlockLineNum = L.makeLenses([this._id])[this._id]
+    }
+
+    static _defaultCallback = Result.Ok
+    static _BLOCK_LINE_OFF = -1
+    static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
+    static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
+
+    static create(blockBoundary, blockCallbacks, block, id) {
+        return new BlockParser(blockBoundary, blockCallbacks, block, id)
+    }
+
+    resulterFilter = ctx => {
+        const blockLineNum = L.view(this._lensBlockLineNum, ctx) || BlockParser._BLOCK_LINE_OFF
+        const line = L.view(cLens.line, ctx)
+        //begin block
+        if (this._block.beginBlockRegex.test(line)) {
+            // console.log(ctx)
+            return Result.Ok(BlockParser._setBlockLineNum(this._lensBlockLineNum, ctx))
+                .chain(this._onBlockBegin)
+        }
+        // block is not detected
+        if (blockLineNum == BlockParser._BLOCK_LINE_OFF) {
+            return Result.Error(ctx)
+        }
+        // block must be continuous
+        if (L.view(cLens.lineNum, ctx) > blockLineNum + 1) {
+            // return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
+            return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
+                .chain(this._onBlockEnd)
+        }
+        //end block
+        if (this._block.endBlockRegex.test(line)) {
+            return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
+                .chain(this._onBlockEnd)
+        }
+        return Result.Ok(BlockParser._setBlockLineNum(this._lensBlockLineNum, ctx))
+    }
+
+    contextFlush = ctx => {
+        if (L.view(this._lensBlockLineNum, ctx) == BlockParser._BLOCK_LINE_OFF) {
+            return ctx
+        }
+        return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
+            .chain(this._onBlockEnd)
+            .merge()
+    }
+}
 
 
 //------------------------------------------------------------------------
@@ -211,7 +262,7 @@ const contextNextLine = curry(2, (line, ctx) => compose.all(
 )
 
 //reducerCreate :: Resulter -> Reducer
-const reducerCreate = resulter => (ctx, line) => compose.all(
+const reducer = resulter => (ctx, line) => compose.all(
     resulter,
     contextNextLine(line),
 )(ctx).merge()
@@ -226,15 +277,15 @@ module.exports = {
 
     /** signatures:
          
-      Context (abbr. ctx) :: { lineNum: number, line: string, original: string }
-      CLens : Context fields accessor
       Regex : bunch of predefined JavaScript RegExp objects
-      Result :: https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
+      Lens : https://github.com/DrBoolean/lenses
+      Context (a.k.a. ctx) :: { lineNum: number, line: string, original: string }
+      CLens : Context fields accessor { lineNum, line, original }
+      Result : https://folktale.origamitower.com/api/v2.3.0/en/folktale.result.html
       Resulter :: ctx -> Result ctx ctx  
-      Block :: { 
-          resulterFilterBlock :: (Resulter onBlockBegin, onBlockEnd) => 
-            (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx 
-      } 
+      BlockBoundary :: { beginBlockRegex: RegExp, endBlockRegex: RegExp }
+      BlockCallbacks :: { onBlockBegin: Resulter, onBlockEnd: Resulter }
+      BlockParser : blockParser object
       Reducer :: (ctx, string) -> ctx
 
     */
@@ -254,28 +305,32 @@ module.exports = {
     Lens: L,
 
     /**
-     * Context properties accessor
-     */  
+     * Context properties accessor - context lenses
+     */
     CLens: {
-        original: cLens.original,      //original original line
-        line: cLens.line,    //modified line
-        lineNum: cLens.lineNum,  //line number
+        original: cLens.original,   //original original line
+        line: cLens.line,           //modified line
+        lineNum: cLens.lineNum,     //line number
     },
-    
-    tap,
 
-    contextCreate, 
+
+    contextCreate,
     contextTapLine,
     contextOverLine,
     contextOver,
 
+    //Result object
+    Result,
+
     resulterFilterLine,
     resulterFilter,
 
-    blockCreate,
-    //  Block.resulterFilterBlock :: (Resulter onBlockBegin, onBlockEnd) 
-    //    => (onBlockBegin -> onBlockEnd) -> ctx -> Result ctx ctx
+    blockBoundaryCreate,
+    blockCallbacksCreate,
+    BlockParser,
 
-    reducerCreate,
+    reducer,
 
+
+    tap,
 }
