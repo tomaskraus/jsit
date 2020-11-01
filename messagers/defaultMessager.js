@@ -3,7 +3,7 @@
  * 
  */
 
-const lineCommentAtTheEnd = line => line.replace(/^(.*)\/\/(.*)$/, "$2")
+const lineCommentAtTheEnd = line => line.replace(/^(.*)\/\/(.*)$/, "//$2")
 const location = ctx => `${ctx.fileName}:${ctx.lineNum}`
 
 
