@@ -1,10 +1,20 @@
 const { compose } = require('folktale/core/lambda')
 const Result = require('folktale/result')
 const { map, chain } = require('pointfree-fantasy')
+const L = require('lenses')
 
 const tbf = require('./text-block-filter')
 
 
+// lenses   for evaluation-param 
+const lens = L.makeLenses(['vars', 'stats', 'numFailed', 'totalTests'])
+lens.stats_numFailed = compose(lens.stats, lens.numFailed)
+lens.stats_totalTests = compose(lens.stats, lens.totalTests)
+
+// context
+const createContext = originalContext => (
+    { ...originalContext, stats: { numFailed: 0, totalTests: 0 } }
+)
 
 const trimStr = s => s.trim()
 const isLineComment = s => tbf.Regex.JSLineComment.test(s)
@@ -101,7 +111,7 @@ const TestRunner = (messager, evaluator) => {
     return {
         reducer: testingReducer,
         flush: testBlockParser.contextFlush,
-        createContext: tbf.contextCreate,
+        createContext: () => createContext(tbf.contextCreate()),
     }
 
 }
