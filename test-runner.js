@@ -7,13 +7,13 @@ const tbf = require('./text-block-filter')
 
 
 // lenses   for evaluation-param 
-const lens = L.makeLenses(['vars', 'msg', 'stats', 'numFailed', 'totalTests'])
+const lens = L.makeLenses(['fileName', 'vars', 'msg', 'stats', 'numFailed', 'totalTests'])
 lens.stats_numFailed = compose(lens.stats, lens.numFailed)
 lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 
 // context
-const createContext = originalContext => (
-    { ...originalContext, stats: { numFailed: 0, totalTests: 0 } }
+const createContext = (fileName, originalContext) => (
+    { ...originalContext, fileName, stats: { numFailed: 0, totalTests: 0 } }
 )
 
 
@@ -147,7 +147,7 @@ const TestRunner = (messager, evaluator) => {
     return {
         reducer: testingReducer,
         flush: testBlockParser.contextFlush,
-        createContext: () => createContext(tbf.contextCreate()),
+        createContext: fileName => createContext(fileName, tbf.contextCreate()),
     }
 
 }
