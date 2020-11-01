@@ -7,14 +7,14 @@ const Msg = {
     describe: ctx => console.log(`${ctx.line}`),
     testOk: ctx =>
         console.log(
-            `OK   ${/*DATA_LINE_START + */ ctx.lineNum} :\t'${ctx.line}'`
+            `OK   ${/*DATA_LINE_START + */ ctx.lineNum} : '${ctx.line}'`
             // {
             //     type: 'Ok',
             //     context: ctx
             // }
         ),
     testFailure: ctx => console.log(
-        `FAIL ${/*DATA_LINE_START + */ ctx.lineNum} :\t'${ctx.line}'`
+        `FAIL ${/*DATA_LINE_START + */ ctx.lineNum} : ${ctx.msg} : '${ctx.line}'`
         // {
         //     type: 'Failure',
         //     context: ctx

@@ -7,7 +7,7 @@ const tbf = require('./text-block-filter')
 
 
 // lenses   for evaluation-param 
-const lens = L.makeLenses(['vars', 'stats', 'numFailed', 'totalTests'])
+const lens = L.makeLenses(['vars', 'msg', 'stats', 'numFailed', 'totalTests'])
 lens.stats_numFailed = compose(lens.stats, lens.numFailed)
 lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 
@@ -15,6 +15,9 @@ lens.stats_totalTests = compose(lens.stats, lens.totalTests)
 const createContext = originalContext => (
     { ...originalContext, stats: { numFailed: 0, totalTests: 0 } }
 )
+
+
+const inc = x => x + 1
 
 const trimStr = s => s.trim()
 const isLineComment = s => tbf.Regex.JSLineComment.test(s)
@@ -80,18 +83,25 @@ const TestRunner = (messager, evaluator) => {
         tbf.contextOverLine(trimStr),
     )
 
-    const evaluate = ctx => {
-        try {
-            if (evaluator.evaluate(ctx.line)) {
-                messager.testOk(ctx)
-                return ctx
-            } else {
-                messager.testFailure(ctx)
-                return ctx
+    const evaluate = () => {
+        const resultAddFail = (ctx, err) => compose.all(
+            tbf.tap(messager.testFailure),
+            L.set(lens.msg, err.message),
+            L.over(lens.stats_numFailed, inc),
+        )(ctx)
+        return ctx => {
+            const ctx2 = L.over(lens.stats_totalTests, inc, ctx)
+            try {
+                const testResult = evaluator.evaluate(ctx2.line)
+                if (testResult !== false) {     //written this way because of "assert" method, which returns "undefined" if the assertion is met
+                    messager.testOk(ctx2)
+                    return ctx2
+                } else {
+                    return resultAddFail(ctx2, new Error(`should be [true], but is [${testResult}]`))
+                }
+            } catch (e) {
+                return resultAddFail(ctx2, e)
             }
-        } catch (e) {
-            messager.testFailure(ctx)
-            return ctx
         }
     }
 
@@ -101,7 +111,7 @@ const TestRunner = (messager, evaluator) => {
     }
 
     const testingResulter = compose.all(
-        map(evaluate),
+        map(evaluate()),
         chain(testingContextResulter),
         allTestLinesResulter,
     )
