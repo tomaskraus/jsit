@@ -14,7 +14,7 @@ const split = require('split')
 const Task = require('data.task')
 
 const _Messager = require('./messagers/defaultMessager')
-const tr = require('./test-runner')
+const tr = require('./TestRunner')
 
 
 
