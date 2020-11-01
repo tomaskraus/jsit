@@ -98,9 +98,14 @@ const cLens = L.makeLenses([
 
     tap :: (a -> any) -> a -> a
 
-    //::: tap   
-    const newCtx = text_block_filter.tap(text_block_filter.CLens.original, x => x + 1, {original: 1})
-    assert.equal(newCtx.original, 1)   //should stay unchanged
+    @example
+    //::: tap 
+    let g = 1                               //define some "global" variable
+    const ctx = {line: "work"}              //our original context  
+    const pluralize = c => {g = 2; return {line: c.line + 's'}}  //some function with side effects
+    const newCtx = text_block_filter.tap(pluralize, ctx)
+    assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
+    assert.equal(g, 2)   //side effects are visible
 */
 const tap = curry(2, (fn, a) => {
     fn(a)
@@ -113,32 +118,44 @@ const tap = curry(2, (fn, a) => {
 
     contextTap :: ({line: string, ...} ctx) => (string -> _) -> ctx -> ctx
 
-    //::: contextTap   
-    const newCtx = text_block_filter.contextTap(text_block_filter.CLens.line, s => s + 's', {line: "work"})
-    assert.equal(newCtx.line, 'work')   //should stay unchanged
+    @example
+    //::: contextTap 
+    let g = 1                               //define some "global" variable
+    const ctx = {line: "work"}              //our original context  
+    const pluralize = s => {g = 2; return s + 's'}  //some function with side effects
+    const newCtx = text_block_filter.contextTapLine(pluralize, ctx)
+    assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
+    assert.equal(g, 2)   //side effects are visible
 */
-const contextTapLine = fn => ctx => tap(L.view(cLens.line, ctx), ctx)
+const contextTapLine = curry(2,
+    (fn, ctx) => {
+        fn(L.view(cLens.line, ctx))
+        return ctx
+    }
+)
 
 
 /**
-    Runs a custom string manipulation function fn with a "line property of a context ctx" as an argument. 
+    Runs a custom string manipulation function fn that takes a "line property of a context ctx" as an argument. 
     Returns a new context, with its "line" property set to the result of that function fn.
 
-    contextOverLine :: ({line: string, ...} ctx) => (string -> _) -> ctx -> ctx
+    contextOverLine :: ({line: string, ...} ctx) => (string -> any) -> ctx -> ctx
 
     @example
-    //::: contextOverLine   
-    const newCtx = text_block_filter.contextOverLine(s => s + 's', {line: "work"})
-    assert.equal(newCtx.line, 'works')   //should be changed
+    //::: contextOverLine
+    const ctx = {line: "work"}              //our original context   
+    const newCtx = text_block_filter.contextOverLine(s => s + 's', ctx)
+    assert.equal(newCtx.line, 'works')   //context line should be changed
 */
-const contextOverLine = fn => ctx => L.over(cLens.line, fn, ctx)
+const contextOverLine = curry(2, (fn, ctx) => L.over(cLens.line, fn, ctx))
+
 
 /**
     Runs a function fn with a "some property "p" of a context ctx" as an argument. 
     Returns a new context, with its "p" property set to the result of that function fn.
     That function fn should check if value "p" is present.
 
-    contextOverLine :: ({p: a, ...} ctx) => (a -> a) -> ctx -> ctx
+    contextOverLine :: ({p: a, ...} ctx) => lens -> (a -> a) -> ctx -> ctx
 
     @example
     //::: contextOver   
@@ -173,16 +190,16 @@ const blockCallbacksCreate = (onBlockBegin, onBlockEnd) => {
 
 
 class BlockParser {
-    
+
     constructor(blockBoundary, blockCallbacks, id) {
         this._block = blockBoundary
         this._onBlockBegin = blockCallbacks.onBlockBegin || BlockParser._defaultCallback
         this._onBlockEnd = blockCallbacks.onBlockEnd || BlockParser._defaultCallback
         this._id = id
-        
+
         this._lensBlockLineNum = L.makeLenses([this._id])[this._id]
     }
-    
+
     static _defaultCallback = Result.Ok
     static _BLOCK_LINE_OFF = -1
     static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
@@ -282,7 +299,7 @@ module.exports = {
 
     // lens object
     Lens: L,
-    
+
     /**
      * Context properties accessor - context lenses
      */
@@ -291,25 +308,25 @@ module.exports = {
         line: cLens.line,           //modified line
         lineNum: cLens.lineNum,     //line number
     },
-     
-    
+
+
     contextCreate,
     contextTapLine,
     contextOverLine,
     contextOver,
-    
+
     //Result object
     Result,
-    
+
     resulterFilterLine,
     resulterFilter,
-    
+
     blockBoundaryCreate,
     blockCallbacksCreate,
     BlockParser,
 
     reducer,
-    
+
 
     tap,
 }
