@@ -169,7 +169,24 @@ const contextOverLine = curry(2, (fn, ctx) => L.over(cLens.line, fn, ctx))
 const contextOver = curry(3, (lens, fn, ctx) => L.over(lens, fn, ctx))
 
 
-//resulterFilter :: (ctx -> boolean) -> Resulter
+/** 
+ *    Given a context condition function fn, creates a Context filter, so that:
+ *  For any Context ctx, returns a negative Result, if condition fn returns false.
+ * 
+ *  resulterFilter :: (ctx -> boolean) -> Resulter
+ * 
+ *  @example
+ *  //::: resulterFilter
+ *  const lib = text_block_filter   //this library
+ *  //
+ *  const oddLineNumResulter = lib.resulterFilter(ctx => ctx.lineNum % 2 === 1)
+ *  //
+ *  oddLineNumResulter({ lineNum: 3}) instanceof lib.Result.Ok      //oddLineNumResulter match odd lineNum example
+ *  oddLineNumResulter({ lineNum: 4}) instanceof lib.Result.Error   //oddLineNumResulter does not match even lineNum example
+ *
+ */
+
+//
 const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     ? Result.Ok(ctx)
     : Result.Error(ctx)
