@@ -4,19 +4,19 @@
  */
 
 const Msg = {
-    header: data => console.log(`file: [${data.fileName}] , module: [${data.moduleName}]`),
+    header: data => console.log(`START | file: [${data.fileName}] , module: [${data.moduleName}]`),
 
     describe: ctx => console.log(`${ctx.line}`),
     testOk: ctx =>
         console.log(
-            `OK   ${/*DATA_LINE_START + */ ctx.lineNum} : '${ctx.line}'`
+            `OK | ${ctx.lineNum} | '${ctx.line}'`
             // {
             //     type: 'Ok',
             //     context: ctx
             // }
         ),
     testFailure: ctx => console.log(
-        `FAIL ${/*DATA_LINE_START + */ ctx.lineNum} : ${ctx.msg} : '${ctx.line}'`
+        `FAIL | ${ctx.lineNum} | message: [${ctx.msg}] | '${ctx.line}'`
         // {
         //     type: 'Failure',
         //     context: ctx
@@ -27,10 +27,13 @@ const Msg = {
         type: 'Error',
         context: ctx
     }),
-    summary: ctx => console.log({
-        type: 'Summary',
-        context: ctx
-    }),
+    summary: ctx => console.log(
+        `END | failed tests: [${ctx.stats.numFailed}] | total tests: [${ctx.stats.totalTests}]`
+        // {
+        //     type: 'Summary',
+        //     context: ctx
+        // }
+        ),
 }
 
 
