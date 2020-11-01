@@ -4,6 +4,8 @@
  */
 
 const Msg = {
+    header: data => console.log(`file: [${data.fileName}] , module: [${data.moduleName}]`),
+
     describe: ctx => console.log(`${ctx.line}`),
     testOk: ctx =>
         console.log(
@@ -33,6 +35,7 @@ const Msg = {
 
 
 module.exports = {
+    header: Msg.header,
     describe: Msg.describe,
     testOk: Msg.testOk,
     testFailure: Msg.testFailure,
