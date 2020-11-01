@@ -105,6 +105,7 @@ const cLens = L.makeLenses([
     let g = 1                               //define some "global" variable
     const ctx = {line: "work"}              //our original context  
     const pluralize = c => {g = 2; return {line: c.line + 's'}}  //some function with side effects
+    //
     const newCtx = lib.tap(pluralize, ctx)
     //
     assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
