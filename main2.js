@@ -61,12 +61,12 @@ const prepareEval = (pathForModuleRequire, messager) => {
     return new Task((reject, resolve) => {
         try {
             const moduleName = sanitizeName(nameWithoutExt(pathForModuleRequire))
-            messager.header({ 'fileName': pathForModuleRequire, 'moduleName': moduleName})
+            messager.header({ 'fileName': pathForModuleRequire, 'moduleName': moduleName })
 
             const requireFileStr = `var ${moduleName} = require("${pathForModuleRequire}")`
             eval(requireFileStr)
             eval("var assert = require('assert')")
-            resolve( { evaluate: str => eval(str) })
+            resolve({ evaluate: str => eval(str) })
         } catch (e) {
             reject(e)
         }
