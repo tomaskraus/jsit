@@ -50,8 +50,8 @@ const getStreamFromFileName = path => {
 }
 
 
-//prepareEval :: (Evaluator string -> boolean) => string -> Task Error Evaluator
-const prepareEval = pathForModuleRequire => {
+//prepareEval :: (Evaluator string -> boolean) => (string -> Messager) -> Task Error Evaluator
+const prepareEval = (pathForModuleRequire, messager) => {
     //const testEvaluator = { evaluate: s => true }
     //resolve(testEvaluator)
 
@@ -61,9 +61,9 @@ const prepareEval = pathForModuleRequire => {
     return new Task((reject, resolve) => {
         try {
             const moduleName = nameWithoutExt(pathForModuleRequire)
-            console.log(`BEGIN | Module | ${moduleName} | File | ${fileName}`)
+            messager.header({ 'fileName': pathForModuleRequire, 'moduleName': moduleName})
 
-            const requireFileStr = `var ${sanitizeName(moduleName)} = require("${fileName}")`
+            const requireFileStr = `var ${sanitizeName(moduleName)} = require("${pathForModuleRequire}")`
             eval(requireFileStr)
             eval("var assert = require('assert')")
             resolve( { evaluate: str => eval(str) })
@@ -81,7 +81,7 @@ const fileName = process.argv[2]
 fileName == null ?
     console.log('usage: main.js <filename>')
     :
-    prepareEval(fileName)
+    prepareEval(fileName, _Msg)
         .chain(evaluator => getStreamFromFileName(fileName)
             .map(stream => doWork(stream, evaluator, _Msg))
         )
