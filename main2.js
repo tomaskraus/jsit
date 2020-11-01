@@ -56,7 +56,7 @@ const prepareEval = (pathForModuleRequire, messager) => {
     //resolve(testEvaluator)
 
     const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
-    const sanitizeName = moduleName => moduleName.replace('-', '_')
+    const sanitizeName = moduleName => moduleName.replace(/-/g, '_')
 
     return new Task((reject, resolve) => {
         try {
