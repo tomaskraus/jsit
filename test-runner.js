@@ -17,8 +17,6 @@ const createContext = (fileName, originalContext) => (
 )
 
 
-const inc = x => x + 1
-
 const trimStr = s => s.trim()
 const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 
@@ -86,6 +84,8 @@ const TestRunner = (messager, evaluator) => {
         blockCommentResulter,
         tbf.contextOverLine(trimStr),
     )
+
+    const inc = x => x + 1
 
     const evaluate = () => {
         const resultAddFail = (ctx, err) => compose.all(

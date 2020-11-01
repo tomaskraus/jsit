@@ -13,7 +13,7 @@ const fs = require('fs')
 const split = require('split')
 const Task = require('data.task')
 
-const _Msg = require('./messagers/defaultMessager')
+const _Messager = require('./messagers/defaultMessager')
 const tr = require('./test-runner')
 
 
@@ -39,10 +39,9 @@ const doWork = (stream, testEvaluator, messager, fileName) => {
         })
 }
 
-//getStreamFromFileName :: string -> Task Error Stream
-const getStreamFromFileName = path => {
-    return new Task((reject, resolve) => {
-        //reject(new Error('Stream is not ready!'))
+//getStreamFromFileNameTask :: string -> Task Error Stream
+const getStreamFromFileNameTask = path => {
+    return new Task((reject, resolve) => {        
         const readStream = fs.createReadStream(path, { encoding: 'utf8' })
         readStream.on('open', _ => resolve(readStream)) //we want a stream object, not its data
         readStream.on('error', error => reject(error))
@@ -50,11 +49,8 @@ const getStreamFromFileName = path => {
 }
 
 
-//prepareEval :: (Evaluator string -> boolean) => (string -> Messager) -> Task Error Evaluator
-const prepareEval = (pathForModuleRequire, messager) => {
-    //const testEvaluator = { evaluate: s => true }
-    //resolve(testEvaluator)
-
+//prepareEvaluatorTask :: (Evaluator string -> boolean) => (string -> Messager) -> Task Error Evaluator
+const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
     const nameWithoutExt = (pathName) => path.basename(pathName, path.extname(pathName))
     const sanitizeName = moduleName => moduleName.replace(/-/g, '_')
 
@@ -77,13 +73,17 @@ const prepareEval = (pathForModuleRequire, messager) => {
 const identity = a => a
 
 
-const fileName = process.argv[2]
-fileName == null ?
+//---------------------------------------------------------------------------------------------------------
+
+
+const nameOfFileToBeTested = process.argv[2]
+nameOfFileToBeTested == null ?
     console.log('usage: main.js <filename>')
     :
-    prepareEval(fileName, _Msg)
-        .chain(evaluator => getStreamFromFileName(fileName)
-            .map(stream => doWork(stream, evaluator, _Msg, fileName))
+    prepareEvaluatorTask(nameOfFileToBeTested, _Messager)
+        .chain(evaluator =>
+            getStreamFromFileNameTask(nameOfFileToBeTested)
+                .map(stream => doWork(stream, evaluator, _Messager, nameOfFileToBeTested))
         )
         .fork(
             error => console.log(`ERROR: ${error.message}`),
