@@ -99,11 +99,14 @@ const cLens = L.makeLenses([
     tap :: (a -> any) -> a -> a
 
     @example
-    //::: tap 
+    //::: tap
+    const lib = text_block_filter  //this module
+    //
     let g = 1                               //define some "global" variable
     const ctx = {line: "work"}              //our original context  
     const pluralize = c => {g = 2; return {line: c.line + 's'}}  //some function with side effects
-    const newCtx = text_block_filter.tap(pluralize, ctx)
+    const newCtx = lib.tap(pluralize, ctx)
+    //
     assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
     assert.equal(g, 2)   //side effects are visible
 */
@@ -119,7 +122,7 @@ const tap = curry(2, (fn, a) => {
     contextTap :: ({line: string, ...} ctx) => (string -> _) -> ctx -> ctx
 
     @example
-    //::: contextTap 
+    //::: contextTapLine 
     let g = 1                               //define some "global" variable
     const ctx = {line: "work"}              //our original context  
     const pluralize = s => {g = 2; return s + 's'}  //some function with side effects
