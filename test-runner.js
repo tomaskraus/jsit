@@ -73,13 +73,13 @@ const TestRunner = (messager, evaluator) => {
         'tBlock'
     )
 
-    const testLineResulter = compose.all(
+    const executableTestLineResulter = compose.all(
         chain(tbf.resulterFilterLine(s => !isLineComment(s))),
         testBlockParser.resulterFilter,
     )
 
     const allTestLinesResulter = compose.all(
-        chain(testLineResulter),
+        chain(executableTestLineResulter),
         result => result.orElse(
             lineCommentResulter
         ),
