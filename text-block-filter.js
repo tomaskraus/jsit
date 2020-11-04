@@ -65,7 +65,7 @@
 
 const { compose, curry } = require('folktale/core/lambda')
 const Result = require('folktale/result')
-const L = require('lenses')
+const Lens = require('lenses')
 
 
 // regexes ----------------------------
@@ -85,7 +85,7 @@ const contextCreate = () => ({
 })
 
 // context lenses (to access ctx's fields)
-const cLens = L.makeLenses([
+const cLens = Lens.makeLenses([
     'lineNum',  //line number (counter)
     'line',     //line read
     'original', //original line read (for read only purpose)
@@ -133,7 +133,7 @@ const tap = curry(2, (fn, a) => {
 */
 const contextTapLine = curry(2,
     (fn, ctx) => {
-        fn(L.view(cLens.line, ctx))
+        fn(Lens.view(cLens.line, ctx))
         return ctx
     }
 )
@@ -151,7 +151,7 @@ const contextTapLine = curry(2,
     const newCtx = text_block_filter.contextOverLine(s => s + 's', ctx)
     assert.equal(newCtx.line, 'works')   //context line should be changed
 */
-const contextOverLine = curry(2, (fn, ctx) => L.over(cLens.line, fn, ctx))
+const contextOverLine = curry(2, (fn, ctx) => Lens.over(cLens.line, fn, ctx))
 
 
 /**
@@ -166,7 +166,7 @@ const contextOverLine = curry(2, (fn, ctx) => L.over(cLens.line, fn, ctx))
     const newCtx = text_block_filter.contextOver(text_block_filter.CLens.lineNum, i => i + 1, {lineNum: 2})
     assert.equal(newCtx.lineNum, 2)   //should be changed
 */
-const contextOver = curry(3, (lens, fn, ctx) => L.over(lens, fn, ctx))
+const contextOver = curry(3, (lens, fn, ctx) => Lens.over(lens, fn, ctx))
 
 
 /** 
@@ -192,7 +192,7 @@ const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     : Result.Error(ctx)
 
 //resulterFilterLine :: (string -> boolean) -> Resulter
-const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(L.view(cLens.line, ctx)))
+const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(Lens.view(cLens.line, ctx)))
 
 
 const blockBoundaryCreate = (beginBlockRegex, endBlockRegex) => {
@@ -218,21 +218,21 @@ class BlockParser {
         this._onBlockEnd = blockCallbacks.onBlockEnd || BlockParser._defaultCallback
         this._id = id
 
-        this._lensBlockLineNum = L.makeLenses([this._id])[this._id]
+        this._lensBlockLineNum = Lens.makeLenses([this._id])[this._id]
     }
 
     static _defaultCallback = Result.Ok
     static _BLOCK_LINE_OFF = -1
-    static _setBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, L.view(cLens.lineNum, ctx), ctx)
-    static _resetBlockLineNum = (blockLineNumLens, ctx) => L.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
+    static _setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(cLens.lineNum, ctx), ctx)
+    static _resetBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
 
     static create(blockBoundary, blockCallbacks, block, id) {
         return new BlockParser(blockBoundary, blockCallbacks, block, id)
     }
 
     resulterFilter = ctx => {
-        const blockLineNum = L.view(this._lensBlockLineNum, ctx) || BlockParser._BLOCK_LINE_OFF
-        const line = L.view(cLens.line, ctx)
+        const blockLineNum = Lens.view(this._lensBlockLineNum, ctx) || BlockParser._BLOCK_LINE_OFF
+        const line = Lens.view(cLens.line, ctx)
         //begin block
         if (this._block.beginBlockRegex.test(line)) {
             // console.log(ctx)
@@ -244,7 +244,7 @@ class BlockParser {
             return Result.Error(ctx)
         }
         // block must be continuous
-        if (L.view(cLens.lineNum, ctx) > blockLineNum + 1) {
+        if (Lens.view(cLens.lineNum, ctx) > blockLineNum + 1) {
             // return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
             return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
                 .chain(this._onBlockEnd)
@@ -258,7 +258,7 @@ class BlockParser {
     }
 
     contextFlush = ctx => {
-        if (L.view(this._lensBlockLineNum, ctx) == BlockParser._BLOCK_LINE_OFF) {
+        if (Lens.view(this._lensBlockLineNum, ctx) == BlockParser._BLOCK_LINE_OFF) {
             return ctx
         }
         return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
@@ -272,9 +272,9 @@ class BlockParser {
 
 //contextNextLine :: ctx -> str -> ctx
 const contextNextLine = curry(2, (line, ctx) => compose.all(
-    L.set(cLens.line, line),
-    L.set(cLens.original, line),
-    L.over(cLens.lineNum, i => i + 1),
+    Lens.set(cLens.line, line),
+    Lens.set(cLens.original, line),
+    Lens.over(cLens.lineNum, i => i + 1),
 )(ctx)
 )
 
@@ -319,12 +319,12 @@ module.exports = {
     },
 
     // lens object
-    Lens: L,
+    Lens,
 
     /**
      * Context properties accessor - context lenses
      */
-    CLens: {
+    L: {
         original: cLens.original,   //original original line
         line: cLens.line,           //modified line
         lineNum: cLens.lineNum,     //line number

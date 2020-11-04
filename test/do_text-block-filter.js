@@ -43,9 +43,9 @@ const myBlockParser2 = tbf.BlockParser.create(
 const createBeginBlockResulter =
     () => {
         return compose.all(
-            map(tbf.tap(ctx => console.log(`${41 + tbf.Lens.view(tbf.CLens.lineNum, ctx)} : '${ctx.line}'`))),
+            map(tbf.tap(ctx => console.log(`${41 + tbf.Lens.view(tbf.L.lineNum, ctx)} : '${ctx.line}'`))),
             myBlockParser2.resulterFilter,
-            tbf.contextOver(tbf.CLens.line, s => s.trim()),
+            tbf.contextOver(tbf.L.line, s => s.trim()),
             //utils.tap(ctx => console.log(ctx))
         )
     }

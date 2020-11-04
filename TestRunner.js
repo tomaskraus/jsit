@@ -114,12 +114,12 @@ const TestRunner = (messager, evaluator) => {
 
     const varRegex = /^\s*(const|let|var)\s+/s
     const _resetVarsHandler = ctx => Result.Error(L.set(lens.vars, '', ctx))
-    const _addVarMapper = ctx => L.over(tbf.CLens.line, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
+    const _addVarMapper = ctx => L.over(tbf.L.line, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
 
     const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
     const _detectVarHandler = ctx => {
-        const line = L.view(tbf.CLens.line, ctx)
+        const line = L.view(tbf.L.line, ctx)
         if (varRegex.test(line)) {
             const s_line = removeLineCommentAtTheEnd(line).trim()
             return Result.Error(L.over(lens.vars, s => `${s}${s_line}; `, ctx))
