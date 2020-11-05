@@ -226,8 +226,8 @@ class BlockParser {
     static _setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(cLens.lineNum, ctx), ctx)
     static _resetBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
 
-    static create(blockBoundary, blockCallbacks, block, id) {
-        return new BlockParser(blockBoundary, blockCallbacks, block, id)
+    static create(blockBoundary, blockCallbacks, id) {
+        return new BlockParser(blockBoundary, blockCallbacks, id)
     }
 
     resulterFilter = ctx => {
