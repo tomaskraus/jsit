@@ -4,7 +4,7 @@ const { map, chain } = require('pointfree-fantasy')
 const L = require('lenses')
 
 const tbf = require('./text-block-filter')
-const tb = require('./TestBlock')
+const { TestBlock } = require('./TestBlock')
 
 
 // lenses   for evaluation-param 
@@ -22,7 +22,7 @@ const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 
 const TestRunner = (messager, evaluator) => {
 
-    const testBlock = tb.TestBlock.create(
+    const testBlock = TestBlock.create(
         tbf.blockCallbacksCreate(
             ctx => compose.all(
                 _resetVarsHandler,
@@ -42,7 +42,7 @@ const TestRunner = (messager, evaluator) => {
 
     const inc = x => x + 1
 
-    
+
     const evaluate = () => {
         const resultAddFail = (ctx, err) => compose.all(
             tbf.tap(messager.testFailure),
