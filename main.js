@@ -9,11 +9,12 @@ const path = require('path');
 const flt = require('./file-line-tools');
 
 const _Messager = require('./messagers/defaultMessager')
-const tr = require('./TestRunner');
+const { TestRunner } = require('./TestRunner');
 
 
 const doWork = (stream, testEvaluator, messager, fileName) => {
-    const runner = tr.createRunner(messager, testEvaluator)
+    const runner = TestRunner.create(messager, testEvaluator)
+    
     flt.lineObservableFromStream(stream)
         .pipe(
             RxOp.scan(runner.reducer, runner.createContext(fileName)),

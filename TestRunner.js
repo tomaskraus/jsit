@@ -20,15 +20,15 @@ const createContext = (fileName, originalContext) => (
 const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 
 
-const TestRunner = (messager, evaluator) => {
+const TestRunnerCreator = (messager, evaluator) => {
 
     const testBlock = TestBlock.create(
-            ctx => compose.all(
-                _resetVarsHandler,
-                tbf.tap(messager.describe),
-            )(ctx),
+        ctx => compose.all(
+            _resetVarsHandler,
+            tbf.tap(messager.describe),
+        )(ctx),
 
-            tbf.Result.Error
+        tbf.Result.Error
     )
 
 
@@ -109,5 +109,7 @@ const TestRunner = (messager, evaluator) => {
 
 
 module.exports = {
-    createRunner: TestRunner,
+    TestRunner: {
+        create: TestRunnerCreator,       
+    }
 }
