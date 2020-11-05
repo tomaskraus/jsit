@@ -68,10 +68,14 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
 
     const flush = ctx => parser.contextFlush(ctx)
 
+
+    const isInCommentBlock = commentBlockParser.isInBlock
+    
     
     return {
         resulter,
         flush,
+        isInCommentBlock,
     }
 }
 

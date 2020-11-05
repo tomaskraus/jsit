@@ -263,9 +263,13 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
     }
 
 
+    const isInBlock = ctx => Lens.view(lensBlockLineNum, ctx) > 0
+
+
     return {
         resulterFilter,
         contextFlush,
+        isInBlock,
     }
 }
 
