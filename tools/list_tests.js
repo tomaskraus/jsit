@@ -13,8 +13,8 @@ const work = (stream, fileName) => {
 
     const testBlock = TestBlock.create(
         compose.all(
-            map(tbf.tap(c => console.log(`line: ${c.lineNum}`))),
-            tbf.Result.Ok,
+            tbf.Result.Ok, //we also want to show headers
+            tbf.tap(c => console.log(`line: ${c.lineNum}`)),
         ),
 
         tbf.Result.Error,
