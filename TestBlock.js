@@ -58,8 +58,10 @@ class TestBlock {
         )
     }
 
-    static create(blockCallbacks) {
-        return new TestBlock(blockCallbacks)
+    static create(onBlockBeginCallback, onBlockEndCallback) {
+        return new TestBlock(
+            tbf.blockCallbacksCreate(onBlockBeginCallback, onBlockEndCallback)
+        )
     }
 
     resulter = ctx => compose.all(
@@ -70,6 +72,8 @@ class TestBlock {
         blockCommentResulter,
         tbf.contextOverLine(trimStr),
     )(ctx)
+
+    flush = ctx => this.parser.contextFlush(ctx)
 }
 
 

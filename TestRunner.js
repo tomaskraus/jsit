@@ -23,14 +23,12 @@ const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 const TestRunner = (messager, evaluator) => {
 
     const testBlock = TestBlock.create(
-        tbf.blockCallbacksCreate(
             ctx => compose.all(
                 _resetVarsHandler,
                 tbf.tap(messager.describe),
             )(ctx),
 
-            tbf.Result.Error,
-        )
+            tbf.Result.Error
     )
 
 
@@ -101,7 +99,7 @@ const TestRunner = (messager, evaluator) => {
 
     return {
         reducer: testingReducer,
-        flush: testBlock.parser.contextFlush,
+        flush: testBlock.flush,
         createContext: fileName => createContext(fileName, tbf.contextCreate()),
     }
 
