@@ -26,7 +26,7 @@ const printResulter = compose.all(
 
 const createCallCounter = (id) => {
     count = 0
-    const countLens = tbf.Lens.makeLenses([id])[id]
+    const countLens = tbf.createLens(id)
     return ctx => tbf.contextOver(countLens, i => ++i || 1, ctx)
 }
 

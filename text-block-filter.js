@@ -85,12 +85,15 @@ const contextCreate = () => ({
 })
 
 // context lenses (to access ctx's fields)
-const cLens = Lens.makeLenses([
+const Lns = Lens.makeLenses([
     'lineNum',  //line number (counter)
     'line',     //line read
     'original', //original line read (for read only purpose)
 ])
 
+
+//createLens :: string -> Lens
+const createLens = idOfNewLens => Lens.makeLenses([idOfNewLens])[idOfNewLens]
 
 /**
     Runs a custom function with a one argument.
@@ -133,7 +136,7 @@ const tap = curry(2, (fn, a) => {
 */
 const contextTapLine = curry(2,
     (fn, ctx) => {
-        fn(Lens.view(cLens.line, ctx))
+        fn(Lens.view(Lns.line, ctx))
         return ctx
     }
 )
@@ -151,7 +154,7 @@ const contextTapLine = curry(2,
     const newCtx = text_block_filter.contextOverLine(s => s + 's', ctx)
     assert.equal(newCtx.line, 'works')   //context line should be changed
 */
-const contextOverLine = curry(2, (fn, ctx) => Lens.over(cLens.line, fn, ctx))
+const contextOverLine = curry(2, (fn, ctx) => Lens.over(Lns.line, fn, ctx))
 
 
 /**
@@ -192,7 +195,7 @@ const resulterFilter = ctxTestFn => ctx => ctxTestFn(ctx) === true
     : Result.Error(ctx)
 
 //resulterFilterLine :: (string -> boolean) -> Resulter
-const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(Lens.view(cLens.line, ctx)))
+const resulterFilterLine = strTestFn => resulterFilter(ctx => strTestFn(Lens.view(Lns.line, ctx)))
 
 
 const blockBoundaryCreate = (beginBlockRegex, endBlockRegex) => {
@@ -212,19 +215,19 @@ const blockCallbacksCreate = (onBlockBegin, onBlockEnd) => {
 
 const defaultCallback = Result.Ok
 const _BLOCK_LINE_OFF = -1
-const setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(cLens.lineNum, ctx), ctx)
+const setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(Lns.lineNum, ctx), ctx)
 const resetBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, _BLOCK_LINE_OFF, ctx)
 
 const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
 
     const onBlockBegin = blockCallbacks.onBlockBegin || defaultCallback
     const onBlockEnd = blockCallbacks.onBlockEnd || defaultCallback
-    const lensBlockLineNum = Lens.makeLenses([id])[id]
+    const lensBlockLineNum = createLens(id)
 
 
     const resulterFilter = ctx => {
         const blockLineNum = Lens.view(lensBlockLineNum, ctx) || _BLOCK_LINE_OFF
-        const line = Lens.view(cLens.line, ctx)
+        const line = Lens.view(Lns.line, ctx)
         //begin block
         if (blockBoundary.beginBlockRegex.test(line)) {
             // console.log(ctx)
@@ -236,7 +239,7 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
             return Result.Error(ctx)
         }
         // block must be continuous
-        if (Lens.view(cLens.lineNum, ctx) > blockLineNum + 1) {
+        if (Lens.view(Lns.lineNum, ctx) > blockLineNum + 1) {
             // return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
             return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
                 .chain(onBlockEnd)
@@ -249,7 +252,7 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
         return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx))
     }
 
-    
+
     const contextFlush = ctx => {
         if (Lens.view(lensBlockLineNum, ctx) == _BLOCK_LINE_OFF) {
             return ctx
@@ -271,9 +274,9 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
 
 //contextNextLine :: ctx -> str -> ctx
 const contextNextLine = curry(2, (line, ctx) => compose.all(
-    Lens.set(cLens.line, line),
-    Lens.set(cLens.original, line),
-    Lens.over(cLens.lineNum, i => i + 1),
+    Lens.set(Lns.line, line),
+    Lens.set(Lns.original, line),
+    Lens.over(Lns.lineNum, i => i + 1),
 )(ctx)
 )
 
@@ -324,10 +327,12 @@ module.exports = {
      * Context properties accessor - context lenses
      */
     L: {
-        original: cLens.original,   //original original line
-        line: cLens.line,           //modified line
-        lineNum: cLens.lineNum,     //line number
+        original: Lns.original,   //original original line
+        line: Lns.line,           //modified line
+        lineNum: Lns.lineNum,     //line number
     },
+
+    createLens,
 
 
     contextCreate,
