@@ -48,24 +48,16 @@ const blockCommentResulter = compose.all(
 )
 
 
-class TestBlock {
+const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
+    const parser = tbf.BlockParser.create(
+        tbf.blockBoundaryCreate(/^\/\/:::/, tbf.Regex.blankLine),
+        tbf.blockCallbacksCreate(blockBeginCallback, blockEndCallback),
+        'tBlock'
+    )
 
-    constructor(blockCallbacks) {
-        this.parser = tbf.BlockParser.create(
-            tbf.blockBoundaryCreate(/^\/\/:::/, tbf.Regex.blankLine),
-            blockCallbacks,
-            'tBlock'
-        )
-    }
 
-    static create(onBlockBeginCallback, onBlockEndCallback) {
-        return new TestBlock(
-            tbf.blockCallbacksCreate(onBlockBeginCallback, onBlockEndCallback)
-        )
-    }
-
-    resulter = ctx => compose.all(
-        chain(this.parser.resulterFilter),
+    const resulter = ctx => compose.all(
+        chain(parser.resulterFilter),
         result => result.orElse(
             lineCommentResulter
         ),
@@ -73,12 +65,21 @@ class TestBlock {
         tbf.contextOverLine(trimStr),
     )(ctx)
 
-    flush = ctx => this.parser.contextFlush(ctx)
+
+    const flush = ctx => parser.contextFlush(ctx)
+
+    
+    return {
+        resulter,
+        flush,
+    }
 }
 
 
 //==================================================================================
 
 module.exports = {
-    TestBlock,
+    TestBlock: {
+        create: testBlockCreator,
+    }
 }
