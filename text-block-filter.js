@@ -163,7 +163,7 @@ const contextOverLine = curry(2, (fn, ctx) => Lens.over(cLens.line, fn, ctx))
 
     @example
     //::: contextOver   
-    const newCtx = text_block_filter.contextOver(text_block_filter.CLens.lineNum, i => i + 1, {lineNum: 2})
+    const newCtx = text_block_filter.contextOver(text_block_filter.L.lineNum, i => i + 1, {lineNum: 2})
     assert.equal(newCtx.lineNum, 2)   //should be changed
 */
 const contextOver = curry(3, (lens, fn, ctx) => Lens.over(lens, fn, ctx))
