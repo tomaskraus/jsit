@@ -100,7 +100,7 @@ const cLens = Lens.makeLenses([
 
     @example
     //::: tap
-    const lib = text_block_filter  //this module
+    const lib = text_block_filter  //module
     //
     let g = 1                               //define some "global" variable
     const ctx = {line: "work"}              //our original context  
@@ -177,7 +177,7 @@ const contextOver = curry(3, (lens, fn, ctx) => Lens.over(lens, fn, ctx))
  * 
  *  @example
  *  //::: resulterFilter
- *  const lib = text_block_filter   //this library
+ *  const lib = text_block_filter   //library
  *  //
  *  const oddLineNumResulter = lib.resulterFilter(ctx => ctx.lineNum % 2 === 1)
  *  //
@@ -210,60 +210,59 @@ const blockCallbacksCreate = (onBlockBegin, onBlockEnd) => {
 }
 
 
-class BlockParser {
+const defaultCallback = Result.Ok
+const _BLOCK_LINE_OFF = -1
+const setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(cLens.lineNum, ctx), ctx)
+const resetBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, _BLOCK_LINE_OFF, ctx)
 
-    constructor(blockBoundary, blockCallbacks, id) {
-        this._block = blockBoundary
-        this._onBlockBegin = blockCallbacks.onBlockBegin || BlockParser._defaultCallback
-        this._onBlockEnd = blockCallbacks.onBlockEnd || BlockParser._defaultCallback
-        this._id = id
+const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
 
-        this._lensBlockLineNum = Lens.makeLenses([this._id])[this._id]
-    }
+    const onBlockBegin = blockCallbacks.onBlockBegin || defaultCallback
+    const onBlockEnd = blockCallbacks.onBlockEnd || defaultCallback
+    const lensBlockLineNum = Lens.makeLenses([id])[id]
 
-    static _defaultCallback = Result.Ok
-    static _BLOCK_LINE_OFF = -1
-    static _setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(cLens.lineNum, ctx), ctx)
-    static _resetBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, BlockParser._BLOCK_LINE_OFF, ctx)
 
-    static create(blockBoundary, blockCallbacks, id) {
-        return new BlockParser(blockBoundary, blockCallbacks, id)
-    }
-
-    resulterFilter = ctx => {
-        const blockLineNum = Lens.view(this._lensBlockLineNum, ctx) || BlockParser._BLOCK_LINE_OFF
+    const resulterFilter = ctx => {
+        const blockLineNum = Lens.view(lensBlockLineNum, ctx) || _BLOCK_LINE_OFF
         const line = Lens.view(cLens.line, ctx)
         //begin block
-        if (this._block.beginBlockRegex.test(line)) {
+        if (blockBoundary.beginBlockRegex.test(line)) {
             // console.log(ctx)
-            return Result.Ok(BlockParser._setBlockLineNum(this._lensBlockLineNum, ctx))
-                .chain(this._onBlockBegin)
+            return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx))
+                .chain(onBlockBegin)
         }
         // block is not detected
-        if (blockLineNum == BlockParser._BLOCK_LINE_OFF) {
+        if (blockLineNum == _BLOCK_LINE_OFF) {
             return Result.Error(ctx)
         }
         // block must be continuous
         if (Lens.view(cLens.lineNum, ctx) > blockLineNum + 1) {
-            // return Result.Error(_resetBlockLineNum(blockLineNumLens, ctx))
-            return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
-                .chain(this._onBlockEnd)
+            // return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
+            return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
+                .chain(onBlockEnd)
         }
         //end block
-        if (this._block.endBlockRegex.test(line)) {
-            return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
-                .chain(this._onBlockEnd)
+        if (blockBoundary.endBlockRegex.test(line)) {
+            return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
+                .chain(onBlockEnd)
         }
-        return Result.Ok(BlockParser._setBlockLineNum(this._lensBlockLineNum, ctx))
+        return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx))
     }
 
-    contextFlush = ctx => {
-        if (Lens.view(this._lensBlockLineNum, ctx) == BlockParser._BLOCK_LINE_OFF) {
+    
+    const contextFlush = ctx => {
+        if (Lens.view(lensBlockLineNum, ctx) == _BLOCK_LINE_OFF) {
             return ctx
         }
-        return Result.Ok(BlockParser._resetBlockLineNum(this._lensBlockLineNum, ctx))
-            .chain(this._onBlockEnd)
+        return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
+            .chain(onBlockEnd)
             .merge()
+    }
+
+
+    return {
+        resulterFilter,
+        contextFlush,
     }
 }
 
@@ -302,7 +301,7 @@ module.exports = {
       Resulter :: ctx -> Result ctx ctx  
       BlockBoundary :: { beginBlockRegex: RegExp, endBlockRegex: RegExp }
       BlockCallbacks :: { onBlockBegin: Resulter, onBlockEnd: Resulter }
-      BlockParser : blockParser object
+      : blockParser object
       Reducer :: (ctx, string) -> ctx
 
     */
@@ -344,7 +343,9 @@ module.exports = {
 
     blockBoundaryCreate,
     blockCallbacksCreate,
-    BlockParser,
+    BlockParser: {
+        create: blockParserCreator,
+    },
 
     reducer,
 
