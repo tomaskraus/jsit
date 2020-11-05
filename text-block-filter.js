@@ -217,6 +217,10 @@ const defaultCallback = Result.Ok
 const _BLOCK_LINE_OFF = -1
 const setBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, Lens.view(Lns.lineNum, ctx), ctx)
 const resetBlockLineNum = (blockLineNumLens, ctx) => Lens.set(blockLineNumLens, _BLOCK_LINE_OFF, ctx)
+const isBlockDiscontinued = (bLineNum, ctx) => (bLineNum != _BLOCK_LINE_OFF)
+    && (Lens.view(Lns.lineNum, ctx) > bLineNum + 1)
+const isBlockAdjacentOrFurther = (bLineNum, ctx) => (bLineNum != _BLOCK_LINE_OFF)
+    && (Lens.view(Lns.lineNum, ctx) >= bLineNum + 1)
 
 const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
 
@@ -230,7 +234,11 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
         const line = Lens.view(Lns.line, ctx)
         //begin block
         if (blockBoundary.beginBlockRegex.test(line)) {
-            // console.log(ctx)
+            if (isBlockAdjacentOrFurther(blockLineNum, ctx)) {
+                const ctx2 = onBlockEnd(ctx).merge()    
+                return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx2))
+                .chain(onBlockBegin)
+            }
             return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx))
                 .chain(onBlockBegin)
         }
@@ -239,8 +247,7 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
             return Result.Error(ctx)
         }
         // block must be continuous
-        if (Lens.view(Lns.lineNum, ctx) > blockLineNum + 1) {
-            // return Result.Error(resetBlockLineNum(blockLineNumLens, ctx))
+        if (isBlockDiscontinued(blockLineNum, ctx)) {
             return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
                 .chain(onBlockEnd)
         }

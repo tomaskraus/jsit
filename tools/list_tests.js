@@ -17,7 +17,10 @@ const work = (stream, fileName) => {
             tbf.tap(c => console.log(`line: ${c.lineNum}`)),
         ),
 
-        tbf.Result.Error,
+        compose.all(
+            tbf.Result.Error,
+            tbf.tap(c => console.log(`----TEST END`)),
+        )
     )
 
     const linesResulter = compose.all(
