@@ -65,25 +65,28 @@ const TestRunner = (messager, evaluator) => {
                 _resetVarsHandler,
                 tbf.tap(messager.describe),
             )(ctx),
-            
+
             tbf.Result.Error,
         ),
         'tBlock'
     )
 
-    const executableTestLineResulter = compose.all(
-        chain(tbf.resulterFilterLine(s => !isLineComment(s))),
-        testBlockParser.resulterFilter,
-    )
 
     const allTestLinesResulter = compose.all(
-        chain(executableTestLineResulter),
+        chain(testBlockParser.resulterFilter),
         result => result.orElse(
             lineCommentResulter
         ),
         blockCommentResulter,
         tbf.contextOverLine(trimStr),
     )
+
+
+    const executableTestLinesResulter = compose.all(
+        chain(tbf.resulterFilterLine(s => !isLineComment(s))),
+        allTestLinesResulter,
+    )
+
 
     const inc = x => x + 1
 
@@ -126,8 +129,7 @@ const TestRunner = (messager, evaluator) => {
         }
         return Result.Ok(ctx)
     }
-    
-    
+
 
     const testingContextResulter = ctx => compose.all(
         map(_addVarMapper),
@@ -139,7 +141,7 @@ const TestRunner = (messager, evaluator) => {
     const testingResulter = compose.all(
         map(evaluate()),
         chain(testingContextResulter),
-        allTestLinesResulter,
+        executableTestLinesResulter,
     )
 
     const testingReducer = tbf.reducer(testingResulter)
