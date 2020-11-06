@@ -102,9 +102,20 @@ const parseCommentMode = argv => argv[2] === '-u'
     : CommentMode.comment
 
 
+const help = appName => {
+    console.log(
+        `(Un)comments inline-tests in the file.
+
+Usage: ${appName} [-u] <filename>
+
+flags: 
+-u : Uncomments inline tests. If not present, comments inline tests.
+    `)
+}
+
 flt.runCmdLineHelper(
     process.argv,
-    'Lists inline-tests in the file.',
+    help,
     nameOfFile =>
         flt.streamFromFileNameTask(nameOfFile)
             .map(stream => work(stream, nameOfFile, parseCommentMode(process.argv)))
