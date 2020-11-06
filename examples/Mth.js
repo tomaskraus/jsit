@@ -30,8 +30,9 @@
  *   Mth.minus(1, 2) == -1    
     //:::
     assert.strictEqual( Mth.minus(1, 2), -1 )
-    Mth.b = 0
-    Mth.minus(1, Mth.b) == 1
+    Mth.b = 2
+    let c = 1
+    assert.strictEqual( Mth.minus(c, Mth.b), -1 )
 
     //:::
     assert.strictEqual( Mth.minus(1, 2), -2 )
