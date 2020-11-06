@@ -235,9 +235,9 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
         //begin block
         if (blockBoundary.beginBlockRegex.test(line)) {
             if (isBlockAdjacentOrFurther(blockLineNum, ctx)) {
-                const ctx2 = onBlockEnd(ctx).merge()    
+                const ctx2 = onBlockEnd(ctx).merge()
                 return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx2))
-                .chain(onBlockBegin)
+                    .chain(onBlockBegin)
             }
             return Result.Ok(setBlockLineNum(lensBlockLineNum, ctx))
                 .chain(onBlockBegin)
@@ -261,12 +261,12 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
 
 
     const contextFlush = ctx => {
-        if (Lens.view(lensBlockLineNum, ctx) == _BLOCK_LINE_OFF) {
-            return ctx
+        if (Lens.view(lensBlockLineNum, ctx) > _BLOCK_LINE_OFF) {   //also handles undefined lensBlockLineNum value
+            return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
+                .chain(onBlockEnd)
+                .merge()
         }
-        return Result.Ok(resetBlockLineNum(lensBlockLineNum, ctx))
-            .chain(onBlockEnd)
-            .merge()
+        return ctx
     }
 
 
