@@ -2,10 +2,10 @@ const { compose } = require('folktale/core/lambda')
 const { map } = require('pointfree-fantasy')
 const RxOp = require('rxjs/operators')
 
-const flt = require('./../file-line-tools')
-const tbf = require('./../text-block-filter')
+const flt = require('../file-line-tools')
+const tbf = require('../text-block-filter')
 
-const { TestBlock } = require('./../TestBlock')
+const { TestBlock } = require('../TestBlock')
 
 
 
