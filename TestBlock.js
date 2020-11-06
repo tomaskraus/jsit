@@ -10,54 +10,76 @@ const tbf = require('./text-block-filter')
 
 
 const trimStr = s => s.trim()
-const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 
-
-const removeLineComment = line => line.replace(/^(\/\/)(.*)$/, "$2")
-const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
-const lineCommentResulter = compose.all(
-    map(tbf.contextOverLine(
-        compose.all(
-            repairTestHeader, //restore the test header we've stripped earlier
-            trimStr,
-            removeLineComment
-        )
-    )),
-    tbf.resulterFilterLine(isLineComment),
-)
-
-
-const commentBlockParser = tbf.BlockParser.create(
-    tbf.blockBoundaryCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd),
-    tbf.blockCallbacksCreate(
-        ctx => tbf.Result.Error(ctx),
-        ctx => tbf.Result.Error(ctx)
-    ),
-    'cBlock'
-)
-
-const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
-const blockCommentResulter = compose.all(
-    map(tbf.contextOverLine(
-        compose(
-            trimStr,
-            removeBlockCommentStar
-        )
-    )),
-    commentBlockParser.resulterFilter,
-)
+const testBlockBeginRegex = /^\/\/:::/
 
 
 const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
-    const parser = tbf.BlockParser.create(
-        tbf.blockBoundaryCreate(/^\/\/:::/, tbf.Regex.blankLine),
+    const testParser = tbf.BlockParser.create(
+        tbf.blockBoundaryCreate(testBlockBeginRegex, tbf.Regex.blankLine),
         tbf.blockCallbacksCreate(blockBeginCallback, blockEndCallback),
         'tBlock'
     )
 
+    //---------------------------------------------------
+
+    const notLineCommentRegex = /^[^\/]|^.[^\/]|^\s*$/
+    const lineCommentParser = tbf.BlockParser.create(
+        tbf.blockBoundaryCreate(testBlockBeginRegex, notLineCommentRegex),
+        tbf.blockCallbacksCreate(
+            ctx => tbf.Result.Ok(ctx),
+            ctx => compose(
+                tbf.Result.Error,
+                testParser.contextFlush,
+            )(ctx)
+        ),
+        'lBlock'
+    )
+
+
+    const removeLineComment = line => line.replace(/^(\/\/)(.*)$/, "$2")
+    const repairTestHeader = line => line.replace(/^:::(.*)$/, "//:::$1")
+    const lineCommentResulter = compose.all(
+        map(tbf.contextOverLine(
+            compose.all(
+                repairTestHeader, //restore the test header we've stripped earlier
+                trimStr,
+                removeLineComment
+            )
+        )),
+        lineCommentParser.resulterFilter,
+    )
+
+
+    const commentBlockParser = tbf.BlockParser.create(
+        tbf.blockBoundaryCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd),
+        tbf.blockCallbacksCreate(
+            ctx => tbf.Result.Error(ctx),
+            ctx => compose(
+                tbf.Result.Error,
+                testParser.contextFlush,
+            )(ctx)
+        ),
+        'cBlock'
+    )
+
+    const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
+    const blockCommentResulter = compose.all(
+        map(tbf.contextOverLine(
+            compose(
+                trimStr,
+                removeBlockCommentStar
+            )
+        )),
+        commentBlockParser.resulterFilter,
+    )
+
+
+    //---------------------------------------------------
+
 
     const resulter = ctx => compose.all(
-        chain(parser.resulterFilter),
+        chain(testParser.resulterFilter),
         result => result.orElse(
             lineCommentResulter
         ),
@@ -66,12 +88,12 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
     )(ctx)
 
 
-    const flush = ctx => parser.contextFlush(ctx)
+    const flush = ctx => testParser.contextFlush(ctx)
 
 
     const isInCommentBlock = commentBlockParser.isInBlock
-    
-    
+
+
     return {
         resulter,
         flush,
