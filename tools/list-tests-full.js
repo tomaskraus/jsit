@@ -29,7 +29,7 @@ const work = (stream, fileName) => {
                 tbf.tap(cs => console.log(`${c.lineNum}\t${cs.original}`), c)
             )
         ),
-        map(tbf.tap(c => console.log(`${c.lineNum}\t${testBlock.isInCommentBlock(c) ? "*block*" : "       "} ${c.original}`))),
+        map(tbf.tap(c => console.log(`${c.lineNum}\t${TestBlock.isInCommentBlock(c) ? "*block*" : "       "} ${c.original}`))),
         //tbf.Result.Ok,
         testBlock.resulter
     )

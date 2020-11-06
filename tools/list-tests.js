@@ -24,7 +24,7 @@ const work = (stream, fileName) => {
     )
 
     const linesResulter = compose.all(
-        map(tbf.tap(c => console.log(`${testBlock.isInCommentBlock(c) ? "*block*" : "       "} ${c.original}`))),
+        map(tbf.tap(c => console.log(`${TestBlock.isInCommentBlock(c) ? "*block*" : "       "} ${c.original}`))),
         //tbf.Result.Ok,
         testBlock.resulter
     )

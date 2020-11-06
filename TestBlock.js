@@ -14,6 +14,11 @@ const trimStr = s => s.trim()
 const testBlockBeginRegex = /^\/\/:::/
 
 
+const COMMENT_BLOCK_ID = 'cBlock';
+const commentBlockLens = tbf.createLens(COMMENT_BLOCK_ID)
+const isInCommentBlock = ctx => tbf.Lens.view(commentBlockLens, ctx) > 0
+
+
 const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
     const testParser = tbf.BlockParser.create(
         tbf.blockBoundaryCreate(testBlockBeginRegex, tbf.Regex.blankLine),
@@ -60,7 +65,7 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
                 testParser.contextFlush,
             )(ctx)
         ),
-        'cBlock'
+        COMMENT_BLOCK_ID
     )
 
     const removeBlockCommentStar = line => line.replace(/(\s)*\*(.*)$/, "$1$2")
@@ -97,7 +102,6 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
     return {
         resulter,
         flush,
-        isInCommentBlock,
     }
 }
 
@@ -107,5 +111,6 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
 module.exports = {
     TestBlock: {
         create: testBlockCreator,
+        isInCommentBlock,
     }
 }
