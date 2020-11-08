@@ -14,7 +14,7 @@ const { TestRunner } = require('./TestRunner');
 
 const doWork = (stream, testEvaluator, messager, fileName) => {
     const runner = TestRunner.create(messager, testEvaluator)
-    
+
     flt.lineObservableFromStream(stream)
         .pipe(
             RxOp.scan(runner.reducer, runner.createContext(fileName)),
@@ -40,12 +40,23 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
 
     return new flt.Task((reject, resolve) => {
         try {
-            const moduleName = sanitizeName(nameWithoutExt(pathForModuleRequire))
+            var moduleName = sanitizeName(nameWithoutExt(pathForModuleRequire))
             messager.header({ 'fileName': pathForModuleRequire, 'moduleName': moduleName })
 
+            eval("var assert = require('assert')")
             const requireFileStr = `var ${moduleName} = require("${pathForModuleRequire}")`
             eval(requireFileStr)
-            eval("var assert = require('assert')")
+
+            var registerModuleFields = (nameOfModule) => {
+                for (var key in nameOfModule) {
+                    if (nameOfModule.hasOwnProperty(key)) {
+                        global[key] = nameOfModule[key]
+                    }
+                }
+            }
+
+            eval(`registerModuleFields(${moduleName})`)
+
             resolve({ evaluate: str => eval(str) })
         } catch (e) {
             reject(e)
