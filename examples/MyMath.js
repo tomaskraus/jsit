@@ -33,10 +33,10 @@ const add = function (a, b) {
  *
  * @example
  * //::: swapA
- * let a = [1, 2, 3], orig = [1, 2, 3]   //define some variables in the test
- * let swapped = [2, 1, 3]
- * assert.deepEqual(swapA(a), swapped)   //swaps first two values
- * assert.deepEqual(a, orig)             //preserves the original array
+ * let arr = [1, 2, 3], orig = [1, 2, 3]    //define some variables in the test
+ * //
+ * assert.deepEqual(swapA(arr), [2, 1, 3])  //swaps first two items
+ * assert.deepEqual(arr, orig)              //preserves the original array
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
