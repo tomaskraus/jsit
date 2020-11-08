@@ -103,13 +103,11 @@ const createLens = idOfNewLens => Lens.makeLenses([idOfNewLens])[idOfNewLens]
 
     @example
     //::: tap
-    const lib = text_block_filter  //module
-    //
     let g = 1                               //define some "global" variable
     const ctx = {line: "work"}              //our original context  
     const pluralize = c => {g = 2; return {line: c.line + 's'}}  //some function with side effects
     //
-    const newCtx = lib.tap(pluralize, ctx)
+    const newCtx = tap(pluralize, ctx)
     //
     assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
     assert.equal(g, 2)   //side effects are visible
@@ -130,7 +128,9 @@ const tap = curry(2, (fn, a) => {
     let g = 1                               //define some "global" variable
     const ctx = {line: "work"}              //our original context  
     const pluralize = s => {g = 2; return s + 's'}  //some function with side effects
-    const newCtx = text_block_filter.contextTapLine(pluralize, ctx)
+    //
+    const newCtx = contextTapLine(pluralize, ctx)
+    //
     assert.equal(newCtx.line, ctx.line)   //context state should stay unchanged
     assert.equal(g, 2)   //side effects are visible
 */
@@ -151,7 +151,9 @@ const contextTapLine = curry(2,
     @example
     //::: contextOverLine
     const ctx = {line: "work"}              //our original context   
-    const newCtx = text_block_filter.contextOverLine(s => s + 's', ctx)
+    //
+    const newCtx = contextOverLine(s => s + 's', ctx)
+    //
     assert.equal(newCtx.line, 'works')   //context line should be changed
 */
 const contextOverLine = curry(2, (fn, ctx) => Lens.over(Lns.line, fn, ctx))
@@ -166,7 +168,8 @@ const contextOverLine = curry(2, (fn, ctx) => Lens.over(Lns.line, fn, ctx))
 
     @example
     //::: contextOver   
-    const newCtx = text_block_filter.contextOver(text_block_filter.L.lineNum, i => i + 1, {lineNum: 2})
+    const newCtx = contextOver(L.lineNum, i => i + 1, {lineNum: 2})
+    //
     assert.equal(newCtx.lineNum, 2)   //should be changed
 */
 const contextOver = curry(3, (lens, fn, ctx) => Lens.over(lens, fn, ctx))
@@ -180,12 +183,10 @@ const contextOver = curry(3, (lens, fn, ctx) => Lens.over(lens, fn, ctx))
  * 
  *  @example
  *  //::: resulterFilter
- *  const lib = text_block_filter   //library
+ *  const oddLineNumResulter = resulterFilter(ctx => ctx.lineNum % 2 === 1)
  *  //
- *  const oddLineNumResulter = lib.resulterFilter(ctx => ctx.lineNum % 2 === 1)
- *  //
- *  oddLineNumResulter({ lineNum: 3}) instanceof lib.Result.Ok      //oddLineNumResulter match odd lineNum example
- *  oddLineNumResulter({ lineNum: 4}) instanceof lib.Result.Error   //oddLineNumResulter does not match even lineNum example
+ *  oddLineNumResulter({ lineNum: 3}) instanceof Result.Ok      //oddLineNumResulter match odd lineNum example
+ *  oddLineNumResulter({ lineNum: 4}) instanceof Result.Error   //oddLineNumResulter does not match even lineNum example
  *
  */
 
