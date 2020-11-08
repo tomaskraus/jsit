@@ -3,7 +3,6 @@
  * @module Mth
  */
 
-// const assert = require('assert')
 
 //
 //:::jsit 1
@@ -25,19 +24,19 @@
  * 
  * @example
  *   //:::
- *   Mth.minus(1, 1) == 0
- *   Mth.minus(1, -1) == 3
- *   Mth.minus(1, 2) == -1    
+ *   minus(1, 1) == 0
+ *   Mth.minus(1, -1) == 2
+ *   minus(1, 2) == -1    
     //:::
-    assert.strictEqual( Mth.minus(1, 2), -1 )
-    Mth.b = 2
+    assert.strictEqual( minus(1, 2), -1 )
+    b = 2
     let c = 1
-    assert.strictEqual( Mth.minus(c, Mth.b), -1 )
+    assert.strictEqual( minus(c, b), -1 )
 
     //:::
-    assert.strictEqual( Mth.minus(1, 2), -2 )
-    Mth.b = 0
-    Mth.minus(1, Mth.b) == 1
+    assert.strictEqual( minus(1, 2), -2 )
+    b = 0
+    minus(1, b) == 1
  *
  * 
  */
@@ -48,13 +47,13 @@ const minus = (a, b) => {
 /** add number a to number b
  * @example
   //:::
-  //Mth.plus(1, 1) =w= 2 
-  Mth.plus(1, -1) == 2 
-  Mth.plus(1, 2) == 3 
+  //plus(1, 1) =w= 2 
+  plus(1, -1) == 2 
+  plus(1, 2) == 3 
 
 // //::: Minus in block comment  
-// Mth.minus(10, 2) == 7
-// assert.strictEqual( Mth.minus(10, 20), -1 )
+// minus(10, 2) == 7
+// assert.strictEqual( minus(10, 20), -1 )
 
  */
 const plus = (a, b) => {
@@ -62,16 +61,20 @@ const plus = (a, b) => {
 }
 
 
-//::: Mth.minus
-// //Mth.minus(10, 2) == 7
-// assert.strictEqual( Mth.minus(10, 20), -1 )
-//::: Mth.minus
-// //Mth.minus(10, 2) == 7
-// assert.strictEqual( Mth.minus(10, 20), -1 )
+//::: minus
+// //minus(10, 2) == 7
+// assert.strictEqual( minus(10, 20), -1 )
+//::: minus
+// //minus(10, 2) == 7
+// assert.strictEqual( minus(10, 20), -1 )
 
-//::: Mth.minus
-// //Mth.minus(10, 2) == 7
-// assert.strictEqual( Mth.minus(10, 20), -1 )
+//::: minus
+// //minus(10, 2) == 8
+// assert.strictEqual( minus(10, 20), -1 )
+
+
+//global example - generally a bad practice
+minus10 = (a) => a - 10
 
 module.exports = {
     plus,
@@ -79,5 +82,5 @@ module.exports = {
 }
 
 
-//::: Mth.minus2
-// //Mth.minus(10, 2) == 7
+//::: minus10
+// minus10(6) == -4

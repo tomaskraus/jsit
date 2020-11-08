@@ -14,7 +14,7 @@ const { TestRunner } = require('./TestRunner');
 
 const doWork = (stream, testEvaluator, messager, fileName) => {
     const runner = TestRunner.create(messager, testEvaluator)
-    
+
     flt.lineObservableFromStream(stream)
         .pipe(
             RxOp.scan(runner.reducer, runner.createContext(fileName)),
@@ -40,12 +40,35 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
 
     return new flt.Task((reject, resolve) => {
         try {
-            const moduleName = sanitizeName(nameWithoutExt(pathForModuleRequire))
+            var moduleName = sanitizeName(nameWithoutExt(pathForModuleRequire))
             messager.header({ 'fileName': pathForModuleRequire, 'moduleName': moduleName })
+
+            eval("var assert = require('assert')")
 
             const requireFileStr = `var ${moduleName} = require("${pathForModuleRequire}")`
             eval(requireFileStr)
-            eval("var assert = require('assert')")
+
+            var registerModuleFields = (nameOfModule) => {
+                for (var key in nameOfModule) {
+                    if (nameOfModule.hasOwnProperty(key)) {
+                        
+                        //global name clash check
+                        //TODO: meke this check optional, from cmdline
+                        if (typeof global[key] !== 'undefined') {
+                            throw new Error(
+                                `The [${pathForModuleRequire}] module's exported key [${key}] is already defined in the global context. Should not be redefined!
+  
+  Note: this could also happen if you defined an exported [${key}] item in [${pathForModuleRequire}] globally, i.e. without const/let/var keywords.`)
+                            // however, in cannot prevent the imported file to overwrite global field directly, i.e. not by module.exports
+                        }
+                        
+                        global[key] = nameOfModule[key]
+                    }
+                }
+            }
+
+            eval(`registerModuleFields(${moduleName})`)
+
             resolve({ evaluate: str => eval(str) })
         } catch (e) {
             reject(e)
