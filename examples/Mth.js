@@ -3,7 +3,6 @@
  * @module Mth
  */
 
-// const assert = require('assert')
 
 //
 //:::jsit 1
@@ -70,10 +69,11 @@ const plus = (a, b) => {
 // assert.strictEqual( minus(10, 20), -1 )
 
 //::: minus
-// //minus(10, 2) == 7
+// //minus(10, 2) == 8
 // assert.strictEqual( minus(10, 20), -1 )
 
 
+//global example - generally a bad practice
 minus10 = (a) => a - 10
 
 module.exports = {

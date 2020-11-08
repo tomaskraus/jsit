@@ -44,12 +44,21 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
             messager.header({ 'fileName': pathForModuleRequire, 'moduleName': moduleName })
 
             eval("var assert = require('assert')")
+
             const requireFileStr = `var ${moduleName} = require("${pathForModuleRequire}")`
             eval(requireFileStr)
 
             var registerModuleFields = (nameOfModule) => {
                 for (var key in nameOfModule) {
                     if (nameOfModule.hasOwnProperty(key)) {
+                        
+                        //global name clash check
+                        //TODO: meke this check optional, from cmdline
+                        if (typeof global[key] !== 'undefined') {
+                            throw new Error(`The [${pathForModuleRequire}] module's exported key [${key}] is already defined in the global context. Should not be redefined!`)
+                            // however, in cannot prevent the imported file to overwrite global field directly, i.e. not by module.exports
+                        }
+                        
                         global[key] = nameOfModule[key]
                     }
                 }
