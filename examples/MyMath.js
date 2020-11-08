@@ -3,7 +3,7 @@
  */
 
 
-//::: some test
+//::: our tests for the "add" function
 // add(1, 2) === 3
 // add(1, 0) === add(0, 1)  //is commutative
 // add(1, "2") === "12"     //can do a string concatenation

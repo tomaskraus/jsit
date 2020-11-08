@@ -27,7 +27,7 @@ We'll give the file a name: `MyMath.js`
 Directly, in your code! Just below a `//:::` mark, in the comment. One test per line. Just a valid js `true`/`false` expressions.
 
 ``` javascript
-//::: some test
+//::: our tests for the "add" function
 // add(1, 2) === 3
 // add(1, 0) === add(0, 1)  //is commutative
 // add(1, "2") === "12"     //can do a string concatenation
@@ -40,7 +40,7 @@ module.exports = {
 }
 ```
 
-Magic: we don't need to prefix our functions with module name in the tests. No `MyMath.add`, just `add`.
+Magic: we don't need to prefix our functions with module name in our tests. No `MyMath.add`, just `add`.
 
 **Note:** Only exported fields can be tested.
 
@@ -56,7 +56,7 @@ node jsit.js ./examples/MyMath.js
 
 ``` bash
 START | file: [./examples/MyMath.js] , module: [MyMath]
-//::: some test
+//::: our tests for the "add" function
 OK | ' add(1, 2) === 3'
 OK | '//is commutative'
 OK | '//can do a string concatenation'
