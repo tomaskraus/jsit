@@ -66,7 +66,7 @@ END | failed tests: [0] | total tests: [3]
 Some interesting things in `MyMath.js` test source affects the test output:
 
 - a string written after the `//:::` test header, is shown in the test output
-- if there is a line comment at the end of the test line, only that comment will be shown fotr that line in the test output
+- if there is a line comment at the end of the test line, only that comment will be shown for that line in the test output
 
 
 
