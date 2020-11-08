@@ -113,10 +113,11 @@ More real-life (still silly) example:
  *
  * @example
  * //::: swapA
- * let a = [1, 2, 3], orig = [1, 2, 3]   //define some variables in the test
+ * let arr = [1, 2, 3], orig = [1, 2, 3]   //define some variables in the test
  * let swapped = [2, 1, 3]
- * assert.deepEqual(swapA(a), swapped)
- * assert.deepEqual(a, orig)             //preserves the original array
+ * //
+ * assert.deepEqual(swapA(arr), swapped)   //swaps first two items
+ * assert.deepEqual(arr, orig)             //preserves the original array
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
