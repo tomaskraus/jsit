@@ -13,7 +13,7 @@ npm install --save-dev jsit
 
 ## 2. Write some code
 
-We'll give the file a name: `myMath.js`
+We'll give the file a name: `MyMath.js`
 
 ``` javascript
 
@@ -24,59 +24,66 @@ We'll give the file a name: `myMath.js`
 
 ## 3. Write tests
 
-Directly, in your code! Just under a `//:::` mark, in the comment. One test per line. Just a `true`/`false` expressions.
+Directly, in your code! Just below a `//:::` mark, in the comment. One test per line. Just a valid js `true`/`false` expressions.
 
 ``` javascript
-    //:::
-    // myMath.add(1, 2) == 3
-    // myMath.add(1, 0) == myMath.add(0, 1)  //we want try the commutativity
-    module.exports.add = function(a, b) {
-        return a + b
-    }
+//::: some test
+// add(1, 2) === 3
+// add(1, 0) === add(0, 1)  //is commutative
+// add(1, "2") === "12"     //can do a string concatenation
+const add = function (a, b) {
+    return a + b
+}
 ```
 
-`add` becomes `myMath.add` here.
-
-These tests are valid javascript expressions.
+It automatically knows that `add` is an exported field of this module.
 
 **Hint:** Write these test uncommented, let the IDE do a syntax-check, then comment them.
 
 ## 4. Run tests
 
 ``` bash
-node jsit.js ./examples/myMath.js
+node jsit.js ./examples/MyMath.js
 ```
 
-...and the result is something like:
+...and the test output is something like:
 
 ``` bash
-BEGIN | Module | myMath | File | /home/examples/myMath.js
-END | Failures | 0 | Tests | 2
-
+START | file: [./examples/MyMath.js] , module: [MyMath]
+//::: some test
+OK | ' add(1, 2) === 3'
+OK | '//is commutative'
+OK | '//can do a string concatenation'
+END | failed tests: [0] | total tests: [3]
 ```
+
+Some interesting things in `MyMath.js` test source:
+
+- a string written after the `//:::` test header, is shown in the test output
+- if there is a line comment at the end of the test line, only that comment will be shown fotr that line in the test output
+
+
 
 ## 5. Turn it into documentation
 
 ``` javascript
 /**
- * @module myMath
+ * @module MyMath
  */
 
 /**
   * Adds number a to b
+  * 
   * @example
-     //:::
-     myMath.add(1, 2) == 3
-     myMath.add(1, 0) == myMath.add(0, 1)  //commutative
-     myMath.add(1, "2") === "12"
+  *   //::: add2
+  *   add2(1, 2) === 3           //basic usage
+  *   add2(2, -3) === -1         //can do negative numbers
+  *   add2(1, 0) === add2(0, 1)  //is commutative
+  *   add2(1, "2") === "12"      //can do a string concatenation
   */
-add = function (a, b) {
+ const add2 = function (a, b) {
     return a + b
-}
-
-module.exports = {
-    add
-}
+  }
 ```
 
 The [JSDoc](https://jsdoc.app/) tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
@@ -90,18 +97,15 @@ More real-life (still silly) example:
 
 ``` javascript
 /**
- * @module myMath
- */
-
-/**
  * Swaps first two items in array. Returns a new array, the input array remains untouched.
  *
  * swapA :: [a] -> [a]
  *
  * @example
- * //:::
- * const a = [1, 2, 3]
- * assert.deepEqual(myMath.swapA(a), [2, 1, 3])
+ * ////::: swapA
+ * let a = [1, 2, 3], b = [2, 1, 3], orig = a //define some variables
+ * assert.deepEqual(swapA(a), b)
+ * assert.deepEqual(a, orig) //preserves the original array
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
@@ -112,22 +116,3 @@ module.exports = {
 ```
 
 Yes, we can use the full power of built-in Node `assert` library. By default.
-
-## Not so obvious
-
-### module names
-
-If your module name contains a `-` character (e.g. `my-first-module`), replace that `-` with an underscore: `_`, in the code (`my_first_module`) in your tests:
-
-##TODO: how jsit names an imported module using its file name
-
-file `my-first-module.js`:
-
-``` javascript
-    //:::
-    // my_first_module.add(1, 2) == 3
-    // my_first_module.add(1, 0) == my_first_module.add(0, 1)  //commutative
-    module.exports.inc = (x) => {
-        return x + 1
-    }
-```
