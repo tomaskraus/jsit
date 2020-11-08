@@ -17,7 +17,7 @@ We'll give the file a name: `MyMath.js`
 
 ``` javascript
 
-    module.exports.add = function(a, b) {
+    add = function(a, b) {
         return a + b
     }
 ```
@@ -34,9 +34,15 @@ Directly, in your code! Just below a `//:::` mark, in the comment. One test per 
 const add = function (a, b) {
     return a + b
 }
+
+module.exports = {
+    add,              //only exported fields can be tested
+}
 ```
 
-It automatically knows that `add` is an exported field of this module.
+Magic: we don't need to prefix our functions with module name in the tests. No `MyMath.add`, just `add`.
+
+**Note:** Only exported fields can be tested.
 
 **Hint:** Write these test uncommented, let the IDE do a syntax-check, then comment them.
 
@@ -57,7 +63,7 @@ OK | '//can do a string concatenation'
 END | failed tests: [0] | total tests: [3]
 ```
 
-Some interesting things in `MyMath.js` test source:
+Some interesting things in `MyMath.js` test source affects the test output:
 
 - a string written after the `//:::` test header, is shown in the test output
 - if there is a line comment at the end of the test line, only that comment will be shown fotr that line in the test output
@@ -84,6 +90,10 @@ Some interesting things in `MyMath.js` test source:
  const add2 = function (a, b) {
     return a + b
   }
+
+  module.exports = {
+    swapA,
+}
 ```
 
 The [JSDoc](https://jsdoc.app/) tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
@@ -102,10 +112,11 @@ More real-life (still silly) example:
  * swapA :: [a] -> [a]
  *
  * @example
- * ////::: swapA
- * let a = [1, 2, 3], b = [2, 1, 3], orig = a //define some variables
- * assert.deepEqual(swapA(a), b)
- * assert.deepEqual(a, orig) //preserves the original array
+ * //::: swapA
+ * let a = [1, 2, 3], orig = [1, 2, 3]   //define some variables in the test
+ * let swapped = [2, 1, 3]
+ * assert.deepEqual(swapA(a), swapped)
+ * assert.deepEqual(a, orig)             //preserves the original array
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
