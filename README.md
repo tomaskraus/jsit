@@ -92,7 +92,7 @@ Some interesting things in `MyMath.js` test source affects the test output:
   }
 
   module.exports = {
-    swapA,
+    add2,
 }
 ```
 
