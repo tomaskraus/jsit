@@ -55,7 +55,10 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
                         //global name clash check
                         //TODO: meke this check optional, from cmdline
                         if (typeof global[key] !== 'undefined') {
-                            throw new Error(`The [${pathForModuleRequire}] module's exported key [${key}] is already defined in the global context. Should not be redefined!`)
+                            throw new Error(
+                                `The [${pathForModuleRequire}] module's exported key [${key}] is already defined in the global context. Should not be redefined!
+  
+  Note: this could also happen if you defined an exported [${key}] item in [${pathForModuleRequire}] globally, i.e. without const/let/var keywords.`)
                             // however, in cannot prevent the imported file to overwrite global field directly, i.e. not by module.exports
                         }
                         
