@@ -13,12 +13,12 @@ const isCommentMode = str => str === CommentMode.comment
 
 const Marks = {
     startBlockStr: { comment: '//*<+', uncomment: '<-*/' },
-    endBlockStr: { comment: '//>+*', uncomment: '/*>-' },
+    endBlockStr: { comment: '//+>*', uncomment: '/*->' },
     startBlockRegex: {},//{ comment: '*+/', uncomment: '-*/'},
     endBlockRegex: {},//{ comment: '/+*', uncomment: '/*-'},
 
     startLineStr: { comment: '////<+', uncomment: '////<-' },
-    endLineStr: { comment: '////>+', uncomment: '////>-' },
+    endLineStr: { comment: '////+>', uncomment: '////->' },
     startLineRegex: {},//{ comment: '*+/', uncomment: '-*/'},
     endLineRegex: {},//{ comment: '/+*', uncomment: '/*-'},
 }
