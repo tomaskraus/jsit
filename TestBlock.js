@@ -12,6 +12,7 @@ const tbf = require('./text-block-filter')
 const trimStr = s => s.trim()
 
 const testBlockBeginRegex = /^\/\/:::/
+const testBlockEndRegex = /^[^\/]|^.[^\/]|^\s*$/      //notLineComment
 
 
 const COMMENT_BLOCK_ID = 'cBlock';
@@ -28,9 +29,8 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
 
     //---------------------------------------------------
 
-    const notLineCommentRegex = /^[^\/]|^.[^\/]|^\s*$/
     const lineCommentParser = tbf.BlockParser.create(
-        tbf.blockBoundaryCreate(testBlockBeginRegex, notLineCommentRegex),
+        tbf.blockBoundaryCreate(testBlockBeginRegex, testBlockEndRegex),
         tbf.blockCallbacksCreate(
             ctx => tbf.Result.Ok(ctx),
             ctx => compose(
@@ -109,5 +109,7 @@ module.exports = {
     TestBlock: {
         create: testBlockCreator,
         isInCommentBlock,
+        blockBeginRegex: testBlockBeginRegex,
+        blockEndRegex: testBlockEndRegex,
     }
 }
