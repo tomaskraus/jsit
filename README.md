@@ -72,6 +72,8 @@ Some interesting things in `MyMath.js` test source affects the test output:
 
 ## 5. Turn it into documentation
 
+We can also add our tests to the block comments:
+
 ``` javascript
 /**
  * @module MyMath
@@ -79,7 +81,7 @@ Some interesting things in `MyMath.js` test source affects the test output:
 
 /**
   * Adds number a to b
-  * 
+  *
   * @example
   *   //::: add2
   *   add2(1, 2) === 3           //basic usage
@@ -97,9 +99,10 @@ Some interesting things in `MyMath.js` test source affects the test output:
 ```
 
 The [JSDoc](https://jsdoc.app/) tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
-Do we need more?
 
-## More...
+**Note**: We still use a `//:::` string to mark a test beginning. Because it is a proper line-comment, it forms a valid javascript code.
+
+## More
 
 ### Need an assertion?
 
