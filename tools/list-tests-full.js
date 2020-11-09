@@ -24,6 +24,12 @@ const work = (stream, fileName) => {
     )
 
     const linesResulter = compose.all(
+        map(
+            tbf.contextTapLine(s => TestBlock.blockBeginRegex.test(s)
+                ? console.log(`\t- - - - - - - - - - - - - - - - - - - - - - - - `)
+                : null
+            )
+        ),
         res => res.orElse(
             c => tbf.Result.Error(
                 tbf.tap(cs => console.log(`${c.lineNum}\t${cs.original}`), c)
