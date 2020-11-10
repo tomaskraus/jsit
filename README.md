@@ -1,6 +1,6 @@
 # jsit
 
-- **The simplest unit-test framework ever.**
+- **The simplest unit-testing tool ever.**
 - No config, no `test*` files!
 - **Document** &amp; **test** your code at **once**.
 - For Node Modules.
@@ -72,7 +72,7 @@ Some interesting things in `MyMath.js` test source affects the test output:
 
 ## 5. Turn it into documentation
 
-We can also add our tests to the block comments:
+We can also add our tests to the block comments. That gives a chance to various documentation generators (such as [JSDoc][1]) to deal with these tests.
 
 ``` javascript
 /**
@@ -98,7 +98,7 @@ We can also add our tests to the block comments:
 }
 ```
 
-The [JSDoc](https://jsdoc.app/) tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
+For example, the [JSDoc][1] tool recognizes the `@example` tag, and shows that test code in the generated documentation.  
 
 **Note**: We still use a `//:::` string to mark a test beginning. Because it is a proper line-comment, it forms a valid javascript code.
 
@@ -130,3 +130,9 @@ module.exports = {
 ```
 
 Yes, we can use the full power of built-in Node `assert` library. By default.
+
+
+
+## Links
+
+[1]: <https://jsdoc.app/> (JSDoc)
