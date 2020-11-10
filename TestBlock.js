@@ -20,7 +20,7 @@ const commentBlockLens = tbf.createLens(COMMENT_BLOCK_ID)
 const isInCommentBlock = ctx => tbf.Lens.view(commentBlockLens, ctx) > 0
 
 
-const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
+const createTestBlock = (blockBeginCallback, blockEndCallback) => {
     const testParser = tbf.BlockParser.create(
         tbf.blockBoundaryCreate(testBlockBeginRegex, tbf.Regex.blankLine),
         tbf.blockCallbacksCreate(blockBeginCallback, blockEndCallback),
@@ -107,7 +107,7 @@ const testBlockCreator = (blockBeginCallback, blockEndCallback) => {
 
 module.exports = {
     TestBlock: {
-        create: testBlockCreator,
+        create: createTestBlock,
         isInCommentBlock,
         blockBeginRegex: testBlockBeginRegex,
         blockEndRegex: testBlockEndRegex,
