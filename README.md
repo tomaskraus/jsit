@@ -135,4 +135,6 @@ Yes, we can use the full power of built-in Node `assert` library. By default.
 
 ## Links
 
-[1]: <https://jsdoc.app/> (JSDoc)
+[1]: https://jsdoc.app/ JSDoc
+
+[2]: https://rbcs-us.com/documents/Why-Most-Unit-Testing-is-Waste.pdf Why Most Unit Testing is Waste
