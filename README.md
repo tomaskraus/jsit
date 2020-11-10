@@ -40,8 +40,6 @@ module.exports = {
 }
 ```
 
-Magic: we don't need to prefix our functions with module name in our tests. No `MyMath.add`, just `add`.
-
 **Note:** Only exported fields can be tested.
 
 **Hint:** Write these test uncommented, let the IDE do a syntax-check, then comment them.
