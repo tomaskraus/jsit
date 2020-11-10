@@ -17,21 +17,21 @@ const createContext = (fileName, originalContext) => (
     { ...originalContext, fileName, stats: { numFailed: 0, totalTests: 0 } }
 )
 
-const isLineComment = s => tbf.Regex.JSLineComment.test(s)
 
 
-const TestRunnerCreator = (messager, evaluator) => {
+const createTestRunner = (messager, evaluator) => {
 
     const testBlock = TestBlock.create(
         ctx => compose.all(
-            _resetVarsHandler,
             tbf.tap(messager.describe),
+            clearVars,
         )(ctx),
 
         tbf.Result.Error
     )
 
 
+    const isLineComment = s => tbf.Regex.JSLineComment.test(s)
     const executableTestLinesResulter = compose.all(
         chain(tbf.resulterFilterLine(s => !isLineComment(s))),
         testBlock.resulter,
@@ -47,6 +47,7 @@ const TestRunnerCreator = (messager, evaluator) => {
             L.set(lens.msg, err.message),
             L.over(lens.stats_numFailed, inc),
         )(ctx)
+
         return ctx => {
             const ctx2 = L.over(lens.stats_totalTests, inc, ctx)
             try {
@@ -63,42 +64,42 @@ const TestRunnerCreator = (messager, evaluator) => {
         }
     }
 
-    //---------------------------------------------------------------------------------------------------
+    //---create variables in test------------------------------------------------------------------------------------------------
 
 
     const varRegex = /^\s*(const|let|var)\s+/s
-    const _resetVarsHandler = ctx => Result.Error(L.set(lens.vars, '', ctx))
-    const _addVarMapper = ctx => L.over(tbf.L.line, s => `${L.view(lens.vars, ctx)} ${s}`, ctx)
-
+    const clearVars = ctx => Result.Error(L.set(lens.vars, '', ctx))
     const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
-    const _detectVarHandler = ctx => {
+    const addVarsToStartOfTheLine = ctx => L.over(tbf.L.line, line => `${L.view(lens.vars, ctx)} ${line}`, ctx)
+
+
+    const detectVars = ctx => {
         const line = L.view(tbf.L.line, ctx)
         if (varRegex.test(line)) {
-            const s_line = removeLineCommentAtTheEnd(line).trim()
-            return Result.Error(L.over(lens.vars, s => `${s}${s_line}; `, ctx))
+            const newVarsToAdd = removeLineCommentAtTheEnd(line).trim()
+            return Result.Error(L.over(lens.vars, varLine => `${varLine}${newVarsToAdd}; `, ctx))
         }
         return Result.Ok(ctx)
     }
 
 
-    const testingContextResulter = ctx => compose.all(
-        map(_addVarMapper),
-        _detectVarHandler,
+    const varResulter = ctx => compose.all(
+        map(addVarsToStartOfTheLine),
+        detectVars,
     )(ctx)
 
     //---------------------------------------------------------------------------------------------------
 
     const testingResulter = compose.all(
         map(evaluate()),
-        chain(testingContextResulter),
+        chain(varResulter),
         executableTestLinesResulter,
     )
 
-    const testingReducer = tbf.reducer(testingResulter)
 
     return {
-        reducer: testingReducer,
+        reducer: tbf.reducer(testingResulter),
         flush: testBlock.flush,
         createContext: fileName => createContext(fileName, tbf.contextCreate()),
     }
@@ -110,6 +111,6 @@ const TestRunnerCreator = (messager, evaluator) => {
 
 module.exports = {
     TestRunner: {
-        create: TestRunnerCreator,       
+        create: createTestRunner,
     }
 }
