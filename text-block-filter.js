@@ -230,7 +230,7 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
     const lensBlockLineNum = createLens(id)
 
 
-    const resulterFilter = ctx => {
+    const resulter = ctx => {
         const blockLineNum = Lens.view(lensBlockLineNum, ctx) || _BLOCK_LINE_OFF
         const line = Lens.view(Lns.line, ctx)
         //begin block
@@ -275,7 +275,7 @@ const blockParserCreator = (blockBoundary, blockCallbacks, id) => {
 
 
     return {
-        resulterFilter,
+        resulter,
         contextFlush,
         isInBlock,
     }

@@ -53,7 +53,7 @@ const createTestBlock = (blockBeginCallback, blockEndCallback) => {
                 removeLineComment
             )
         )),
-        lineCommentParser.resulterFilter,
+        lineCommentParser.resulter,
     )
 
 
@@ -78,7 +78,7 @@ const createTestBlock = (blockBeginCallback, blockEndCallback) => {
                 removeBlockCommentStar
             )
         )),
-        commentBlockParser.resulterFilter,
+        commentBlockParser.resulter,
     )
 
 
@@ -86,7 +86,7 @@ const createTestBlock = (blockBeginCallback, blockEndCallback) => {
 
 
     const resulter = compose.all(
-        chain(testParser.resulterFilter),
+        chain(testParser.resulter),
         result => result.orElse(
             lineCommentResulter
         ),
