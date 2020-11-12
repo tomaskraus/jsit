@@ -23,6 +23,7 @@ const createTestRunner = (messager, evaluator) => {
 
     const testBlock = TestBlock.create(
         ctx => compose.all(
+            Result.Error,
             tbf.tap(messager.describe),
             clearVars,
         )(ctx),
@@ -68,7 +69,7 @@ const createTestRunner = (messager, evaluator) => {
 
 
     const varRegex = /^\s*(const|let|var)\s+/s
-    const clearVars = ctx => Result.Error(L.set(lens.vars, '', ctx))
+    const clearVars = ctx => L.set(lens.vars, '', ctx)
     const removeLineCommentAtTheEnd = line => line.replace(/^(.*)\/\/.*$/, "$1")
 
     const addVarsToStartOfTheLine = ctx => L.over(tbf.L.line, line => `${L.view(lens.vars, ctx)} ${line}`, ctx)
