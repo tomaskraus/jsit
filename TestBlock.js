@@ -32,11 +32,12 @@ const createTestBlock = (blockBeginCallback, blockEndCallback) => {
     const lineCommentParser = tbf.BlockParser.create(
         tbf.blockBoundaryCreate(testBlockBeginRegex, testBlockEndRegex),
         tbf.blockCallbacksCreate(
-            ctx => tbf.Result.Ok(ctx),
-            ctx => compose(
+            tbf.Result.Ok,
+
+            compose(
                 tbf.Result.Error,
                 testParser.contextFlush,
-            )(ctx)
+            )
         ),
         'lBlock'
     )
@@ -59,11 +60,12 @@ const createTestBlock = (blockBeginCallback, blockEndCallback) => {
     const commentBlockParser = tbf.BlockParser.create(
         tbf.blockBoundaryCreate(tbf.Regex.JSBlockCommentBegin, tbf.Regex.JSBlockCommentEnd),
         tbf.blockCallbacksCreate(
-            ctx => tbf.Result.Error(ctx),
-            ctx => compose(
+            tbf.Result.Error,
+            
+            compose(
                 tbf.Result.Error,
                 testParser.contextFlush,
-            )(ctx)
+            )
         ),
         COMMENT_BLOCK_ID
     )
@@ -83,17 +85,17 @@ const createTestBlock = (blockBeginCallback, blockEndCallback) => {
     //---------------------------------------------------
 
 
-    const resulter = ctx => compose.all(
+    const resulter = compose.all(
         chain(testParser.resulterFilter),
         result => result.orElse(
             lineCommentResulter
         ),
         blockCommentResulter,
         tbf.contextOverLine(trimStr),
-    )(ctx)
+    )
 
 
-    const flush = ctx => testParser.contextFlush(ctx)
+    const flush = testParser.contextFlush
 
 
     return {
