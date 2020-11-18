@@ -25,6 +25,7 @@ Directly, in your code! Just below a `//:::` mark, in the comment. One test per 
 
 ``` javascript
 @@ add-test-simple
+@@ add
 
 @@ exports-add
 ```

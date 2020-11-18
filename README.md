@@ -30,6 +30,9 @@ Directly, in your code! Just below a `//:::` mark, in the comment. One test per 
 // add(1, 2)    === 3
 // add(1, 0)    === add(0, 1)   //is commutative
 // add(1, "2")  === "12"        //can do a string concatenation
+function add(a, b) {
+  return a + b
+}
 
 module.exports = {
   add,              //only exported fields can be tested
