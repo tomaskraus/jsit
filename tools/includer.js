@@ -8,9 +8,6 @@ const flt = require('../file-line-tools')
 const tbf = require('../text-block-filter')
 
 
-const includerTagRegexp = /^\s*@@/                          // @@
-const getTagName = s => s.replace(/^\s*@@\s*(\w*)/, "$1")
-
 
 const prepareDefinitionsTask = stream => {
     const definitions = {}
@@ -73,16 +70,21 @@ const prepareDefinitionsTask = stream => {
 
 
 
-const replacer = definitions => s => {
-    if (includerTagRegexp.test(s)) {
-        const key = getTagName(s)
-        const text = definitions[key]
-        if (text === undefined) {
-            throw new Error(`key [${key}] does not exist!`)
+const replacer = definitions => {
+    const includerTagRegexp = /^\s*@@/                          // @@
+    const getTagName = s => s.replace(/^\s*@@\s*(\w*)/, "$1")
+
+    return s => {
+        if (includerTagRegexp.test(s)) {
+            const key = getTagName(s)
+            const text = definitions[key]
+            if (text === undefined) {
+                throw new Error(`key [${key}] does not exist!`)
+            }
+            return text
         }
-        return text
+        return s
     }
-    return s
 }
 
 
