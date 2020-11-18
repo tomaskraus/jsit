@@ -1,0 +1,1 @@
+cat README.template.md | node ./tools/includer.js ./examples/MyMath.js > README.md

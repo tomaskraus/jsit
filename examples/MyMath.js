@@ -1,31 +1,34 @@
+////+ module
 /**
  * @module my_math
  */
+////-
 
-
+////+ add-test-simple
 //::: our tests for the "add" function
-// add(1, 2) === 3
-// add(1, 0) === add(0, 1)  //is commutative
-// add(1, "2") === "12"     //can do a string concatenation
-const add = function (a, b) {
-    return a + b
-}
-
-
+// add(1, 2)    === 3
+// add(1, 0)    === add(0, 1)   //is commutative
+// add(1, "2")  === "12"        //can do a string concatenation
+////-
+////+ add-test
 /**
   * Adds number a to b
   * 
   * @example
-  *   //::: add2
-  *   add2(1, 2) === 3           //basic usage
-  *   add2(2, -3) === -1         //can do negative numbers
-  *   add2(1, 0) === add2(0, 1)  //is commutative
-  *   add2(1, "2") === "12"      //can do a string concatenation
+  *   //::: add
+  *   add(1, 2)   === 3           //basic usage
+  *   add(2, -3)  === -1          //can do negative numbers
+  *   add(1, 0)   === add(0, 1)   //is commutative
+  *   add(1, "2") === "12"        //can do a string concatenation
   */
- const add2 = function (a, b) {
-    return a + b
-  }
+////-
+////+ add
+function add(a, b) {
+  return a + b
+}
+////-
 
+////+ swapA
 /**
  * Swaps first two items in array. Returns a new array, the input array remains untouched.
  *
@@ -40,9 +43,23 @@ const add = function (a, b) {
  *
  */
 const swapA = ([a, b, ...tail]) => [b, a, ...tail]
+////-
 
+////+ exports-swapA
 module.exports = {
-    add,
-    add2,
-    swapA,
+  swapA,              //only exported fields can be tested
 }
+////-
+
+////+ exports-add
+module.exports = {
+  add,              //only exported fields can be tested
+}
+////-
+
+////+ exports-all
+module.exports = {
+  add,
+  swapA,
+}
+////-
