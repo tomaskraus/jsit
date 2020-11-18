@@ -14,7 +14,7 @@ const getTagName = s => s.replace(/^\s*@@\s*(\w*)/, "$1")
 
 const prepareDefinitionsTask = stream => {
     const definitions = {}
-    
+
     let tagName = ''
     let body = ''
 
@@ -43,7 +43,11 @@ const prepareDefinitionsTask = stream => {
     )
 
     const defResulter = compose.all(
-        map(tbf.contextTapLine(s => { body = (body === '') ? body + s : body + '\n' + s})),
+        map(tbf.contextTapLine(s => {
+            body = (body === '')
+                ? body + s
+                : body + '\n' + s
+        })),
         defParser.resulter,
     )
 
