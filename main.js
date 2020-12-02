@@ -45,7 +45,7 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
 
             eval("var assert = require('assert')")
 
-            const requireFileStr = `var ${moduleName} = require("${pathForModuleRequire}")`
+            const requireFileStr = `var ${moduleName} = require("./${pathForModuleRequire}")`
             eval(requireFileStr)
 
             var registerModuleFields = (nameOfModule) => {
