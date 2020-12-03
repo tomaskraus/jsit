@@ -3,6 +3,7 @@
  * 
  */
 
+const { Subject } = require('rxjs')
 const RxOp = require('rxjs/operators')
 
 const path = require('path');
@@ -32,6 +33,33 @@ const streamFromFileNameTask = (path, readStreamOptions) => {
  */
 const lineObservableFromStream = stream => streamToStringRx(stream.pipe(split()))
 
+/**
+ * RxJS Subject-like object, can emit its lines on demand
+ * 
+ * LinesSubj :: [string] -> "Subject-like"
+ * 
+ */
+const LinesSubj = strArr => {
+    const subj = new Subject();
+    const subscribe = observer => subj.subscribe(observer)
+    let lineNumber = -1
+    const next = () => {
+        lineNumber += 1     //increment here, because of asynchronous nature of the subj.next
+        if (lineNumber >= strArr.length) {
+            subj.complete()
+        }
+        subj.next(strArr[lineNumber])
+    }
+
+    return {
+        // subscribe :: Observer -> _
+        subscribe,
+        // next :: () -> a
+        next,
+    }
+}
+
+
 const _defaultHelp = (applicationName, helpStr = null) => {
     if (helpStr) console.log(helpStr)
     console.log(`Usage: ${applicationName} <filename>`)
@@ -53,11 +81,11 @@ const _defaultHelp = (applicationName, helpStr = null) => {
 
 const runCmdLineHelper = (argv, help, success) => {
     const appName = path.basename(argv[1])
-    const fileName = argv.length > 2 ?
-        argv[argv.length - 1]
+    const fileName = argv.length > 2
+        ? argv[argv.length - 1]
         : null
-    fileName ?
-        success(fileName)
+    fileName != null
+        ? success(fileName)
         : typeof (help) === 'string'
             ? _defaultHelp(appName, help)
             : help(appName)
@@ -84,7 +112,7 @@ const identity = a => a
 //------------------------------------------------------------------------------
 
 module.exports = {
-    
+
     /**
      * just a Task from data.task module, for convenience
      */
@@ -103,7 +131,15 @@ module.exports = {
      * @param {Stream} stream 
      */
     lineObservableFromStream,
-    
+
+    /**
+     * RxJS Subject-like object, can emit its lines on demand
+     * 
+     * LinesSubj :: [string] -> "Subject-like"
+     * 
+     */
+    LinesSubj,
+
     /**
      * Checks for filename presence at command line. 
      * A filename is considered to be the last argument in the command line argument list.
@@ -117,7 +153,7 @@ module.exports = {
      * @param {function(fileName: string)} success 
      */
     runCmdLineHelper,
-    
+
     /**
      * Default error-handling function. Just prints the error message and details
      */
