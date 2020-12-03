@@ -3,16 +3,19 @@
  * input logic
  */
 
+const { Subject } = require('rxjs')
 const RxOp = require('rxjs/operators')
-const path = require('path');
+const path = require('path')
+const getStdin = require('get-stdin');
 
-const flt = require('./file-line-tools');
+const flt = require('./file-line-tools')
 
 const _Messager = require('./messagers/defaultMessager')
-const { TestRunner } = require('./TestRunner');
+const { TestRunner } = require('./TestRunner')
 
 
-const doWork = (stream, testEvaluator, messager, fileName) => {
+
+const doWork = (stream, testEvaluator, messager, fileName, testCompleteCallback) => {
     const runner = TestRunner.create(messager, testEvaluator)
 
     flt.lineObservableFromStream(stream)
@@ -28,6 +31,7 @@ const doWork = (stream, testEvaluator, messager, fileName) => {
             },
             complete: _ => {
                 stream.destroy()
+                testCompleteCallback()
             }
         })
 }
@@ -51,7 +55,7 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
             var registerModuleFields = (nameOfModule) => {
                 for (var key in nameOfModule) {
                     if (nameOfModule.hasOwnProperty(key)) {
-                        
+
                         //global name clash check
                         //TODO: meke this check optional, from cmdline
                         if (typeof global[key] !== 'undefined') {
@@ -61,7 +65,7 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
   Note: this could also happen if you defined an exported [${key}] item in [${pathForModuleRequire}] globally, i.e. without const/let/var keywords.`)
                             // however, in cannot prevent the imported file to overwrite global field directly, i.e. not by module.exports
                         }
-                        
+
                         global[key] = nameOfModule[key]
                     }
                 }
@@ -77,6 +81,47 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
 }
 
 
+const testDoneCallback = () => { return } //console.log('= = = = = Tadaa! = = = =')
+
+const testTheFile = (nameOfFileToBeTested, testCompleteCB, errorCB) =>
+    prepareEvaluatorTask(nameOfFileToBeTested, _Messager)
+        .chain(evaluator =>
+            flt.streamFromFileNameTask(nameOfFileToBeTested)
+                .map(stream => doWork(stream, evaluator, _Messager, nameOfFileToBeTested, testCompleteCB))
+        )
+        .fork(
+            errorCB,
+            flt.identity
+        )
+
+
+const testFilesFromInputStream = () => {
+    getStdin().then(
+        s => {
+            const lines = s
+                .split('\n')
+                .filter(s => s.length > 0)
+            const lSub = flt.LinesSubj(lines)
+            lSub.subscribe({
+                next: fileName => {
+                    // console.log(`name=${fileName}`)
+                    // lSub.next()
+                        testTheFile(fileName, lSub.next, flt.stdOutErrorHandler)
+                },
+                complete: testDoneCallback,
+                error: flt.stdOutErrorHandler
+            })
+            lSub.next()
+        },
+        err => console.error(err),
+    )
+
+}
+
+
+const processParam = arg => arg === '-i'
+    ? testFilesFromInputStream()
+    : testTheFile(arg, testDoneCallback, flt.stdOutErrorHandler)
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -84,14 +129,5 @@ const prepareEvaluatorTask = (pathForModuleRequire, messager) => {
 flt.runCmdLineHelper(
     process.argv,
     'Runs inline-tests in the file.',
-    nameOfFileToBeTested =>
-        prepareEvaluatorTask(nameOfFileToBeTested, _Messager)
-            .chain(evaluator =>
-                flt.streamFromFileNameTask(nameOfFileToBeTested)
-                    .map(stream => doWork(stream, evaluator, _Messager, nameOfFileToBeTested))
-            )
-            .fork(
-                flt.stdOutErrorHandler,
-                flt.identity
-            )
+    processParam
 )
